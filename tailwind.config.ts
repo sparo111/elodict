@@ -9,6 +9,7 @@ export default {
       colors: {
         bg: "var(--color-bg)",
         surface: "var(--color-surface)",
+        desk: "var(--color-desk)",
         border: "var(--color-border)",
         "border-input": "var(--color-border-input)",
         text: "var(--color-text)",

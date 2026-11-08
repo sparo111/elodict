@@ -66,3 +66,14 @@ Autosalvataggio, 4 lingue (EN/FR/ES), export .docx/.pdf/.md, email, impostazioni
 - Test: 102 sulla logica (16 sul taglio delle frasi), 261 nel browser (5 saltate di proposito).
 - **Non verificato:** voce umana vera (la sintesi è molto più pulita); microfoni veri e rumore; computer lenti (con Whisper medio la risposta può arrivare con secondi di ritardo); Firefox e Safari veri (simulati togliendo il riconoscimento integrato); WebGPU (non usato); uso con la pagina pubblicata online (il file del motore pesa 22 MB, sotto il limite di 25 MB dei servizi gratuiti più comuni).
 - **Limiti noti:** la scelta del microfono ancora non c'è (usa quello predefinito); il testo arriva a fine frase, non parola per parola (Whisper non lavora a flusso); la prima volta c'è il download del modello.
+
+## M5 (2026-11-08) — il foglio A4 e le bandierine (richieste dell'utente)
+- **Foglio A4 vero**: 794 x 1123 px (21 x 29,7 cm a 96 dpi), margini di 2,54 cm, fogli bianchi impilati su una "scrivania", numero di pagina «n / N».
+- **A capo a fine foglio**: il testo scorre in una colonna sola e alla fine dell'area utile si inserisce uno spazio (margine in basso + intervallo + margine in alto), così la riga dopo parte dal foglio successivo, **anche a metà di un paragrafo** (`src/editor/PageLayout.ts`, calcolo puro provato con 9 prove numeriche). Gli spazi sono solo decorazioni: non finiscono nel documento né nei file esportati.
+- **A capo a fine riga**: il testo andava già a capo al margine destro del foglio; ora è misurato (nessuna parola supera 698 px né scende sotto 96 px) e anche una parola lunghissima senza spazi si spezza.
+- **Zoom** del foglio (Adatta, 75-150%). "Adatta" riduce il foglio sul telefono.
+- **Bandierine** accanto al nome (IT, EN, FR, ES, disegnate in SVG perché su Windows le "emoji bandiera" appaiono come lettere): scelgono insieme la lingua dei menu e quella della voce. Il menu a tendina della barra permette ancora di dettare in una lingua diversa da quella dei menu.
+- Esportazione: anche Word e PDF ora sono A4 con margini di 2,54 cm.
+- Difetti trovati mentre lo costruivo (non arrivati all'utente): (1) il metodo per trovare l'inizio di ogni riga funzionava solo per le righe visibili sullo schermo; (2) con il foglio rimpicciolito sul telefono, le misure ingrandite e quelle vere venivano mescolate e tutte le righe si fondevano in una: trovati con le prove su telefono.
+- Test: 111 sulla logica, 333 nel browser (5 saltate di proposito).
+- **Non verificato**: l'aspetto con altri font o su schermi molto grandi; la stampa dal browser (non è stata progettata: si usa Esporta); documenti di molte decine di pagine (il calcolo dei fogli rilegge tutte le parole a ogni modifica: su testi molto lunghi può diventare lento); la divisione in sillabe (le parole non si spezzano con il trattino, vanno a capo intere salvo quelle lunghissime).

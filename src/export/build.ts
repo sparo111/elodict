@@ -29,14 +29,16 @@ async function buildDocx(blocks: Block[]): Promise<Blob> {
     if (b.kind === "li") return new Paragraph({ children: [new TextRun(`${b.n}. `), ...runsOf(b)] });
     return new Paragraph({ children: runsOf(b), spacing: { after: 160 } });
   });
-  return Packer.toBlob(new Document({ sections: [{ children }] }));
+  // A4 (21 x 29,7 cm) con margini di 2,54 cm, come il foglio che si vede a schermo
+  const page = { size: { width: 11906, height: 16838 }, margin: { top: 1440, right: 1440, bottom: 1440, left: 1440 } };
+  return Packer.toBlob(new Document({ sections: [{ properties: { page }, children }] }));
 }
 
 async function buildPdf(blocks: Block[]): Promise<Blob> {
   const { jsPDF } = await import("jspdf");
   const doc = new jsPDF({ unit: "mm", format: "a4" });
-  const left = 20, width = 170, bottom = 277;
-  let y = 25;
+  const left = 25.4, width = 159.2, bottom = 271.6;
+  let y = 25.4;
   // Il font di base del PDF non ha tutti i simboli: li sostituiamo con equivalenti semplici.
   const clean = (s: string) => s.replace(/ /g, " ").replace(/…/g, "...").replace(/[“”]/g, '"');
   for (const b of blocks) {
@@ -48,7 +50,7 @@ async function buildPdf(blocks: Block[]): Promise<Blob> {
     for (const l of doc.splitTextToSize(text, width) as string[]) {
       if (y > bottom) {
         doc.addPage();
-        y = 25;
+        y = 25.4;
       }
       doc.text(l, left, y);
       y += line;

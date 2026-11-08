@@ -58,3 +58,7 @@ Test del microfono con indicatore di livello,qualità,should,no,yes,"Impostazion
 Avviso se per alcuni secondi non arriva testo (con controlli da fare),qualità,should,no,yes,dopo 10 s senza testo; porta alla prova del microfono; non in pausa
 Copia di sicurezza e ripristino di tutti i documenti,core,should,no,yes,Impostazioni: scarica/ripristina un file JSON controllato; promemoria sempre visibile
 Trascrivere un file audio caricato,tecnologia,could,no,no,da recensioni: 21 su import/export; richiede Whisper nel browser; vedi fixes-recorders.md
+"Foglio A4 (21 x 29,7 cm) con margini, uno sotto l'altro, con numero di pagina",editor,must,yes,yes,"richiesto dall'utente; margini 2,54 cm; misurato con prove geometriche"
+A capo automatico a fine riga e a fine foglio (anche a metà paragrafo),editor,must,yes,yes,richiesto dall'utente; anche parole lunghissime si spezzano; provato su computer e telefono
+Bandierine accanto al nome per scegliere la lingua dell'app e della voce,lingue,should,no,yes,"richiesto dall'utente; 4 bandiere disegnate; cambiano menu, testi e voce"
+"Zoom del foglio (adatta, 75%, 100%, 125%, 150%)",editor,could,yes,yes,'Adatta' riduce il foglio sul telefono

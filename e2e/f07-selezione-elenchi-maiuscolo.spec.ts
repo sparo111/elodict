@@ -62,7 +62,7 @@ test.describe("Maiuscolo e minuscolo", () => {
   });
 
   test("CAPS-H4 in inglese: uppercase last word", async ({ page }) => {
-    await page.getByRole("toolbar").getByRole("combobox").selectOption("en");
+    await page.getByRole("toolbar").getByRole("combobox").first().selectOption("en");
     await say(page, "see you tomorrow");
     await say(page, "uppercase last word");
     await expect(editor(page)).toHaveText("See you TOMORROW");

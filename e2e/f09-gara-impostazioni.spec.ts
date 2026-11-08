@@ -45,7 +45,7 @@ test("RACE-1 cambiare lingua prima che le impostazioni siano lette: la scelta va
   const page = await context.newPage();
   await page.addInitScript(SLOW_DB);
   await page.goto("/", { waitUntil: "commit" });
-  const lang = page.getByRole("toolbar").getByRole("combobox");
+  const lang = page.getByRole("toolbar").getByRole("combobox").first();
   await lang.selectOption("fr");
   await expect(lang).toHaveValue("fr");
   await page.waitForTimeout(3500); // il database si apre, le impostazioni vengono lette
@@ -54,7 +54,7 @@ test("RACE-1 cambiare lingua prima che le impostazioni siano lette: la scelta va
   // 3) dopo il ricaricamento: la scelta c'è e il dizionario anche
   await page.reload({ waitUntil: "commit" });
   await page.waitForTimeout(3500);
-  await expect(page.getByRole("toolbar").getByRole("combobox")).toHaveValue("fr");
+  await expect(page.getByRole("toolbar").getByRole("combobox").first()).toHaveValue("fr");
   await page.getByRole("button", { name: /Impostazioni|Réglages/ }).click();
   await expect(page.getByRole("dialog").locator("li")).toContainText("Pippo");
   await context.close();
@@ -63,9 +63,9 @@ test("RACE-1 cambiare lingua prima che le impostazioni siano lette: la scelta va
 test("RACE-2 con il database lento, la prima scelta resta anche senza impostazioni salvate", async ({ page }) => {
   await page.addInitScript(SLOW_DB);
   await page.goto("/", { waitUntil: "commit" });
-  await page.getByRole("toolbar").getByRole("combobox").selectOption("es");
+  await page.getByRole("toolbar").getByRole("combobox").first().selectOption("es");
   await page.waitForTimeout(3500);
-  await expect(page.getByRole("toolbar").getByRole("combobox")).toHaveValue("es");
+  await expect(page.getByRole("toolbar").getByRole("combobox").first()).toHaveValue("es");
   await say(page, "signo de apertura de interrogación qué tal signo de interrogación");
   await expect(editor(page)).toContainText("¿Qué tal?");
 });

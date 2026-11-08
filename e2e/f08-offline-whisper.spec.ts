@@ -123,7 +123,7 @@ for (const [lang, file, first, second, model] of [
       try {
         const check = watchErrors(page);
         await page.goto("/");
-        if (lang !== "it") await page.getByRole("toolbar").getByRole("combobox").selectOption(lang);
+        if (lang !== "it") await page.getByRole("toolbar").getByRole("combobox").first().selectOption(lang);
         await chooseOffline(page, model);
 
         await big(page).click();

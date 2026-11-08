@@ -4,6 +4,7 @@ import { Bold, Heading2, Italic, List, ListOrdered, Mic, Redo2, Square, Underlin
 import type { Strings } from "../i18n";
 import { LANGS, LANG_NAME } from "../commands";
 import type { Lang } from "../commands/types";
+import type { Zoom } from "./Paper";
 
 interface Props {
   editor: Editor;
@@ -13,6 +14,8 @@ interface Props {
   onMic: () => void;
   lang: Lang;
   onLang: (l: Lang) => void;
+  zoom: Zoom;
+  onZoom: (z: Zoom) => void;
 }
 
 const base =
@@ -40,7 +43,7 @@ function Tool({ label, active, disabled, onClick, children }: {
 
 const Divider = () => <span className="mx-1 h-6 w-px shrink-0 bg-border" aria-hidden="true" />;
 
-export function Toolbar({ editor, s, listening, micDisabled, onMic, lang, onLang }: Props) {
+export function Toolbar({ editor, s, listening, micDisabled, onMic, lang, onLang, zoom, onZoom }: Props) {
   const st = useEditorState({
     editor,
     selector: ({ editor: e }) => ({
@@ -108,6 +111,20 @@ export function Toolbar({ editor, s, listening, micDisabled, onMic, lang, onLang
         <Tool label={s.tbOrdered} active={st.ordered} onClick={() => run().toggleOrderedList().run()}>
           <ListOrdered size={18} aria-hidden="true" />
         </Tool>
+        <Divider />
+        <select
+          aria-label={s.zoomLabel}
+          title={s.zoomLabel}
+          value={String(zoom)}
+          onChange={(e) => onZoom(e.target.value === "fit" ? "fit" : Number(e.target.value))}
+          className="h-10 shrink-0 rounded-md border border-border-input bg-bg px-2 text-sm font-semibold"
+        >
+          <option value="fit">{s.zoomFit}</option>
+          <option value="0.75">75%</option>
+          <option value="1">100%</option>
+          <option value="1.25">125%</option>
+          <option value="1.5">150%</option>
+        </select>
       </div>
     </section>
   );

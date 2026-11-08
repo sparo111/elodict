@@ -4,7 +4,7 @@ import { editor, FAKE_SPEECH, say, watchErrors } from "./helpers";
 
 const openSettings = (page: Page) => page.getByRole("button", { name: "Impostazioni" }).click();
 const big = (page: Page) => page.getByRole("button", { name: /^(Detta|Ferma)/ }).last();
-const toolbarLang = (page: Page) => page.getByRole("toolbar").getByRole("combobox");
+const toolbarLang = (page: Page) => page.getByRole("toolbar").getByRole("combobox").first();
 
 async function downloadBackup(page: Page): Promise<string> {
   await openSettings(page);

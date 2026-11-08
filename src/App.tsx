@@ -1,9 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { EditorContent, useEditor, type Editor } from "@tiptap/react";
+import { useEditor, type Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import UnderlineExt from "@tiptap/extension-underline";
 import { closeHistory } from "@tiptap/pm/history";
 import { Toolbar } from "./components/Toolbar";
+import { Flags } from "./components/Flags";
+import { Paper, type Zoom } from "./components/Paper";
+import { PageLayout } from "./editor/PageLayout";
 import { AlertTriangle, Download, HelpCircle, Mail, Mic, Settings, Square } from "lucide-react";
 import { strings } from "./i18n";
 import { COMMANDS } from "./commands";
@@ -80,6 +83,9 @@ export function App() {
   const [error, setError] = useState<RecognizerError | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [isEmpty, setIsEmpty] = useState(true);
+  const [pages, setPages] = useState(1);
+  const [zoom, setZoom] = useState<Zoom>("fit");
+  const scaleRef = useRef(1);
   const [saveState, setSaveState] = useState<SaveState>("saved");
   const [dialog, setDialog] = useState<null | "settings" | "help" | "export" | "send">(null);
   const [tryText, setTryText] = useState("");
@@ -111,7 +117,7 @@ export function App() {
   );
 
   const editor = useEditor({
-    extensions: [StarterKit, UnderlineExt],
+    extensions: [StarterKit, UnderlineExt, PageLayout.configure({ onPages: setPages, getScale: () => scaleRef.current })],
     content: "",
     editorProps: { attributes: { "aria-label": "Documento", role: "textbox", "aria-multiline": "true" } },
     onUpdate: ({ editor }) => {
@@ -187,6 +193,9 @@ export function App() {
   };
 
   useEffect(() => { document.documentElement.lang = uiLang; }, [uiLang]);
+  useEffect(() => {
+    editor?.view.dom.setAttribute("aria-label", strings[uiLang].editorLabel);
+  }, [editor, uiLang]);
 
   // Cambia una o più impostazioni e le salva sul dispositivo.
   const savePrefs = (over: Partial<Omit<SettingsRow, "id">>) => {
@@ -417,8 +426,15 @@ export function App() {
 
   return (
     <div className="flex min-h-full flex-col bg-bg text-text">
-      <header className="flex h-14 items-center justify-between gap-2 border-b border-border px-4">
-        <h1 className="text-lg">{s.appName}</h1>
+      <header className="flex min-h-14 flex-wrap items-center justify-between gap-x-3 gap-y-1 border-b border-border px-4 py-1">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+          <h1 className="text-lg">{s.appName}</h1>
+          <Flags
+            value={uiLang}
+            label={s.flagsLabel}
+            onPick={(l) => savePrefs({ uiLanguage: l, dictationLanguage: l })}
+          />
+        </div>
         <nav className="flex items-center gap-1">
           <button type="button" className={iconBtn} onClick={() => setDialog("send")} aria-label={s.send}>
             <Mail size={18} aria-hidden="true" /><span className="hidden sm:inline">{s.send}</span>
@@ -444,10 +460,13 @@ export function App() {
           onMic={toggle}
           lang={dictLang}
           onLang={(l) => savePrefs({ dictationLanguage: l })}
+          zoom={zoom}
+          onZoom={setZoom}
         />
       )}
 
-      <main className="mx-auto flex w-full max-w-editor flex-1 flex-col px-4">
+      <main className="flex w-full flex-1 flex-col">
+      <div className="mx-auto w-full max-w-editor px-4">
         {!supported && (
           <div role="alert" className="mt-4 flex gap-3 rounded-md bg-warning-soft p-4 text-warning">
             <AlertTriangle size={20} aria-hidden="true" className="mt-0.5 shrink-0" />
@@ -482,15 +501,11 @@ export function App() {
           </div>
         )}
 
-        <div className="doc-editor relative flex-1">
-          {isEmpty && (
-            <p className="pointer-events-none absolute left-0 top-6 max-w-md font-document text-doc text-muted">
-              {s.placeholder}
-            </p>
-          )}
-          <EditorContent editor={editor} />
-        </div>
+      </div>
 
+      <Paper editor={editor} pages={pages} zoom={zoom} scaleRef={scaleRef} isEmpty={isEmpty} placeholder={s.placeholder} />
+
+      <div className="mx-auto w-full max-w-editor px-4 pt-3">
         <p className="min-h-6 pb-2 font-document text-doc italic text-muted" aria-hidden="true">{interim}</p>
 
         <details className="mb-3 rounded-md border border-border p-3">
@@ -525,6 +540,7 @@ export function App() {
         </p>
         <p className="pb-1 text-xs text-muted">{s.backupHint}</p>
         <p className="pb-28 text-xs text-muted">{engine === "offline" ? s.privacyOffline : s.privacy}</p>
+      </div>
       </main>
 
       <div className="fixed inset-x-0 bottom-0 flex flex-col items-center gap-2 border-t border-border bg-bg px-4 py-3">
