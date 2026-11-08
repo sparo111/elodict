@@ -54,3 +54,5 @@ Cronologia dei documenti con ricerca,core,could,no,no,idea dal concorrente; oggi
 Tastiera di sistema per dettare in ogni app,piattaforma,skip,no,skip,"non fattibile come sito web; vedi ""dettare dentro altre app"""
 "Riconoscimento offline nel browser (Whisper), anche su Firefox",tecnologia,could,no,no,idea da altri programmi; download 77-560 MB; privacy migliore; abilita scelta microfono
 Elenchi a voce (elenco puntato / numerato),comandi,could,no,no,idea da altri programmi
+Test del microfono con indicatore di livello,qualità,should,no,no,da recensioni utenti Dictate (5 testi su 7: sembra ascoltare ma non scrive); vedi fixes.md
+Avviso se per alcuni secondi non arriva testo (con controlli da fare),qualità,should,no,no,da recensioni utenti Dictate; vedi fixes.md
