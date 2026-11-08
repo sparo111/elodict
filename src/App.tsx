@@ -132,7 +132,7 @@ export function App() {
     if (editor) await persist(editor); // salva subito l'ultima modifica
     const json = await exportBackup();
     const day = new Date().toISOString().slice(0, 10);
-    downloadFile(new File([json], `mia-dictate-copia-${day}.json`, { type: "application/json" }));
+    downloadFile(new File([json], `elodict-copia-${day}.json`, { type: "application/json" }));
     flash(s.backupDone);
   };
   const restoreNow = async (file: File): Promise<number | null> => {
@@ -477,7 +477,7 @@ export function App() {
           ) : (
             <>
               <Mic size={20} aria-hidden="true" />
-              {s.dictate}
+              {s.talk}
             </>
           )}
         </button>

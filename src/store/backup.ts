@@ -6,7 +6,7 @@ import { parseDictionary } from "../text/clean";
 import type { DocumentRow, SettingsRow } from "./db";
 
 export interface BackupFile {
-  app: "mia-dictate";
+  app: "elodict";
   version: 1;
   exportedAt: string;
   settings: Omit<SettingsRow, "id"> | null;
@@ -26,7 +26,7 @@ export function buildBackup(settings: SettingsRow | undefined, documents: Docume
   const { id: _id, ...rest } = settings ?? ({} as SettingsRow);
   void _id;
   return {
-    app: "mia-dictate",
+    app: "elodict",
     version: 1,
     exportedAt: new Date().toISOString(),
     settings: settings ? rest : null,
@@ -38,7 +38,7 @@ export function buildBackup(settings: SettingsRow | undefined, documents: Docume
 export function parseBackup(json: string): ParsedBackup {
   if (json.length > MAX_BACKUP_BYTES) throw new Error("troppo grande");
   const data: unknown = JSON.parse(json);
-  if (!isObj(data) || data.app !== "mia-dictate" || data.version !== 1 || !Array.isArray(data.documents)) {
+  if (!isObj(data) || data.app !== "elodict" || data.version !== 1 || !Array.isArray(data.documents)) {
     throw new Error("formato");
   }
   if (data.documents.length > 200) throw new Error("troppi documenti");

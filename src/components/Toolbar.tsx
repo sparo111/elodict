@@ -61,8 +61,8 @@ export function Toolbar({ editor, s, listening, micDisabled, onMic, lang, onLang
       <div role="toolbar" aria-label={s.tbToolbar} className="mx-auto flex max-w-editor items-center gap-1 overflow-x-auto px-4 py-1">
         <button
           type="button"
-          title={listening ? s.stop : s.dictate}
-          aria-label={listening ? s.stop : s.dictate}
+          title={listening ? s.stop : s.talk}
+          aria-label={listening ? s.stop : s.talk}
           aria-pressed={listening}
           disabled={micDisabled}
           onClick={onMic}

@@ -1,0 +1,24 @@
+{
+  "name": "Elodict",
+  "status": "nome di lavoro scelto dopo i controlli: vedi replica/brand.md",
+  "avoid": [
+    "Microsoft",
+    "Dictate",
+    "Hyper Whisper",
+    "Office 365"
+  ],
+  "domains": [
+    "microsoft.com",
+    "office.com",
+    "support.microsoft.com"
+  ],
+  "colors": [
+    "#0078d4",
+    "#185abd",
+    "#2b579a",
+    "#106ebe"
+  ],
+  "rejected": [
+    "Voxia: gia' usato (6 app nell'App Store USA, anche trascrizione; tutti i domini principali occupati)"
+  ]
+}

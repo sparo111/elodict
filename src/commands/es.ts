@@ -1,4 +1,4 @@
-// Comandos de voz en español (tabla de Microsoft leída solo de un resumen: revisar con un hablante nativo).
+// Comandos de voz en español (tabla de referencia leída solo de un resumen: revisar con un hablante nativo).
 import { formatCommands } from "./format";
 import type { CommandDef } from "./types";
 

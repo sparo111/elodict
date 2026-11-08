@@ -9,7 +9,7 @@ const toolbarLang = (page: Page) => page.getByRole("toolbar").getByRole("combobo
 async function downloadBackup(page: Page): Promise<string> {
   await openSettings(page);
   const [dl] = await Promise.all([page.waitForEvent("download"), page.getByRole("button", { name: "Scarica la copia di sicurezza" }).click()]);
-  expect(dl.suggestedFilename()).toMatch(/^mia-dictate-copia-\d{4}-\d{2}-\d{2}\.json$/);
+  expect(dl.suggestedFilename()).toMatch(/^elodict-copia-\d{4}-\d{2}-\d{2}\.json$/);
   return (await dl.path())!;
 }
 
@@ -20,7 +20,7 @@ test.describe("Copia di sicurezza", () => {
     await say(page, "da non perdere punto");
     const path = await downloadBackup(page);
     const data = JSON.parse(fs.readFileSync(path, "utf8"));
-    expect(data.app).toBe("mia-dictate");
+    expect(data.app).toBe("elodict");
     expect(data.documents).toHaveLength(1);
     expect(JSON.stringify(data.documents[0].content)).toContain("Da non perdere.");
     check();

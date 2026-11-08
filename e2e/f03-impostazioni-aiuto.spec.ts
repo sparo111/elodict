@@ -8,7 +8,7 @@ test.beforeEach(async ({ page }) => {
 test("F03-H1 cambio la lingua dell'app e i testi cambiano", async ({ page }) => {
   await setLanguage(page, "ui", "en");
   await expect(page.getByRole("button", { name: "Settings" })).toBeVisible();
-  await expect(page.getByText("Press “Dictate”")).toBeVisible();
+  await expect(page.getByText("Press “Speak”")).toBeVisible();
   await setLanguage(page, "ui", "fr");
   await expect(page.getByRole("button", { name: "Réglages" })).toBeVisible();
   await setLanguage(page, "ui", "es");

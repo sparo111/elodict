@@ -1,5 +1,5 @@
 // Comandi con numeri e parole libere: "cancella 3 parole", "cancella da X a Y".
-// Frasi nostre (Microsoft ha questi comandi solo in inglese).
+// Frasi nostre (l'app di riferimento ha questi comandi solo in inglese).
 import type { CommandAction, Lang } from "./types";
 
 export interface EditSyntax {

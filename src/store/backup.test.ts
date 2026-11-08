@@ -35,8 +35,8 @@ describe("copia di sicurezza", () => {
   it("funziona anche senza impostazioni", () => {
     expect(parseBackup(JSON.stringify(buildBackup(undefined, [doc]))).settings).toBeNull();
   });
-  it("rifiuta file che non sono copie di Mia Dictate", () => {
-    for (const bad of ["non json", "{}", "[]", '{"app":"altro","version":1,"documents":[]}', '{"app":"mia-dictate","version":2,"documents":[]}']) {
+  it("rifiuta file che non sono copie di Elodict", () => {
+    for (const bad of ["non json", "{}", "[]", '{"app":"altro","version":1,"documents":[]}', '{"app":"elodict","version":2,"documents":[]}']) {
       expect(() => parseBackup(bad)).toThrow();
     }
   });

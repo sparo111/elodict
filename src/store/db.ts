@@ -26,7 +26,7 @@ class AppDB extends Dexie {
   documents!: Table<DocumentRow, string>;
   settings!: Table<SettingsRow, string>;
   constructor() {
-    super("mia-dictate");
+    super("elodict");
     this.version(1).stores({ documents: "id, updatedAt", settings: "id" });
   }
 }
