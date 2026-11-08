@@ -28,7 +28,7 @@ Invio email a voce,mobile,could,yes,no,fuori scope iniziale
 Editor di testo indipendente (non serve Word),core,must,no,yes,M1: TipTap
 Copia negli appunti / scarica il testo (.txt),core,must,no,partial,scarica sì; manca copia negli appunti
 Lingue EN IT FR ES con comandi vocali,lingue,must,yes,yes,"punteggiatura, simboli, valuta, modifica, cancella N, da X a Y, formattazione a voce in 4 lingue; ES da far rivedere a un madrelingua; mancano emoji, tabelle, selezione"
-Cambio lingua al volo,lingue,should,partial,no,
+Cambio lingua al volo,lingue,should,partial,no,da recensioni di app che registrano: 30 recensioni su lingue (es. utente bilingue); vedi fixes-recorders.md
 Funziona dal browser senza installazione,piattaforma,must,no,partial,gira in locale; manca la pubblicazione online
 Completamente gratuita senza account,business,must,no,yes,nessun account né server
 Esporta in Word (.docx),export,must,no,yes,"M2: titoli, grassetto, corsivo, elenchi; da aprire in Word vero"
@@ -56,3 +56,5 @@ Tastiera di sistema per dettare in ogni app,piattaforma,skip,no,skip,"non fattib
 Elenchi a voce (elenco puntato / numerato),comandi,could,no,no,idea da altri programmi
 Test del microfono con indicatore di livello,qualità,should,no,no,da recensioni utenti Dictate (5 testi su 7: sembra ascoltare ma non scrive); vedi fixes.md
 Avviso se per alcuni secondi non arriva testo (con controlli da fare),qualità,should,no,no,da recensioni utenti Dictate; vedi fixes.md
+Copia di sicurezza e ripristino di tutti i documenti,core,should,no,no,"da recensioni di app che registrano: registrazioni perse, 22 recensioni su 6 app; vedi fixes-recorders.md"
+Trascrivere un file audio caricato,tecnologia,could,no,no,da recensioni: 21 su import/export; richiede Whisper nel browser; vedi fixes-recorders.md
