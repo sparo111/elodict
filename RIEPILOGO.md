@@ -231,7 +231,7 @@ npm run build        # controlla i tipi e crea la cartella dist/
 - **Cestino**: il conto dei 30 giorni usa l'orologio del dispositivo; provato con date finte nel database.
 - **Documenti molto lunghi**: l'impaginazione ora è incrementale (T002). Provata su 50 fogli; oltre non misurato. Il browser rifà comunque il disegno di tutta la pagina a ogni modifica.
 - **Nessuna pagina di presentazione né pubblicazione** (fasi `replica-launch` e `replica-deploy`).
-- **Nessuna licenza scelta** per il codice (il README lo dice).
+- **Licenza**: GNU AGPL v3 (`AGPL-3.0-only`), file `LICENSE`, campo `license` di `package.json`. La sezione 13 chiede di offrire il sorgente a chi usa il programma via rete: il collegamento è in fondo a Impostazioni (`src/legal.ts`, un solo indirizzo, `SOURCE_CODE_URL`). Le librerie usate hanno licenze proprie (non verificate una per una per compatibilità con la AGPL).
 - `replica/recon.md` e le sezioni 8b/10 restano come registro storico delle decisioni iniziali.
 
 ## 15. Cosa NON è verificato (onestà prima di tutto)
@@ -250,7 +250,6 @@ npm run build        # controlla i tipi e crea la cartella dist/
 
 1. Decidere nome definitivo e cartella (sezione 11).
 2. **Trascrizione di un file audio** (la scelta del microfono è fatta: T003).
-4. Scegliere una licenza (`App.tsx` è già stato diviso: T002).
 5. `replica-launch` (pagina di presentazione: gratis, senza account, senza limiti, 4 lingue, foglio A4) e `replica-deploy`.
 6. **Una persona vera che prova con un microfono vero** e dice cosa non va: è la prova che manca di più.
 7. Controlli sul marchio e parere di un avvocato prima di spendere soldi sul nome.

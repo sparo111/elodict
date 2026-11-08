@@ -54,4 +54,6 @@ Le prove con Whisper vero hanno bisogno di internet e delle registrazioni di pro
 Il progetto ricostruisce **le funzioni e l'esperienza d'uso** di Dictate (Microsoft 365) in modo «clean-room»: ogni riga di codice, colore, testo e icona è scritta da zero; fonti solo pagine pubbliche di aiuto. I recensori citati nei documenti sono materiale di studio, non testimonianze.
 
 ## Licenza
-Nessuna licenza è stata ancora scelta. Le librerie usate hanno le proprie licenze (React, TipTap, Dexie, docx, jsPDF, Transformers.js, onnxruntime-web, Lucide, Inter e Source Serif 4). I modelli Whisper (`Xenova/whisper-tiny` e `-base`) si scaricano da huggingface.co e hanno la propria licenza.
+Elodict è software libero, rilasciato con la licenza **GNU Affero General Public License, versione 3** (`AGPL-3.0-only`): il testo completo è nel file [`LICENSE`](LICENSE). In pratica: puoi usarlo, studiarlo, modificarlo e condividerlo; se ne metti online una versione modificata, devi offrire il codice sorgente a chi la usa (sezione 13). Per questo in fondo a **Impostazioni** c'è il collegamento «Codice sorgente (licenza AGPL-3.0)», che porta a <https://github.com/sparo111/elodict>.
+
+Le librerie usate hanno le proprie licenze (React, TipTap, Dexie, docx, jsPDF, Transformers.js, onnxruntime-web, Lucide, Inter e Source Serif 4). I modelli Whisper (`Xenova/whisper-tiny` e `-base`) si scaricano da huggingface.co e hanno la propria licenza.

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Trash2 } from "lucide-react";
 import { Modal } from "../Modal";
+import { SOURCE_CODE_URL } from "../../legal";
 import { MicTest } from "../MicTest";
 import { OfflineSection } from "../OfflineSection";
 import { LANGS, LANG_NAME } from "../../commands";
@@ -172,7 +173,12 @@ export function SettingsDialog({ open, onClose, s, value, onChange, onBackup, on
         </button>
 
         <p className="text-sm text-muted">{s.settingsNote}</p>
-        <p className="font-document border-t border-border pt-3 text-sm italic text-muted">{s.dedication}</p>
+        <div className="flex flex-col gap-1 border-t border-border pt-3">
+          <p className="font-document text-sm italic text-muted">{s.dedication}</p>
+          <a href={SOURCE_CODE_URL} target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-accent underline">
+            {s.sourceCode}
+          </a>
+        </div>
       </div>
     </Modal>
   );
