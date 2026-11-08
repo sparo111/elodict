@@ -1,5 +1,6 @@
 // Lavoratore in background: carica il modello Whisper e trascrive. Gira nel browser, niente server.
 import { env, pipeline } from "@huggingface/transformers";
+import { ortBaseUrl } from "../pwa/basePath";
 
 // Il modello si scarica dal sito Hugging Face una volta e poi resta nella memoria del browser.
 env.allowLocalModels = false;
@@ -8,7 +9,7 @@ env.useBrowserCache = true;
 const wasm = env.backends.onnx.wasm as { wasmPaths?: string; numThreads?: number } | undefined;
 if (wasm) {
   // Indirizzo completo (con il sito davanti): così lo strumento di sviluppo non lo rielabora.
-  wasm.wasmPaths = new URL(`${import.meta.env.BASE_URL}ort/`, self.location.origin).href;
+  wasm.wasmPaths = ortBaseUrl(import.meta.env.BASE_URL, self.location.origin);
   wasm.numThreads = 1;
 }
 
