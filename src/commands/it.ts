@@ -1,5 +1,4 @@
-// Comandi vocali in italiano (M1: punteggiatura e a capo).
-// Le frasi sono quelle che si dicono a voce; le varianti sono alternative equivalenti.
+// Comandi vocali in italiano. I comandi di modifica (annulla, cancella) sono nostri.
 import type { CommandDef } from "./types";
 
 export const itCommands: CommandDef[] = [
@@ -10,6 +9,13 @@ export const itCommands: CommandDef[] = [
   { phrases: ["due punti"], action: { type: "punct", char: ":" } },
   { phrases: ["virgola"], action: { type: "punct", char: "," } },
   { phrases: ["punto"], action: { type: "punct", char: "." } },
+  { phrases: ["parentesi aperta", "apri parentesi"], action: { type: "open", char: "(" } },
+  { phrases: ["parentesi chiusa", "chiudi parentesi"], action: { type: "close", char: ")" } },
+  { phrases: ["virgolette aperte", "apri virgolette"], action: { type: "open", char: "«" } },
+  { phrases: ["virgolette chiuse", "chiudi virgolette"], action: { type: "close", char: "»" } },
   { phrases: ["nuovo paragrafo"], action: { type: "break", paragraph: true } },
   { phrases: ["a capo", "nuova riga"], action: { type: "break", paragraph: false } },
+  { phrases: ["annulla"], action: { type: "edit", op: "undo" } },
+  { phrases: ["cancella parola"], action: { type: "edit", op: "deleteWord" } },
+  { phrases: ["cancella frase"], action: { type: "edit", op: "deleteSentence" } },
 ];

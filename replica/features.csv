@@ -1,15 +1,15 @@
 feature,area,priority,original,clone,notes
 Pulsante Dictate avvia/ferma,core,must,yes,yes,M1: tasto Detta/Ferma
 Testo dettato appare nell'editor,core,must,yes,yes,M1
-Scelta lingua di dettatura,impostazioni,must,yes,no,default = lingua documento
+Scelta lingua di dettatura,impostazioni,must,yes,yes,"M2: impostazioni, salvata nel browser"
 Scelta microfono,impostazioni,should,yes,no,
 Punteggiatura automatica (toggle),impostazioni,should,yes,no,solo per alcune lingue nell'originale
 Filtro parolacce con ***,impostazioni,could,yes,no,
-Comandi punteggiatura (punto/virgola/punto interrogativo/a capo),comandi,must,yes,partial,"M1: solo italiano; mancano parentesi, virgolette, EN/FR/ES"
+Comandi punteggiatura (punto/virgola/punto interrogativo/a capo),comandi,must,yes,yes,M2: EN IT FR ES + parentesi e virgolette; ¿ ¡ in spagnolo; spazio prima di ? ! : ; in francese
 Comandi simboli/valuta/matematica,comandi,could,yes,no,
 Comandi emoji (smiley ecc.),comandi,could,yes,no,
-Comando annulla (undo),comandi,must,yes,no,
-Comandi cancella (delete that / ultima parola / ultima frase),comandi,must,yes,no,
+Comando annulla (undo),comandi,must,yes,yes,M2: comandi nostri in 4 lingue
+Comandi cancella (delete that / ultima parola / ultima frase),comandi,must,yes,partial,M2: cancella parola e frase; manca 'cancella N' e 'cancella da X a Y'
 Comandi seleziona (parola/frase/paragrafo/da X a Y),comandi,should,yes,no,
 Comandi navigazione (vai a fine frase/paragrafo),comandi,could,yes,no,web
 Comandi formattazione (grassetto/corsivo/sottolineato/maiuscolo),comandi,should,yes,no,
@@ -19,7 +19,7 @@ Comandi tabelle,comandi,could,yes-web,no,solo web nell'originale
 Comando aggiungi commento,comandi,could,yes,no,
 Pausa/ripresa dettatura (pause/resume dictation),controllo,should,yes,no,
 Scorciatoia da tastiera per avviare,controllo,could,yes,no,Mac Option+F1; ALT+` web ripresa
-Pannello aiuto comandi (show commands),aiuto,should,yes,no,S05
+Pannello aiuto comandi (show commands),aiuto,should,yes,partial,M2: pulsante Aiuto con elenco; manca il comando vocale 'mostra comandi'
 Messaggi d'errore microfono (3 tipi),errori,must,yes,yes,"M1: bloccato, non trovato, non ti sento, rete, altro"
 Stato disattivato se documento in sola lettura,errori,could,yes,no,
 Evidenziazione parole dubbie + Ignore,qualità,could,yes-web,no,S07
@@ -27,18 +27,18 @@ Versione mobile con comandi ridotti,piattaforma,could,yes,no,
 Invio email a voce,mobile,could,yes,no,fuori scope iniziale
 Editor di testo indipendente (non serve Word),core,must,no,yes,M1: TipTap
 Copia negli appunti / scarica il testo (.txt),core,must,no,partial,scarica sì; manca copia negli appunti
-Lingue EN IT FR ES con comandi vocali,lingue,must,yes,no,decisione utente
+Lingue EN IT FR ES con comandi vocali,lingue,must,yes,partial,M2: punteggiatura e modifica base in 4 lingue; ES da verificare con madrelingua; mancano formattazione e simboli
 Cambio lingua al volo,lingue,should,partial,no,
 Funziona dal browser senza installazione,piattaforma,must,no,partial,gira in locale; manca la pubblicazione online
 Completamente gratuita senza account,business,must,no,yes,nessun account né server
-Esporta in Word (.docx),export,must,no,no,generato nel browser
-Esporta in PDF,export,must,no,no,generato nel browser
-Esporta in Markdown (.md),export,must,no,no,
+Esporta in Word (.docx),export,must,no,yes,"M2: titoli, grassetto, corsivo, elenchi; da aprire in Word vero"
+Esporta in PDF,export,must,no,yes,"M2: solo testo, titoli e elenchi; senza grassetto"
+Esporta in Markdown (.md),export,must,no,yes,M2
 Esporta in testo (.txt),export,must,no,yes,M1
-Esporta in altri formati (.html .rtf),export,could,no,no,
-Invia il file via email (mailto/Condividi),email,must,no,no,mailto non allega file; Condividi su mobile sì
+Esporta in altri formati (.html .rtf),export,could,no,partial,"M2: html sì, rtf no"
+Invia il file via email (mailto/Condividi),email,must,no,yes,M2: mailto + Condividi file dove supportato
 Invia email con allegato dal server,email,could,no,no,richiede server e servizio email; costi/spam
-Salvataggio automatico locale nel browser,core,should,no,no,niente account né server
+Salvataggio automatico locale nel browser,core,should,no,yes,"M2: IndexedDB, ultimo documento"
 Compatibilità browser e avviso se non supportato (Firefox),errori,should,no,yes,M1
 Dettare dentro altre app (estensione browser/desktop),piattaforma,could,no,no,da decidere con l'utente
 Integrazione dentro Word/Outlook/PowerPoint/OneNote,piattaforma,skip,yes,skip,non clonabile: prodotti Microsoft
