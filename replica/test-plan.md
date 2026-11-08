@@ -126,3 +126,17 @@ Non coperto: quota piena, due schede durante l'aggiornamento, altri browser, dat
 | check:dist | la build pubblicata non contiene i nomi degli agganci; la build di prova sì (così il controllo non è vuoto); il controllo fallisce se li trova | riuscito |
 Verifiche con errore introdotto a mano: senza il salvataggio prima della chiusura TAB-S1 fallisce; senza il gestore `blocked` TAB-B1 fallisce.
 Non coperto: due vere versioni dell'app aperte insieme; Firefox/Safari; quota piena.
+
+## T-001d — Sito pubblicato (`e2e/g1-sito-pubblicato.spec.ts`, `SITE_URL=… --project=sito-pubblicato`)
+| caso | cosa si controlla | esito su https://sparo111.github.io/elodict/ |
+| --- | --- | --- |
+| PUB-1 | risponde 200, l'app parte senza errori, «Prova senza microfono» scrive nel foglio | riuscita |
+| PUB-2 | `installa.html` in 4 lingue, con dedica e «Cos'è Elodict», axe senza errori | riuscita |
+| PUB-3 | manifest valido, `start_url` e `scope` = `/elodict/`, icone 200 | riuscita |
+| PUB-4 | service worker registrato con scope `/elodict/` | riuscita |
+| PUB-5 | `ort/*.wasm` sotto `/elodict/ort/` (200, tipo wasm); alla radice 404 | riuscita |
+| PUB-6 | riapertura senza internet dopo la prima visita | riuscita |
+| PUB-7 | in Impostazioni: collegamento al sorgente e dedica | riuscita |
+| PUB-8 | con Whisper vero (modello piccolo): tutte le richieste a `ort/` vanno a `/elodict/ort/` | riuscita |
+| LIC-1/2, legal.test | collegamento al sorgente in 4 lingue; `LICENSE`/`package.json`/indirizzo unico | riuscite |
+Non coperto: telefono vero, iPhone, installazione vera, Firefox/Safari, voce umana.

@@ -4,6 +4,8 @@
 
 **Detta con la voce direttamente nel browser, su un foglio A4.** Gratis, senza account, senza installare niente.
 
+👉 **Provalo: <https://sparo111.github.io/elodict/>** · Come installarlo (pagina da stampare): <https://sparo111.github.io/elodict/installa.html> · Codice sorgente: <https://github.com/sparo111/elodict> (licenza AGPL-3.0)
+
 > Elodict è un **nome di lavoro** (i controlli sul marchio non sono finiti). Questa cartella si chiama ancora `mia-dictate`.
 > *English: a free, no-install, no-account web app for voice dictation into a real A4-page editor, in Italian, English, French and Spanish. A clean-room functional rebuild of Microsoft Word's "Dictate": no code, assets, colours or copy from the original. No backend.*
 
@@ -37,7 +39,7 @@ Le prove con Whisper vero hanno bisogno di internet e delle registrazioni di pro
 ## Stato
 - **Parità con Dictate: 75,9 / 100**, funzioni obbligatorie 10 su 10; difetti aperti: nessuno.
 - **188 prove sulla logica e 475 nel browser** (computer e telefono): 463 riuscite, 12 saltate di proposito.
-- **Non ancora fatto o verificato**: nessuna prova con una voce umana vera; scelta del microfono provata solo con microfoni finti; elenco dei documenti provato solo con Chromium; `.docx` mai aperti in Word vero; spagnolo da far rivedere a un madrelingua; controlli sul marchio; **non è pubblicato online** (è pronto il flusso per GitHub Pages: vedi `.github/workflows/deploy.yml`); installazione mai provata su un iPhone o un Android veri.
+- **Non ancora fatto o verificato**: nessuna prova con una voce umana vera; scelta del microfono provata solo con microfoni finti; elenco dei documenti provato solo con Chromium; `.docx` mai aperti in Word vero; spagnolo da far rivedere a un madrelingua; controlli sul marchio; installazione mai provata su un iPhone o un Android veri. **È pubblicato** su GitHub Pages (flusso `.github/workflows/deploy.yml`, a ogni aggiornamento di `main`).
 
 ## Dove leggere di più
 | file | per cosa |
