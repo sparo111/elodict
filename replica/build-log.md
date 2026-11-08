@@ -83,3 +83,8 @@ Il bundle JS principale era 597 kB (188 kB compresso) a quel punto; docx e PDF s
 - Riquadro con 7 frasi in cima a `installa.html` (4 lingue) e frase n. 1 nella schermata della lingua del primo avvio. Testi identici a quelli ricevuti, nessuna correzione necessaria.
 - Una sola sorgente: i testi stanno in `src/i18n.ts` (`whatTitle`, `what1`..`what7`); un plugin in `vite.config.ts` li scrive in `public/installa-testi.js` (file generato, ignorato da git) a ogni avvio o costruzione, e la pagina statica lo carica.
 - Per stare in un foglio A4 (francese in due pagine) ho ridotto margini e spazi e poi i passi di installazione a 14 pt; il riquadro è a 14,5 pt.
+
+## T-001c — Dedica
+- Frase di dedica (chiave `dedication` in `src/i18n.ts`, 4 lingue, testo italiano dell'autore invariato) in: `installa.html` (prima riga dopo il nome, prima di «Cos'è Elodict», corsivo centrato), prima schermata del primo avvio, in fondo a Impostazioni, in cima al README. Non entra nei documenti né nelle esportazioni.
+- La pagina statica la riceve da `public/installa-testi.js` (stesso meccanismo di T-001b).
+- Per tornare a 1 foglio A4 per lingua: margini e spazi ridotti, titoli e passi di installazione più piccoli (13 pt). Dedica (14 pt) e riquadro (14,5 pt) invariati.

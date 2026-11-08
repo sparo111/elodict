@@ -70,3 +70,5 @@ Non coperto: scaricamento vero di Whisper sulla copia costruita e riapertura off
 
 
 | P-11 | «Cos'è Elodict»: riquadro con titolo e 7 voci in 4 lingue, cambia con le bandierine, axe senza errori (computer e telefono 390 px); frase 1 nel primo avvio; stampa ancora 1 pagina A4 per lingua | riuscita |
+
+| P-12 | dedica: prima riga di `installa.html` (dopo il nome, prima di «Cos'è»), nelle 4 lingue; prima schermata del primo avvio; fondo di Impostazioni (computer e telefono); assente da Markdown, testo e pagina web esportati | riuscita |

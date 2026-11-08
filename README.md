@@ -1,5 +1,7 @@
 # Elodict
 
+*Creata per Mimma, in segno di profonda gratitudine per la sua onestà intellettuale.*
+
 **Detta con la voce direttamente nel browser, su un foglio A4.** Gratis, senza account, senza installare niente.
 
 > Elodict è un **nome di lavoro** (i controlli sul marchio non sono finiti). Questa cartella si chiama ancora `mia-dictate`.

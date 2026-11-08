@@ -5,18 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Elodict</title>
 <style>
+  .dedication { text-align: center; font-style: italic; font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif; font-size: 14pt; margin: 0 0 2mm; }
   .what { border: 2px solid #111; border-radius: 3mm; padding: 2mm 4mm; margin-bottom: 2mm; font-size: 14.5pt; }
   .what h2 { border: 0; padding: 0; margin: 0 0 1.5mm; }
   .what ul { margin: 0; padding-left: 6mm; }
   .what li { margin-bottom: 0.8mm; }
-  @page { size: A4; margin: 10mm; }
+  @page { size: A4; margin: 8mm; }
   * { box-sizing: border-box; }
   body { margin: 0; font-family: Arial, Helvetica, sans-serif; color: #111; background: #fff; font-size: 15pt; line-height: 1.25; }
-  main { max-width: 190mm; margin: 0 auto; padding: 4mm; }
-  h1 { font-size: 26pt; margin: 0 0 2mm; }
-  h2 { font-size: 18pt; margin: 3mm 0 1mm; border-top: 2px solid #111; padding-top: 2mm; }
+  main { max-width: 190mm; margin: 0 auto; padding: 2mm; }
+  h1 { font-size: 24pt; margin: 0 0 1mm; }
+  h2 { font-size: 16pt; margin: 2mm 0 1mm; border-top: 2px solid #111; padding-top: 2mm; }
   p { margin: 0 0 2mm; }
-  ol { margin: 0; padding-left: 9mm; font-size: 14pt; }
+  ol { margin: 0; padding-left: 9mm; font-size: 13pt; }
   li { margin-bottom: 0.8mm; }
   .note { font-size: 14pt; }
   .langs { margin-bottom: 4mm; font-size: 14pt; }
@@ -32,6 +33,7 @@
     <a href="?lang=it">Italiano</a><a href="?lang=en">English</a><a href="?lang=fr">Français</a><a href="?lang=es">Español</a>
   </nav>
   <h1 id="title"></h1>
+  <p class="dedication" id="dedication"></p>
   <section class="what" aria-labelledby="what-title"><h2 id="what-title"></h2><ul id="what-list"></ul></section>
   <p id="intro"></p>
   <section><h2 id="h-pc"></h2><ol id="pc"></ol></section>
@@ -91,7 +93,7 @@
   text("h-pc", t.pc); text("h-android", t.android); text("h-iphone", t.iphone);
   fill("pc", t.pcS); fill("android", t.anS); fill("iphone", t.ipS);
   var w = (window.ELODICT_WHAT || {})[lang];
-  if (w) { text("what-title", w.title); fill("what-list", w.items); } else { document.querySelector(".what").hidden = true; }
+  if (w) { text("dedication", w.dedication); text("what-title", w.title); fill("what-list", w.items); } else { document.querySelector(".what").hidden = true; }
   text("foot", t.foot); text("print", t.print);
   document.getElementById("print").addEventListener("click", function () { window.print(); });
 })();

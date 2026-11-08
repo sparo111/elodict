@@ -5,6 +5,13 @@ import { editor, watchErrors } from "./helpers";
 const DONE = { cookies: [], origins: [{ origin: "http://localhost:5200", localStorage: [{ name: "elodict-onboarding", value: "done" }] }] };
 const FRESH = { cookies: [], origins: [] };
 
+const DEDICA = {
+  it: "Creata per Mimma, in segno di profonda gratitudine per la sua onestà intellettuale.",
+  en: "Made for Mimma, with deep gratitude for her intellectual honesty.",
+  fr: "Créée pour Mimma, en signe de profonde gratitude pour son honnêteté intellectuelle.",
+  es: "Creada para Mimma, en señal de profunda gratitud por su honestidad intelectual.",
+} as const;
+
 const UA_IPHONE =
   "Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Mobile/15E148 Safari/604.1";
 const UA_FIREFOX = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:125.0) Gecko/20100101 Firefox/125.0";
@@ -83,6 +90,12 @@ test.describe("versione installabile: file", () => {
       await expect(page.getByRole("heading", { name: titles[lang] })).toBeVisible();
       await expect(box.getByRole("listitem")).toHaveCount(7);
       await expect(box).toContainText(first[lang]);
+      // la dedica è la prima riga dopo il nome, prima del riquadro
+      const ded = page.getByText(DEDICA[lang], { exact: true });
+      await expect(ded).toBeVisible();
+      const [dy, by, hy] = await Promise.all([ded.boundingBox(), box.boundingBox(), page.getByRole("heading", { level: 1 }).boundingBox()]);
+      expect(hy!.y).toBeLessThan(dy!.y);
+      expect(dy!.y).toBeLessThan(by!.y);
     }
     const axe = await new AxeBuilder({ page }).analyze();
     expect(axe.violations).toEqual([]);
@@ -200,6 +213,18 @@ test.describe("primo avvio guidato", () => {
     await expect(editor(page)).toBeVisible();
     await expect(page.getByRole("dialog", { name: "Che lingua parli?" })).toHaveCount(0);
     errors();
+  });
+
+  test("la dedica è nella prima schermata, nella lingua scelta", async ({ page }) => {
+    await page.goto("/");
+    const dlg = page.getByRole("dialog");
+    await expect(dlg.getByText(DEDICA.it, { exact: true })).toBeVisible();
+    for (const [lang, name] of [["en", "English"], ["fr", "Français"], ["es", "Español"]] as const) {
+      await dlg.getByRole("button", { name }).click();
+      await expect(dlg.getByText(DEDICA[lang], { exact: true })).toBeVisible();
+    }
+    const axe = await new AxeBuilder({ page }).include("dialog[open]").analyze();
+    expect(axe.violations).toEqual([]);
   });
 
   test("si può saltare, e da Impostazioni si rifà", async ({ page }) => {

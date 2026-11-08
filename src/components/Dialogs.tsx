@@ -175,6 +175,7 @@ export function SettingsDialog({ open, onClose, s, value, onChange, onBackup, on
         </button>
 
         <p className="text-sm text-muted">{s.settingsNote}</p>
+        <p className="font-document border-t border-border pt-3 text-sm italic text-muted">{s.dedication}</p>
       </div>
     </Modal>
   );

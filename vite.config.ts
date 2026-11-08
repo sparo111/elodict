@@ -24,9 +24,9 @@ function installaTesti(): Plugin {
   return {
     name: "elodict-installa-testi",
     buildStart() {
-      const out: Record<string, { title: string; items: string[] }> = {};
+      const out: Record<string, { title: string; items: string[]; dedication: string }> = {};
       for (const [lang, s] of Object.entries(strings)) {
-        out[lang] = { title: s.whatTitle, items: [s.what1, s.what2, s.what3, s.what4, s.what5, s.what6, s.what7] };
+        out[lang] = { title: s.whatTitle, items: [s.what1, s.what2, s.what3, s.what4, s.what5, s.what6, s.what7], dedication: s.dedication };
       }
       fs.writeFileSync("public/installa-testi.js", `window.ELODICT_WHAT = ${JSON.stringify(out)};
 `);
