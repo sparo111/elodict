@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { Mic, Square } from "lucide-react";
 import type { Strings } from "../i18n";
+import { isMissing, openMic } from "../audio/devices";
+import { useMics } from "../audio/useMics";
+import type { EngineKind } from "../speech/engine";
 
 type Phase = "idle" | "starting" | "on" | "denied" | "none" | "error";
 
@@ -8,12 +11,25 @@ type Phase = "idle" | "starting" | "on" | "denied" | "none" | "error";
  * Prova del microfono: mostra una barra che si muove quando arriva suono.
  * L'audio resta nel browser: non viene registrato né inviato.
  */
-export function MicTest({ s }: { s: Strings }) {
+interface Props {
+  s: Strings;
+  /** microfono scelto (vuoto = predefinito) */
+  micId: string;
+  onMicId: (id: string) => void;
+  /** chi ascolta: con «browser» la scelta del microfono non vale per la dettatura */
+  engine: EngineKind;
+}
+
+export function MicTest({ s, micId, onMicId, engine }: Props) {
   const [phase, setPhase] = useState<Phase>("idle");
   const [level, setLevel] = useState(0);
   const [device, setDevice] = useState("");
   const [silent, setSilent] = useState(false);
+  const [fellBack, setFellBack] = useState(false);
   const stopRef = useRef<(() => void) | null>(null);
+  const { devices, refresh } = useMics();
+  const missing = isMissing(micId, devices);
+  const named = devices.some((d) => d.label);
 
   const stop = () => {
     stopRef.current?.();
@@ -26,9 +42,13 @@ export function MicTest({ s }: { s: Strings }) {
   const start = async () => {
     setPhase("starting");
     setSilent(false);
+    setFellBack(false);
     let stream: MediaStream;
     try {
-      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const opened = await openMic(micId);
+      stream = opened.stream;
+      setFellBack(opened.fellBack);
+      void refresh(); // adesso c'è il permesso: compaiono i nomi
     } catch (e) {
       const name = (e as DOMException)?.name;
       setPhase(name === "NotAllowedError" || name === "SecurityError" ? "denied" : name === "NotFoundError" ? "none" : "error");
@@ -80,6 +100,26 @@ export function MicTest({ s }: { s: Strings }) {
 
   return (
     <div className="flex flex-col gap-2">
+      <label htmlFor="mic-choice" className="text-sm font-semibold">{s.micChoose}</label>
+      <select
+        id="mic-choice"
+        value={micId}
+        onChange={(e) => {
+          stop();
+          onMicId(e.target.value);
+        }}
+        className="h-10 w-full rounded-md border border-border-input bg-bg px-3 text-base"
+      >
+        <option value="">{s.micDefault}</option>
+        {missing && <option value={micId}>{s.micMissingOption}</option>}
+        {devices
+          .filter((d) => d.id)
+          .map((d, i) => (
+            <option key={d.id} value={d.id}>{d.label || s.micUnnamed.replace("{n}", String(i + 1))}</option>
+          ))}
+      </select>
+      {!named && devices.length > 0 && <p className="text-xs text-muted">{s.micNamesHint}</p>}
+      {engine === "browser" && <p className="text-xs text-muted">{s.micBrowserNote}</p>}
       <p className="text-sm text-muted">{s.micHelp}</p>
       <div className="flex flex-wrap items-center gap-3">
         {phase === "on" ? (
@@ -107,6 +147,7 @@ export function MicTest({ s }: { s: Strings }) {
       {phase === "on" && device && <p className="text-xs text-muted">{s.micDevice} {device}</p>}
       {phase === "on" && !silent && <p className="text-sm" role="status">{s.micSpeak}</p>}
       {phase === "on" && silent && <p className="text-sm text-warning" role="status">{s.micSilent}</p>}
+      {fellBack && phase === "on" && <p className="text-sm text-warning" role="status">{s.micFallback}</p>}
       {msg && <p role="alert" className="text-sm text-danger">{msg}</p>}
     </div>
   );

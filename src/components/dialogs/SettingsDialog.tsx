@@ -142,7 +142,7 @@ export function SettingsDialog({ open, onClose, s, value, onChange, onBackup, on
 
         <section className="flex flex-col gap-2 border-t border-border pt-4" aria-labelledby="mic-title">
           <h3 id="mic-title" className="text-sm font-semibold">{s.micTitle}</h3>
-          <MicTest s={s} />
+          <MicTest s={s} micId={value.microphoneId} onMicId={(microphoneId) => onChange({ microphoneId })} engine={value.engine} />
         </section>
 
         <section className="flex flex-col gap-2 border-t border-border pt-4" aria-labelledby="backup-title">

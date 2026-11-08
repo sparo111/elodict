@@ -1,13 +1,15 @@
 import { AlertTriangle } from "lucide-react";
 import type { Strings } from "../i18n";
 import type { EngineKind } from "../speech/engine";
-import type { RecognizerError } from "../speech/recognizer";
+import type { RecognizerError, RecognizerNotice } from "../speech/recognizer";
 
 interface Props {
   s: Strings;
   supported: boolean;
   engine: EngineKind;
   error: RecognizerError | null;
+  /** avviso che non ferma l'ascolto (microfono scelto non collegato o scollegato) */
+  notice: RecognizerNotice | null;
   /** ascolta ma da un po' non arriva testo */
   noText: boolean;
   onRetry: () => void;
@@ -15,7 +17,7 @@ interface Props {
 }
 
 /** Avvisi sopra il foglio: motore non disponibile, errore del microfono, nessun testo in arrivo. */
-export function Notices({ s, supported, engine, error, noText, onRetry, onOpenSettings }: Props) {
+export function Notices({ s, supported, engine, error, notice, noText, onRetry, onOpenSettings }: Props) {
   return (
     <div className="mx-auto w-full max-w-editor px-4">
       {!supported && (
@@ -40,6 +42,12 @@ export function Notices({ s, supported, engine, error, noText, onRetry, onOpenSe
               {s.noTextAction}
             </button>
           )}
+        </div>
+      )}
+
+      {notice && (
+        <div role="status" className="mt-4 rounded-md bg-accent-soft p-4 text-sm text-text">
+          {notice === "mic-lost" ? s.micLost : s.micFallback}
         </div>
       )}
 

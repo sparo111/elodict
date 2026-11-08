@@ -24,6 +24,7 @@ export interface SettingsRow {
   whisperModel: "tiny" | "base"; // quale modello offline
   dictionary: DictEntry[]; // dizionario personale
   onboardingDone: boolean; // il primo avvio guidato è stato fatto (o saltato)
+  microphoneId: string;    // microfono scelto (vuoto = quello predefinito del sistema)
 }
 
 class AppDB extends Dexie {
@@ -54,6 +55,7 @@ export async function loadSettings(): Promise<SettingsRow> {
     whisperModel: "base",
     dictionary: [],
     onboardingDone: false,
+    microphoneId: "",
   };
   try {
     // Le impostazioni salvate da versioni vecchie non hanno i campi nuovi: si completano.

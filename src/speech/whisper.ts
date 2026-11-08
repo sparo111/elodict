@@ -1,6 +1,8 @@
 // Riconoscimento della voce "offline": il microfono viene ascoltato qui, il modello Whisper gira nel browser.
 // L'audio non esce dal dispositivo. Il modello (decine di MB) si scarica una volta dal sito Hugging Face.
 import type { Lang } from "../commands/types";
+import { openMic } from "../audio/devices";
+import { WORKLET } from "./worklet";
 import type { Handlers } from "./recognizer";
 import { cleanWhisperText, resampleTo16k, Segmenter, type Utterance } from "./segmenter";
 
@@ -123,31 +125,12 @@ function transcribeAudio(audio: Float32Array, lang: Lang): Promise<string> {
 }
 
 /* ---------- il microfono ---------- */
-const WORKLET = `
-class Capture extends AudioWorkletProcessor {
-  constructor() { super(); this.buf = []; this.n = 0; }
-  process(inputs) {
-    const ch = inputs[0] && inputs[0][0];
-    if (ch) {
-      this.buf.push(new Float32Array(ch)); this.n += ch.length;
-      if (this.n >= 4096) {
-        const out = new Float32Array(this.n); let o = 0;
-        for (const b of this.buf) { out.set(b, o); o += b.length; }
-        this.port.postMessage(out, [out.buffer]); this.buf = []; this.n = 0;
-      }
-    }
-    return true;
-  }
-}
-registerProcessor("capture", Capture);
-`;
-
 export interface WhisperEngine {
   start(): void;
   stop(): void;
 }
 
-export function createWhisperEngine(lang: Lang, model: WhisperModelId, h: Handlers): WhisperEngine {
+export function createWhisperEngine(lang: Lang, model: WhisperModelId, h: Handlers, micId = ""): WhisperEngine {
   let running = false;
   let stream: MediaStream | null = null;
   let ctx: AudioContext | null = null;
@@ -182,6 +165,55 @@ export function createWhisperEngine(lang: Lang, model: WhisperModelId, h: Handle
     ctx = null;
   };
 
+  /**
+   * Apre il microfono (quello scelto, o il predefinito se non c'è più) e lo collega al taglio delle frasi.
+   * Se il microfono si scollega mentre si ascolta, riparte da solo con quello predefinito e avvisa.
+   */
+  const connect = async (preferredId: string) => {
+    const opened = await openMic(preferredId, { channelCount: 1, echoCancellation: true, noiseSuppression: true });
+    stream = opened.stream;
+    if (opened.fellBack) h.onNotice?.("mic-fallback");
+    if (!running) {
+      teardown();
+      return;
+    }
+    ctx = new AudioContext();
+    await ctx.resume();
+    const url = URL.createObjectURL(new Blob([WORKLET], { type: "text/javascript" }));
+    await ctx.audioWorklet.addModule(url);
+    URL.revokeObjectURL(url);
+    node = new AudioWorkletNode(ctx, "capture");
+    const mute = ctx.createGain();
+    mute.gain.value = 0;
+    ctx.createMediaStreamSource(stream).connect(node);
+    node.connect(mute).connect(ctx.destination);
+    const rate = ctx.sampleRate;
+    seg = new Segmenter();
+    node.port.onmessage = (e: MessageEvent<Float32Array>) => {
+      if (!seg) return;
+      for (const u of seg.push(resampleTo16k(e.data, rate))) enqueue(u);
+    };
+    stream.getAudioTracks()[0]?.addEventListener("ended", () => void onLost());
+  };
+
+  /** Il microfono si è scollegato (la traccia finisce da sola, non perché l'abbiamo fermata noi). */
+  const onLost = async () => {
+    if (!running) return;
+    const last = seg?.flush();
+    seg = null;
+    teardown();
+    if (last) enqueue(last);
+    h.onNotice?.("mic-lost");
+    try {
+      await connect("");
+    } catch (e) {
+      running = false;
+      teardown();
+      h.onError((e as DOMException)?.name === "NotFoundError" ? "no-mic" : "other");
+      h.onState("idle");
+    }
+  };
+
   return {
     start() {
       if (running) return;
@@ -198,41 +230,14 @@ export function createWhisperEngine(lang: Lang, model: WhisperModelId, h: Handle
         }
         if (!running) return void h.onState("idle");
         try {
-          stream = await navigator.mediaDevices.getUserMedia({
-            audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true },
-          });
+          await connect(micId);
+          if (!running) return void h.onState("idle");
+          h.onState("listening");
         } catch (e) {
           running = false;
-          h.onError((e as DOMException)?.name === "NotFoundError" ? "no-mic" : "not-allowed");
-          h.onState("idle");
-          return;
-        }
-        if (!running) {
           teardown();
-          return void h.onState("idle");
-        }
-        try {
-          ctx = new AudioContext();
-          await ctx.resume();
-          const url = URL.createObjectURL(new Blob([WORKLET], { type: "text/javascript" }));
-          await ctx.audioWorklet.addModule(url);
-          URL.revokeObjectURL(url);
-          node = new AudioWorkletNode(ctx, "capture");
-          const mute = ctx.createGain();
-          mute.gain.value = 0;
-          ctx.createMediaStreamSource(stream).connect(node);
-          node.connect(mute).connect(ctx.destination);
-          const rate = ctx.sampleRate;
-          seg = new Segmenter();
-          node.port.onmessage = (e: MessageEvent<Float32Array>) => {
-            if (!seg) return;
-            for (const u of seg.push(resampleTo16k(e.data, rate))) enqueue(u);
-          };
-          h.onState("listening");
-        } catch {
-          running = false;
-          teardown();
-          h.onError("other");
+          const name = (e as DOMException)?.name;
+          h.onError(name === "NotFoundError" ? "no-mic" : name === "NotAllowedError" || name === "SecurityError" ? "not-allowed" : "other");
           h.onState("idle");
         }
       })();

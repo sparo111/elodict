@@ -21,6 +21,7 @@ const settings: SettingsRow = {
   whisperModel: "base",
   dictionary: [{ from: "a", to: "B" }],
   onboardingDone: true,
+  microphoneId: "mic-b",
 };
 
 describe("copia di sicurezza", () => {
@@ -38,6 +39,7 @@ describe("copia di sicurezza", () => {
       whisperModel: "base",
       dictionary: [{ from: "a", to: "B" }],
       onboardingDone: true,
+      microphoneId: "mic-b",
     });
   });
   it("funziona anche senza impostazioni", () => {

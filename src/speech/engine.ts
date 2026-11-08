@@ -12,6 +12,7 @@ export interface Engine {
 
 export const isEngineSupported = (kind: EngineKind) => (kind === "offline" ? isOfflineSupported() : isSpeechSupported());
 
-export function createEngine(kind: EngineKind, lang: Lang, model: WhisperModelId, h: Handlers): Engine {
-  return kind === "offline" ? createWhisperEngine(lang, model, h) : createRecognizer(VOICE_CODE[lang], h);
+/** `micId`: il microfono scelto. Vale solo per l'ascolto offline: il riconoscimento del browser non permette di sceglierlo. */
+export function createEngine(kind: EngineKind, lang: Lang, model: WhisperModelId, h: Handlers, micId = ""): Engine {
+  return kind === "offline" ? createWhisperEngine(lang, model, h, micId) : createRecognizer(VOICE_CODE[lang], h);
 }

@@ -77,6 +77,7 @@ export function App() {
     engine: prefs.engine,
     dictLang: prefs.dictationLanguage,
     whisperModel: prefs.whisperModel,
+    micId: prefs.microphoneId,
     onTextRef,
   });
   const onControl = (a: ControlAction) => {
@@ -146,6 +147,7 @@ export function App() {
           supported={dictation.supported}
           engine={prefs.engine}
           error={dictation.error}
+          notice={dictation.notice}
           noText={dictation.noText}
           onRetry={dictation.toggle}
           onOpenSettings={() => setDialog("settings")}

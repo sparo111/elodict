@@ -2,22 +2,25 @@
 import { useEffect, useRef, useState, type MutableRefObject } from "react";
 import type { Lang } from "../commands/types";
 import { createEngine, isEngineSupported, type Engine, type EngineKind } from "../speech/engine";
-import type { RecognizerError, RecognizerState } from "../speech/recognizer";
+import type { RecognizerError, RecognizerNotice, RecognizerState } from "../speech/recognizer";
 import type { WhisperModelId } from "../speech/whisper";
 
 interface Options {
   engine: EngineKind;
   dictLang: Lang;
   whisperModel: WhisperModelId;
+  /** microfono scelto (vuoto = predefinito) */
+  micId: string;
   /** chi riceve il testo riconosciuto; è un riferimento perché cambia a ogni modifica delle impostazioni */
   onTextRef: MutableRefObject<(text: string) => void>;
 }
 
-export function useDictation({ engine, dictLang, whisperModel, onTextRef }: Options) {
+export function useDictation({ engine, dictLang, whisperModel, micId, onTextRef }: Options) {
   const supported = isEngineSupported(engine);
   const [state, setState] = useState<RecognizerState>("idle");
   const [interim, setInterim] = useState("");
   const [error, setError] = useState<RecognizerError | null>(null);
+  const [notice, setNotice] = useState<RecognizerNotice | null>(null);
   const [loadPct, setLoadPct] = useState<number | null>(null);
   const [paused, setPaused] = useState(false);
   const [activity, setActivity] = useState(0);
@@ -61,7 +64,10 @@ export function useDictation({ engine, dictLang, whisperModel, onTextRef }: Opti
       onError: (e) => {
         if (alive) setError(e);
       },
-    });
+      onNotice: (n) => {
+        if (alive) setNotice(n);
+      },
+    }, micId);
     recRef.current = rec;
     if (resumeAfterSwitch.current) {
       resumeAfterSwitch.current = false;
@@ -73,11 +79,12 @@ export function useDictation({ engine, dictLang, whisperModel, onTextRef }: Opti
       rec.stop();
       if (recRef.current === rec) recRef.current = null;
     };
-  }, [supported, dictLang, engine, whisperModel, onTextRef]);
+  }, [supported, dictLang, engine, whisperModel, micId, onTextRef]);
 
   const toggle = () => {
     if (state === "idle") {
       setError(null);
+      setNotice(null);
       recRef.current?.start();
     } else {
       recRef.current?.stop();
@@ -115,6 +122,7 @@ export function useDictation({ engine, dictLang, whisperModel, onTextRef }: Opti
     active: state !== "idle",
     interim,
     error,
+    notice,
     loadPct,
     paused,
     pausedRef,

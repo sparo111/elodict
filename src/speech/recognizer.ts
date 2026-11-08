@@ -2,6 +2,8 @@
 // Se il browser lo ferma da solo (pausa lunga), lo riavvia finché l'utente non preme Stop.
 
 export type RecognizerState = "idle" | "starting" | "listening";
+/** Avvisi che non fermano l'ascolto: il microfono scelto non c'era (si usa il predefinito) o si è scollegato. */
+export type RecognizerNotice = "mic-fallback" | "mic-lost";
 export type RecognizerError = "not-allowed" | "no-mic" | "no-speech" | "network" | "model" | "other";
 
 export interface Handlers {
@@ -11,6 +13,8 @@ export interface Handlers {
   onError: (e: RecognizerError) => void;
   /** Solo per il riconoscimento offline: avanzamento del download del modello, da 0 a 100. */
   onProgress?: (pct: number) => void;
+  /** Solo per il riconoscimento offline: avvisi sul microfono. */
+  onNotice?: (n: RecognizerNotice) => void;
 }
 
 // Tipi minimi: TypeScript non li include ancora tutti.

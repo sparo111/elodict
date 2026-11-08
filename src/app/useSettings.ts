@@ -15,6 +15,7 @@ const initialPrefs = (): Prefs => ({
   whisperModel: "base",
   dictionary: [],
   onboardingDone: readOnboardingMirror(),
+  microphoneId: "",
 });
 
 export function useSettings() {

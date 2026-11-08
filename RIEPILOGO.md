@@ -58,8 +58,8 @@ Il lavoro è stato guidato dal pacchetto di competenze **replica-skill** di Clau
 ```bash
 npm install
 npm run dev          # apre il sito (di solito http://localhost:5173); prima copia i file di Whisper in public/ort
-npm test             # 146 prove sulla logica (Vitest), pochi secondi
-npm run test:e2e     # 370 prove nel browser (Playwright, Chromium); avvia da solo il sito di sviluppo (porta 5199) e due copie costruite (5200 radice, 5201 sotto /elodict/)
+npm test             # 159 prove sulla logica (Vitest), pochi secondi
+npm run test:e2e     # 404 prove nel browser (Playwright, Chromium); avvia da solo il sito di sviluppo (porta 5199) e due copie costruite (5200 radice, 5201 sotto /elodict/)
 npm run build        # controlla i tipi e crea la cartella dist/
 ```
 
@@ -121,9 +121,10 @@ npm run build        # controlla i tipi e crea la cartella dist/
 | `i18n.ts` | tutti i testi in 4 lingue |
 | `main.tsx`, `index.css` | avvio, stile dei fogli A4 e dell'editor |
 | `commands/` | `types.ts` (tipi di azione), `it/en/fr/es.ts` (comandi per lingua), `parser.ts` (da frase a passi), `syntax.ts` («cancella 3 parole», «da X a Y»), `format.ts` (genera i comandi di formattazione), `index.ts` (elenco lingue, codici voce) |
+| `audio/` | `devices.ts` (elenco dei microfoni e apertura di quello scelto; se è scollegato ripiega sul predefinito e lo dice), `useMics.ts` (elenco che si aggiorna da solo) |
 | `speech/` | `recognizer.ts` (motore del browser, riavvio automatico), `whisper.ts` (motore offline: microfono + modello), `whisper.worker.ts` (il modello gira qui), `segmenter.ts` (taglia le frasi dalle pause, pulisce le frasi «inventate»), `engine.ts` (sceglie tra i due) |
 | `editor/PageLayout.ts`, `editor/measure.ts` | `PageLayout` inserisce gli spazi fra i fogli; **`planPages`** è una funzione pura provata a parte. `measure.ts` misura le righe **un blocco alla volta e ricorda i blocchi non cambiati** (`LineCache`): dopo una modifica si rimisura solo il blocco toccato |
-| `components/` | `Paper.tsx` (fogli e zoom), `Toolbar.tsx`, `Flags.tsx` (bandierine in SVG), `dialogs/` (`SettingsDialog`, `HelpDialog`, `ExportDialog`, `SendDialog`), `OfflineSection.tsx`, `MicTest.tsx`, `Modal.tsx` (usa l'elemento nativo `<dialog>`) |
+| `components/` | `Paper.tsx` (fogli e zoom), `Toolbar.tsx`, `Flags.tsx` (bandierine in SVG), `dialogs/` (`SettingsDialog`, `HelpDialog`, `ExportDialog`, `SendDialog`), `OfflineSection.tsx`, `MicTest.tsx` (scelta e prova del microfono), `Modal.tsx` (usa l'elemento nativo `<dialog>`) |
 | `text/` | `clean.ts` (parole riempitive, ripetizioni, dizionario), `edit.ts` (cancella/seleziona intervalli, titolo) |
 | `store/` | `db.ts` (Dexie: tabelle `documents` e `settings`), `backup.ts` (controllo e formato della copia di sicurezza) |
 | `export/` | `blocks.ts` (documento → blocchi → txt/md/html), `build.ts` (docx, pdf, «Salva con nome») |
@@ -167,7 +168,7 @@ npm run build        # controlla i tipi e crea la cartella dist/
 
 ## 8. Dati e privacy
 
-- **IndexedDB** (Dexie, database `elodict`): tabella `documents` (id, titolo, contenuto JSON di TipTap, lingua, date) e `settings` (una riga: lingue, pulizia, punto automatico, motore, modello, dizionario). Oggi **si salva solo l'ultimo documento** (l'elenco dei documenti non esiste).
+- **IndexedDB** (Dexie, database `elodict`): tabella `documents` (id, titolo, contenuto JSON di TipTap, lingua, date) e `settings` (una riga: lingue, pulizia, punto automatico, motore, modello, dizionario, primo avvio fatto, microfono scelto). Oggi **si salva solo l'ultimo documento** (l'elenco dei documenti non esiste).
 - **localStorage**: solo i flag `elodict-model-tiny|base` (modello offline scaricato).
 - **Copia di sicurezza**: JSON `{ app: "elodict", version: 1, documents, settings }`, controllato campo per campo prima di importare (non importa niente a metà). Limiti: 200 documenti, 20 MB.
 - Cosa dichiara l'app all'utente: «su Chrome l'audio è elaborato da Google; il testo resta sul dispositivo»; con Whisper offline: «l'audio non lascia il dispositivo».
@@ -182,7 +183,7 @@ npm run build        # controlla i tipi e crea la cartella dist/
 ## 10. Stato delle funzioni e punteggio
 
 - **Parità con Dictate: 75,9 / 100** (era 43,1 all'inizio); **funzioni obbligatorie 10 su 10**; soglia «pubblicabile» = 80. Si ricalcola con `parity.py` della skill `replica-diff` leggendo `replica/features.csv`.
-- Mancano per salire: scelta del microfono (con Whisper ora sarebbe possibile), punteggiatura automatica vera (oggi è una regola semplice), trascrizione di un file audio caricato, cronologia dei documenti con ricerca, selezione «da X a Y» e per paragrafo, emoji/tabelle/commenti a voce.
+- Mancano per salire: punteggiatura automatica vera (oggi è una regola semplice), trascrizione di un file audio caricato, cronologia dei documenti con ricerca, selezione «da X a Y» e per paragrafo, emoji/tabelle/commenti a voce.
 - Cose nostre non presenti nell'originale (non contano nel punteggio): Whisper offline, copia di sicurezza, esportazioni, email, bandierine, zoom, casella «Prova senza microfono».
 
 ## 11. Marchio e nome
@@ -223,6 +224,7 @@ npm run build        # controlla i tipi e crea la cartella dist/
 
 **Resta da fare (nessuno di questi punti è un errore, sono scelte rimandate):**
 - **La cartella si chiama ancora `mia-dictate`** mentre il prodotto è Elodict (nome di lavoro).
+- **Scelta del microfono**: provata con dispositivi **finti** (elenco e richieste simulati, audio del microfono finto di Chrome) e con Whisper vero. Mai provata con due microfoni veri né scollegandone uno davvero. Con «Il browser» a dettare **la scelta non vale**: il riconoscimento del browser non permette di scegliere il microfono (lo dice l'app); non verificato su Chrome vero con più microfoni.
 - **Documenti molto lunghi**: l'impaginazione ora è incrementale (T002). Provata su 50 fogli; oltre non misurato. Il browser rifà comunque il disegno di tutta la pagina a ogni modifica.
 - **Nessuna pagina di presentazione né pubblicazione** (fasi `replica-launch` e `replica-deploy`).
 - **Nessuna licenza scelta** per il codice (il README lo dice).
@@ -243,7 +245,7 @@ npm run build        # controlla i tipi e crea la cartella dist/
 ## 16. Prossimi passi possibili
 
 1. Decidere nome definitivo e cartella (sezione 11).
-2. **Scelta del microfono** (con Whisper è fattibile) e **trascrizione di un file audio**.
+2. **Trascrizione di un file audio** (la scelta del microfono è fatta: T003).
 3. **Cronologia dei documenti** (oggi solo l'ultimo) con ricerca.
 4. Scegliere una licenza (`App.tsx` è già stato diviso: T002).
 5. `replica-launch` (pagina di presentazione: gratis, senza account, senza limiti, 4 lingue, foglio A4) e `replica-deploy`.

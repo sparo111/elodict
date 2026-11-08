@@ -81,3 +81,19 @@ Non coperto: scaricamento vero di Whisper sulla copia costruita e riapertura off
 | LAYOUT-E1 | dopo modifiche in tre punti i fogli sono identici a quelli ricalcolati da zero dopo il ricaricamento; verificata con una modifica sbagliata a mano (la prova fallisce) | riuscita |
 | U-measure | `LineCache`: ritrova il blocco, si svuota se cambiano larghezza/zoom, `clear()` | riuscite (3) |
 | SEL-R1 | BUG-006: la selezione a voce con il disegno ritardato di mezzo secondo | riuscita |
+
+## T-003 — Scelta del microfono (`e2e/f13-scelta-microfono.spec.ts`, `src/audio/devices.test.ts`)
+Dispositivi finti: copione che sostituisce l'elenco e le richieste di apertura; l'audio viene dal microfono finto di Chrome.
+| caso | cosa si controlla | esito |
+| --- | --- | --- |
+| MIC-H1 | l'elenco: predefinito + 2 microfoni, senza telecamera né voci doppie | riuscita (computer e telefono) |
+| MIC-H2 | la prova chiede il dispositivo scelto; la scelta resta dopo il ricaricamento | riuscita |
+| MIC-H3 | un microfono collegato a finestra aperta compare da solo | riuscita |
+| MIC-H4 | tornare a «predefinito» chiede senza identificativo | riuscita |
+| MIC-N1 | scelto e poi scollegato: voce «non è collegato», la prova ripiega sul predefinito con avviso e senza errore; richieste: scelto poi predefinito | riuscita |
+| MIC-N2 | senza permesso (nomi e id nascosti): avviso; id senza nomi: «Microfono N» | riuscita |
+| MIC-N3 | cambiare microfono durante la prova la ferma | riuscita |
+| MIC-E1 | la nota «con il browser la scelta non vale» c'è solo con il browser | riuscita |
+| MIC-W1 | Whisper vero (modello piccolo): chiede il dispositivo scelto; scollegato durante l'ascolto → riparte con il predefinito e avvisa; riavvio con dispositivo assente → ripiego con avviso (solo computer, si salta senza rete) | riuscita |
+| U-devices | 10 prove sulla logica: elenco, `isMissing`, `openMic` (scelto, ripiego, permesso negato non ripiega, nessun microfono) | riuscite |
+Non coperto: due microfoni veri, scollegamento vero, Chrome con più dispositivi e il riconoscimento del browser.

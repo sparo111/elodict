@@ -73,6 +73,7 @@ export function parseBackup(json: string): ParsedBackup {
       engine: s.engine === "offline" ? "offline" : "browser",
       whisperModel: s.whisperModel === "tiny" ? "tiny" : "base",
       onboardingDone: s.onboardingDone === true,
+      microphoneId: typeof s.microphoneId === "string" && s.microphoneId.length <= 300 ? s.microphoneId : "",
       dictionary: parseDictionary(JSON.stringify(s.dictionary)),
     };
   }

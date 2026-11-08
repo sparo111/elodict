@@ -95,3 +95,12 @@ Il bundle JS principale era 597 kB (188 kB compresso) a quel punto; docx e PDF s
 - Tempi su un documento di 50 fogli (300 paragrafi), per una modifica: **prima 50–60 ms, dopo 3–7 ms**; con computer 4 volte più lento **prima 250–285 ms, dopo 15–50 ms**. Soglia delle prove: 30 ms (120 ms col computer lento).
 - Cambio di comportamento (voluto): due scelte di impostazione fatte nello stesso istante ora si sommano, prima la seconda poteva cancellare la prima (`useSettings` tiene sempre l'ultimo valore).
 - Più difficile del previsto: niente di grave. Nota: la misura dei tempi resta nel codice (`performance.measure("pageLayout.run")`), costo trascurabile.
+
+## T-003 — Scelta del microfono
+- Nuova cartella `src/audio/`: `devices.ts` (`listMics`, `isMissing`, `openMic`) e `useMics.ts` (elenco che si aggiorna con `devicechange`). `openMic` chiede il dispositivo scelto (`deviceId: { exact }`); se non c'è più (`OverconstrainedError`/`NotFoundError`) apre il predefinito e lo segnala. Permesso negato e «nessun microfono» passano come errori veri, senza ripiego.
+- Impostazione `microphoneId` (vuoto = predefinito), nel salvataggio e nella copia di sicurezza (lunghezza ≤ 300, altrimenti vuoto). Se ripristinata su un altro computer, il microfono non c'è e si ripiega con avviso.
+- Scelta in Impostazioni, dentro «Prova del microfono» (elenco: predefinito + ingressi audio, senza voci virtuali né telecamere). La prova usa il microfono scelto. Se la scelta non è più collegata l'elenco la mostra come «non è collegato (uso quello predefinito)». Prima del permesso il browser nasconde nomi e identificativi: l'app lo dice.
+- Whisper: usa il microfono scelto; se all'avvio manca → predefinito + avviso («Il microfono scelto non è collegato…»); se si scollega mentre si ascolta → `onLost` rimette in coda le ultime parole e riparte da solo con il predefinito, con avviso. Gli avvisi non fermano l'ascolto (`onNotice`, nuovo gestore opzionale).
+- Con «Il browser» a dettare la scelta non vale (il riconoscimento del browser non lo permette): l'app lo scrive sotto l'elenco, solo quando è scelto il browser.
+- `whisper.ts` portato a 256 righe spostando il programma audio in `speech/worklet.ts`.
+- Più difficile del previsto: niente. Scartato: ripartire con l'altro microfono anche con il browser (non si può).
