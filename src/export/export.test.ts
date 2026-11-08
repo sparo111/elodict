@@ -48,6 +48,13 @@ describe("blocchi", () => {
   });
 });
 
+describe("sottolineato", () => {
+  it("arriva nell'html", () => {
+    const d = { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "ciao", marks: [{ type: "underline" }] }] }] };
+    expect(toHtml(docToBlocks(d), "t", "it")).toContain("<u>ciao</u>");
+  });
+});
+
 describe("file", () => {
   it("nome file sicuro", () => {
     expect(safeName('a/b:c?"d')).toBe("abcd");

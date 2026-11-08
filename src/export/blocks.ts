@@ -1,7 +1,7 @@
 // Trasforma il documento dell'editor (JSON TipTap) in blocchi semplici,
 // da cui si ricavano tutti i formati: txt, md, html, docx, pdf.
 
-export interface Run { text: string; bold?: boolean; italic?: boolean }
+export interface Run { text: string; bold?: boolean; italic?: boolean; underline?: boolean }
 export interface Block {
   kind: "p" | "h" | "li";
   level?: number;      // titoli 1..6
@@ -23,7 +23,12 @@ function inline(nodes: JNode[] = []): Run[] {
   for (const n of nodes) {
     if (n.type === "text" && n.text) {
       const marks = n.marks?.map((m) => m.type) ?? [];
-      runs.push({ text: n.text, bold: marks.includes("bold") || undefined, italic: marks.includes("italic") || undefined });
+      runs.push({
+        text: n.text,
+        bold: marks.includes("bold") || undefined,
+        italic: marks.includes("italic") || undefined,
+        underline: marks.includes("underline") || undefined,
+      });
     } else if (n.type === "hardBreak") {
       runs.push({ text: "\n" });
     } else if (n.content) {
@@ -99,6 +104,7 @@ const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replac
 
 function htmlRun(r: Run): string {
   let t = esc(r.text).replace(/\n/g, "<br>");
+  if (r.underline) t = `<u>${t}</u>`;
   if (r.italic) t = `<em>${t}</em>`;
   if (r.bold) t = `<strong>${t}</strong>`;
   return t;

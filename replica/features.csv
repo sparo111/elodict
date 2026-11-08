@@ -45,3 +45,5 @@ Integrazione dentro Word/Outlook/PowerPoint/OneNote,piattaforma,skip,yes,skip,no
 Motore di riconoscimento vocale Microsoft,tecnologia,skip,yes,skip,si usa Web Speech API o servizio terzo
 Account/abbonamento Microsoft 365,business,skip,yes,skip,non serve
 Supporto 50+ lingue con qualità Microsoft,tecnologia,skip,yes,skip,solo 4 lingue scelte
+Barra strumenti con icone (grassetto/corsivo/sottolineato/titolo/elenchi/annulla/ripeti),core,should,no,yes,M2b: barra sopra il testo; titolo = livello 2
+Icona microfono nella barra strumenti,core,should,no,yes,M2b: avvia/ferma come il pulsante grande

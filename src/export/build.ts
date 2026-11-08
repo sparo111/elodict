@@ -21,7 +21,7 @@ async function buildDocx(blocks: Block[]): Promise<Blob> {
   const H = [HeadingLevel.HEADING_1, HeadingLevel.HEADING_2, HeadingLevel.HEADING_3, HeadingLevel.HEADING_4, HeadingLevel.HEADING_5, HeadingLevel.HEADING_6];
   const runsOf = (b: Block) =>
     b.runs.flatMap((r) =>
-      r.text.split("\n").map((part, i) => new TextRun({ text: part, bold: r.bold, italics: r.italic, break: i > 0 ? 1 : undefined })),
+      r.text.split("\n").map((part, i) => new TextRun({ text: part, bold: r.bold, italics: r.italic, underline: r.underline ? {} : undefined, break: i > 0 ? 1 : undefined })),
     );
   const children = blocks.map((b) => {
     if (b.kind === "h") return new Paragraph({ heading: H[Math.min(5, (b.level ?? 1) - 1)], children: runsOf(b) });

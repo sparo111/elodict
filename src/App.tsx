@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { EditorContent, useEditor, type Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
+import UnderlineExt from "@tiptap/extension-underline";
+import { Toolbar } from "./components/Toolbar";
 import { AlertTriangle, Download, HelpCircle, Mail, Mic, Settings, Square } from "lucide-react";
 import { strings } from "./i18n";
 import { COMMANDS, VOICE_CODE } from "./commands";
@@ -62,7 +64,7 @@ export function App() {
   );
 
   const editor = useEditor({
-    extensions: [StarterKit],
+    extensions: [StarterKit, UnderlineExt],
     content: "",
     editorProps: { attributes: { "aria-label": "Documento", role: "textbox", "aria-multiline": "true" } },
     onUpdate: ({ editor }) => {
@@ -189,6 +191,10 @@ export function App() {
           </button>
         </nav>
       </header>
+
+      {editor && (
+        <Toolbar editor={editor} s={s} listening={active} micDisabled={!supported} onMic={toggle} />
+      )}
 
       <main className="mx-auto flex w-full max-w-editor flex-1 flex-col px-4">
         {!supported && (
