@@ -19,15 +19,9 @@
 | Casella "Prova senza microfono" | fatto (extra) | fa passare il testo scritto dagli stessi comandi: utile per provare senza microfono |
 | Comandi cancella parola/frase, annulla | fatto | parole nostre, non di Microsoft |
 
-Il bundle JS principale è 597 kB (188 kB compresso); docx e PDF si caricano solo quando servono. Da ridurre più avanti.
+Il bundle JS principale era 597 kB (188 kB compresso) a quel punto; docx e PDF si caricano solo quando servono.
 
-## Non verificato
-- Il microfono vero NON è stato provato qui (serve una persona che parli in Chrome/Edge/Safari). I test automatici coprono la logica dei comandi (7 test), non l'audio.
-- Su Android Chrome la Web Speech API a volte ripete l'ultima frase: da verificare su telefono.
-- Nessuno screenshot per il confronto: `replica/clone-screens/` è ancora vuota.
-
-## Prossimi passi (M2)
-Autosalvataggio, 4 lingue (EN/FR/ES), export .docx/.pdf/.md, email, impostazioni, aiuto comandi.
+> Le liste «cosa non è verificato» e «prossimi passi» aggiornate sono in `RIEPILOGO.md` (sezioni 15 e 16); sotto, per ogni tappa, ciò che era vero in quel momento.
 
 ## M2c (2026-11-08) — chiuse le funzioni obbligatorie
 - Cancella N parole/frasi ("cancella 3 parole") e cancella da X a Y, in 4 lingue (`src/commands/syntax.ts`). Limite: in "da X a Y" la parte Y è tutto il resto della frase detta, quindi il comando va detto da solo.

@@ -2,7 +2,7 @@
 
 > Scritto il 2026-11-08 leggendo il repository così com'è (branch `master`, ultimo commit `d6f9af7`).
 > Il documento è pensato per essere dato a Claude.ai (o a una persona) che non ha visto il lavoro fatto.
-> Dove un altro file del repo è rimasto indietro rispetto al codice, lo dico nella sezione 14: **il codice e questo file vincono**.
+> I documenti della cartella `replica/` sono stati riallineati al codice il 2026-11-08 (vedi sezione 14). In caso di dubbio **il codice e questo file vincono**.
 
 ## 0. In breve (English, for Claude.ai)
 
@@ -130,7 +130,7 @@ npm run build        # controlla i tipi e crea la cartella dist/
 | `helpers.ts` | `FAKE_SPEECH` (finto riconoscimento), `NO_PICKER`, `say()` (scrive nella casella di prova) |
 | `make-fixtures.ps1` | crea le registrazioni di sintesi per le prove con Whisper |
 
-**Altro:** `scripts/copy-ort.mjs` (copia i file di onnxruntime in `public/ort`), `public/favicon.svg` (icona provvisoria: una «E» fatta di barre), `playwright.config.ts` (due progetti: computer 1440×900 e telefono 390×844, sempre Chromium; microfono finto di Chrome), `vite.config.ts` (esclude Transformers.js dalla pre-elaborazione; worker in formato ES), `tailwind.config.ts` + `replica/design/tokens.*` (colori e misure).
+**Altro:** `README.md` (pagina breve per chi arriva dal repository), `scripts/copy-ort.mjs` (copia i file di onnxruntime in `public/ort`), `public/favicon.svg` (icona provvisoria: una «E» fatta di barre), `playwright.config.ts` (due progetti: computer 1440×900 e telefono 390×844, sempre Chromium; microfono finto di Chrome), `vite.config.ts` (esclude Transformers.js dalla pre-elaborazione; worker in formato ES), `tailwind.config.ts` + `replica/design/tokens.*` (colori e misure).
 
 **Documenti di lavoro — `replica/`** (non fanno parte dell'app; sono la memoria del progetto)
 
@@ -138,16 +138,16 @@ npm run build        # controlla i tipi e crea la cartella dist/
 | --- | --- | --- |
 | `recon.md` | studio di Dictate: schermate, flussi, componenti, dati, concorrente «dictate.» | storico, scrittura del 2026-11-08 |
 | `features.csv` | **matrice delle funzioni** (originale sì/no, clone sì/no/parziale/skip, priorità) | **aggiornata** |
-| `parity.md` | confronto con l'originale a punteggio | **numeri vecchi** (72,5; oggi 75,9) |
-| `build-log.md` | cronologia di tutto ciò che è stato costruito, con ciò che non è verificato | aggiornata (ha una sezione «Prossimi passi (M2)» ormai superata) |
+| `parity.md` | confronto con l'originale a punteggio | **aggiornata** (75,9; obbligatorie 10/10) |
+| `build-log.md` | cronologia di tutto ciò che è stato costruito, con ciò che non è verificato | aggiornata (le sezioni superate sono state tolte) |
 | `bugs.md` | 5 difetti trovati e corretti, con causa e prova | aggiornata |
-| `test-plan.md` | piano di prova | **ferma a metà del lavoro** |
-| `architecture.md`, `schema.ts` | piano tecnico iniziale | **superati** |
+| `test-plan.md` | piano di prova: come si esegue, cosa copre ogni file, cosa resta da provare a mano | **aggiornato** (338 + 111 prove) |
+| `architecture.md` | architettura com'è oggi: stack, dati, moduli, rischi, stato | **riscritta** (`schema.ts` è stato rimosso: la forma dei dati è in `src/store/db.ts`) |
 | `competitors.md` | progetti GitHub simili e idee prese | aggiornata |
 | `fixes.md`, `reviews.csv`, `feedback.md` | cosa dicono gli utenti di Dictate (7 testi) | aggiornati |
 | `fixes-recorders.md`, `reviews-recorders.csv`, `feedback-recorders.md`, `themes-recorders.json` | 600 recensioni di 6 app che registrano | aggiornati |
 | `brand.md`, `brand.json` | nome, controlli, palette, logo, voce | aggiornati |
-| `design/` | token di design, specifiche dei componenti, controllo contrasto (`contrast.py`) | `tokens.*` aggiornati; `components.md` **superato** |
+| `design/` | token di design, specifiche dei componenti, controllo contrasto (`contrast.py`) | `tokens.*` e `components.md` **aggiornati** |
 
 ## 8. Dati e privacy
 
@@ -194,18 +194,23 @@ npm run build        # controlla i tipi e crea la cartella dist/
 - **Commit**: messaggio in italiano, con riga finale `Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>`. Un solo ramo (`master`); non c'è un repository remoto.
 - File ignorati da git (rigenerabili): `node_modules/`, `dist/`, `public/ort/`, `e2e/fixtures/`, `test-results/`, `playwright-report/`, `.replica-guida.json` (file del programma di guida, non dell'app).
 
-## 14. Cosa è rimasto indietro (da sistemare dopo questa lettura)
+## 14. Sistemazione dei documenti, e cosa resta
 
-1. **`replica/parity.md`**: dice 72,5 e «8 funzioni obbligatorie»; il valore vero è **75,9** e **10 su 10**. Da rigenerare.
-2. **`replica/architecture.md`**: descrive il piano iniziale. Non è più vero che: si usi `turndown` (il Markdown è scritto a mano in `blocks.ts`), `i18next` (c'è `i18n.ts`), `commands/*.json` (sono file `.ts`), un pulsante «Dictate»; mancano Whisper offline, l'impaginazione A4, la copia di sicurezza, le bandierine. Da riscrivere o archiviare.
-3. **`replica/schema.ts`**: forma dei dati iniziale, **non coincide più** con `src/store/db.ts` (campi `engine`, `whisperModel`, `autoPeriod`, `cleanFillers`, `dictionary`…). Da eliminare o allineare.
-4. **`replica/test-plan.md`**: si ferma ai test fino a metà lavoro; ora ci sono 338 prove in 12 file (vedi sez. 7).
-5. **`replica/design/components.md`**: menziona un pulsante «Dictate» e componenti ormai diversi (foglio, bandierine, zoom, prova del microfono, sezione offline).
-6. **`replica/build-log.md`**: la sezione «Prossimi passi (M2)» è superata.
-7. **Manca un `README.md`** nel repository: questo file può farne le veci, ma è lungo; servirebbe una pagina breve per chi arriva da GitHub.
-8. **La cartella si chiama ancora `mia-dictate`** mentre il prodotto è Elodict (nome di lavoro).
-9. **`App.tsx` è lungo (~620 righe)**: conviene spezzarlo (applicazione delle frasi, impostazioni, intestazione) prima di aggiungere altro.
-10. **Nessun log di modifiche per l'utente** né pagina di presentazione (fase `replica-launch`).
+**Fatto il 2026-11-08 (dopo la prima lettura del repository):**
+1. `replica/parity.md` rigenerato: **75,9** e **10 funzioni obbligatorie su 10**.
+2. `replica/architecture.md` riscritto sul codice di oggi (Whisper offline, foglio A4, `i18n.ts` a mano, nessun `turndown`/`i18next`, nessun file JSON dei comandi).
+3. `replica/schema.ts` **rimosso** (non coincideva più con `src/store/db.ts`): ora l'architettura rimanda a quel file.
+4. `replica/test-plan.md` riscritto: come si esegue, cosa copre ogni file (169 casi nel browser × 2 schermi = 338 esecuzioni, più 111 prove sulla logica) e l'elenco delle prove a mano.
+5. `replica/design/components.md` riscritto (foglio A4, bandierine, zoom, prova del microfono, sezione offline, finestre).
+6. `replica/build-log.md`: tolta la sezione «Prossimi passi (M2)» ormai superata; `replica/recon.md` segnato come **documento storico**.
+7. **`README.md`** aggiunto alla radice (pagina breve, con rimando a questo file).
+
+**Resta da fare (nessuno di questi punti è un errore, sono scelte rimandate):**
+- **La cartella si chiama ancora `mia-dictate`** mentre il prodotto è Elodict (nome di lavoro).
+- **`src/App.tsx` è lungo (~620 righe)**: conviene spezzarlo (applicazione delle frasi, impostazioni, intestazione) prima di aggiungere altro.
+- **Nessuna pagina di presentazione né pubblicazione** (fasi `replica-launch` e `replica-deploy`).
+- **Nessuna licenza scelta** per il codice (il README lo dice).
+- `replica/recon.md` e le sezioni 8b/10 restano come registro storico delle decisioni iniziali.
 
 ## 15. Cosa NON è verificato (onestà prima di tutto)
 
@@ -219,10 +224,10 @@ npm run build        # controlla i tipi e crea la cartella dist/
 
 ## 16. Prossimi passi possibili
 
-1. Sistemare i punti della sezione 14 (parity, architettura, schema, test-plan, README).
+1. Decidere nome definitivo e cartella (sezione 11).
 2. **Scelta del microfono** (con Whisper è fattibile) e **trascrizione di un file audio**.
 3. **Cronologia dei documenti** (oggi solo l'ultimo) con ricerca.
-4. Spezzare `App.tsx`.
+4. Spezzare `App.tsx` e scegliere una licenza.
 5. `replica-launch` (pagina di presentazione: gratis, senza account, senza limiti, 4 lingue, foglio A4) e `replica-deploy`.
 6. **Una persona vera che prova con un microfono vero** e dice cosa non va: è la prova che manca di più.
 7. Controlli sul marchio e parere di un avvocato prima di spendere soldi sul nome.

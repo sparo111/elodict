@@ -1,0 +1,46 @@
+# Elodict
+
+**Detta con la voce direttamente nel browser, su un foglio A4.** Gratis, senza account, senza installare niente.
+
+> Elodict è un **nome di lavoro** (i controlli sul marchio non sono finiti). Questa cartella si chiama ancora `mia-dictate`.
+> *English: a free, no-install, no-account web app for voice dictation into a real A4-page editor, in Italian, English, French and Spanish. A clean-room functional rebuild of Microsoft Word's "Dictate": no code, assets, colours or copy from the original. No backend.*
+
+## Cosa fa
+- **Detti e il testo compare** in un foglio A4 vero (21 × 29,7 cm, margini di 2,54 cm, numero di pagina). A fine riga e a fine foglio il testo va a capo da solo, anche a metà paragrafo.
+- **Quattro lingue**, sia per i menu sia per la voce: italiano, inglese, francese, spagnolo. Le bandierine accanto al nome le cambiano insieme.
+- **Comandi vocali** nelle quattro lingue: punteggiatura, simboli, «a capo», annulla, cancella (anche «cancella 3 parole» e «cancella da X a Y»), grassetto, corsivo, sottolineato, maiuscolo, selezione, elenchi, pausa e ripresa, cambio lingua, «mostra comandi».
+- **Due modi di ascoltare**: quello del browser (veloce, serve internet; su Chrome l'audio passa da Google) oppure **Whisper offline** nel browser (l'audio resta sul tuo dispositivo; funziona anche su Firefox; il modello si scarica una volta, 40 o 80 MB).
+- **Salva e invia**: salvataggio automatico nel browser, copia di sicurezza, esportazione in **Word, PDF, Markdown, testo, pagina web** con nome e cartella a scelta, invio per email.
+- **Utile da sapere**: pulizia di «ehm/uhm», dizionario personale, prova del microfono, casella «Prova senza microfono» per provare tutto scrivendo.
+
+## Come si usa (da sviluppatore)
+```bash
+npm install
+npm run dev        # apre il sito, di solito http://localhost:5173 (usa Chrome, Edge o Safari per la voce)
+npm test           # prove sulla logica (Vitest)
+npm run test:e2e   # prove nel browser (Playwright): npx playwright install chromium la prima volta
+npm run build      # controlla i tipi e crea dist/
+```
+Le prove con Whisper vero hanno bisogno di internet e delle registrazioni di prova: `powershell -ExecutionPolicy Bypass -File e2e/make-fixtures.ps1` (altrimenti si saltano da sole).
+
+## Stato
+- **Parità con Dictate: 75,9 / 100**, funzioni obbligatorie 10 su 10; difetti aperti: nessuno.
+- **111 prove sulla logica e 338 nel browser** (computer e telefono), tutte riuscite (5 saltate di proposito).
+- **Non ancora fatto o verificato**: nessuna prova con una voce umana vera; scelta del microfono; elenco dei documenti salvati (oggi si salva solo l'ultimo); `.docx` mai aperti in Word vero; spagnolo da far rivedere a un madrelingua; controlli sul marchio; **non è pubblicato online**.
+
+## Dove leggere di più
+| file | per cosa |
+| --- | --- |
+| [`RIEPILOGO.md`](RIEPILOGO.md) | **il riepilogo completo**: decisioni, architettura, mappa dei file, convenzioni, cosa non è verificato |
+| [`replica/architecture.md`](replica/architecture.md) | stack, dati, moduli, rischi |
+| [`replica/features.csv`](replica/features.csv) · [`replica/parity.md`](replica/parity.md) | funzioni e punteggio di parità |
+| [`replica/build-log.md`](replica/build-log.md) · [`replica/bugs.md`](replica/bugs.md) | cronologia e difetti trovati |
+| [`replica/test-plan.md`](replica/test-plan.md) | cosa si prova e cosa resta da provare a mano |
+| [`replica/brand.md`](replica/brand.md) | nome, controlli, palette, voce |
+| [`replica/fixes.md`](replica/fixes.md) · [`replica/fixes-recorders.md`](replica/fixes-recorders.md) · [`replica/competitors.md`](replica/competitors.md) | cosa dicono gli utenti e i concorrenti |
+
+## Origine e regole
+Il progetto ricostruisce **le funzioni e l'esperienza d'uso** di Dictate (Microsoft 365) in modo «clean-room»: ogni riga di codice, colore, testo e icona è scritta da zero; fonti solo pagine pubbliche di aiuto. I recensori citati nei documenti sono materiale di studio, non testimonianze.
+
+## Licenza
+Nessuna licenza è stata ancora scelta. Le librerie usate hanno le proprie licenze (React, TipTap, Dexie, docx, jsPDF, Transformers.js, onnxruntime-web, Lucide, Inter e Source Serif 4). I modelli Whisper (`Xenova/whisper-tiny` e `-base`) si scaricano da huggingface.co e hanno la propria licenza.

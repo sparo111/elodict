@@ -1,61 +1,53 @@
-# Piano di test: mia-dictate
+# Piano di prova: Elodict
 
-Data: 2026-11-08. Regola: si prova solo il NOSTRO clone, mai i server di Microsoft.
-Il microfono vero non è provabile qui: nei test un "finto riconoscimento vocale" (`FAKE_SPEECH` in `e2e/helpers.ts`) fa parlare l'app, e la casella "Prova senza microfono" passa dagli stessi comandi.
+Aggiornato il 2026-11-08. Regola: si prova solo il NOSTRO clone, mai i server dell'originale.
 
-Come si esegue: `npx playwright test` (desktop 1440px e telefono 390px) e `npm test` (logica, 39 test).
+## Come si esegue
+```bash
+npm test            # 111 prove sulla logica (Vitest), pochi secondi
+npm run test:e2e    # 169 casi nel browser × 2 schermi (computer 1440×900 e telefono 390×844) = 338 esecuzioni
+```
+Ultimo esito: **111/111** e **333 riuscite + 5 saltate di proposito** (le saltate sono le copie su telefono dei casi che bastano una volta sul computer: controllo di accessibilità e prove con Whisper). Difetti aperti: nessuno (`bugs.md`).
 
-## F01 Dettare un testo — `e2e/f01-dettatura.spec.ts`
-| caso | cosa si prova | esito |
+## Come si prova senza microfono
+- `FAKE_SPEECH` (`e2e/helpers.ts`) sostituisce il riconoscimento del browser: il test può «far parlare» l'app (`__say`), simulare errori (`__fail`) e fermate (`__browserStop`).
+- La casella «Prova senza microfono» passa dallo stesso percorso dei comandi: è l'helper `say()`.
+- Chrome parte con un microfono finto (`--use-fake-device-for-media-stream`) per la prova del microfono.
+- Per Whisper vero: voci di sintesi di Windows (`e2e/make-fixtures.ps1` crea `e2e/fixtures/speech-en.wav` e `speech-it.wav`, non in git) usate come microfono di un Chrome avviato apposta. Servono internet e quei file; altrimenti le prove si saltano da sole.
+- Le misure dei fogli (`f10`, `f11`) leggono la posizione di ogni parola con le misure vere (senza zoom) e controllano che nessuna tocchi i margini, l'intervallo fra i fogli o il margine destro.
+
+## Cosa copre ogni file
+| file | casi | cosa si prova |
 | --- | --- | --- |
-| F01-H1 | Detta, parlo, il testo compare, Ferma | ok |
-| F01-H2 | due frasi di fila con lo spazio giusto | ok |
-| F01-H3 | testo provvisorio visibile, poi sparisce | ok |
-| F01-E1 | il browser ferma il microfono: riavvio automatico | ok |
-| F01-E2 | la lingua scelta arriva al riconoscimento (it-IT) | ok |
-| F01-E3 | il microfono nella barra = tasto grande | ok |
-| F01-E4 | browser senza riconoscimento vocale: avviso, tasti spenti, casella di prova funziona | ok |
-| F01-N1 | microfono bloccato: messaggio chiaro | ok |
-| F01-N2 | "non ti sento": avvisa e continua ad ascoltare | ok |
-| F01-N3 | nessun microfono collegato | ok |
-| F01-N4 | Riprova dopo un errore | ok |
-
-## F02 Correggere a voce, 4 lingue — `e2e/f02-comandi.spec.ts`
-| caso | cosa si prova | esito |
-| --- | --- | --- |
-| F02-H1..H3 | punteggiatura, cancella parola, annulla, cancella frase | ok (dopo fix BUG-002) |
-| F02-H4 | a capo e nuovo paragrafo | ok (dopo fix BUG-001) |
-| F02-H5..H7 | inglese, francese (spazio prima di ?), spagnolo (¿) | ok |
-| F02-H8 | la lingua scelta resta dopo il ricaricamento | ok |
-| F02-E1 | accenti ed emoji | ok |
-| F02-E2 | frase vuota | ok |
-| F02-E3 | testo lunghissimo (3000 parole) | ok |
-| F02-E4 | invio doppio rapido | ok |
-| F02-E5 | cancella/annulla su documento vuoto | ok |
-| F02-E6 | cursore a metà testo | ok (controlla solo che il testo compaia) |
-
-## F03/F04 Impostazioni e aiuto — `e2e/f03-impostazioni-aiuto.spec.ts`
-Cambio lingua app (4 lingue), persistenza, Esc/tastiera, elenco comandi nella lingua scelta, pulsante Chiudi: tutti ok.
-
-## Esporta e Invia — `e2e/export-email.spec.ts`
-| caso | cosa si prova | esito |
-| --- | --- | --- |
-| EXP-H1 | tutti e 5 i formati scaricati col nome scelto; docx = zip, pdf = %PDF | ok |
-| EXP-H2 | nome proposto = titolo | ok |
-| EXP-E1..E5 | documento vuoto, caratteri vietati, nome vuoto, accenti/emoji, grassetto in markdown | ok |
-| EXP-P1/P2 | "Salva con nome" (simulato): nome proposto, file scritto; annullo = niente | ok |
-| MAIL-E1..E3, H1 | vuoto, testo corto, testo troppo lungo (pulsante spento), senza Condividi | ok |
-
-## Salvataggio, barra, accessibilità, telefono — `e2e/salvataggio-barra-a11y.spec.ts`
-Salvataggio dopo ricarica, app funzionante senza IndexedDB, annulla/ripeti, grassetto/corsivo/sottolineato, elenchi e titolo, il cursore resta, scansione axe (pagina, errore, 4 finestre), nessuno scorrimento orizzontale a 390px: tutti ok.
+| `e2e/f01-dettatura.spec.ts` | 11 | Detta/Ferma, testo provvisorio, riavvio automatico dopo le pause, lingua del riconoscimento, microfono nella barra, errori (bloccato, assente, «non ti sento», riprova), browser senza riconoscimento |
+| `e2e/f02-comandi.spec.ts` | 23 | punteggiatura e maiuscole nelle 4 lingue, cancella (parola, frase, N, «da X a Y»), annulla, a capo, formattazione, simboli, accenti ed emoji, testo lunghissimo, documento vuoto |
+| `e2e/f03-impostazioni-aiuto.spec.ts` | 5 | cambio lingua dei menu, persistenza, tastiera, aiuto per lingua |
+| `e2e/f05-pulizia-dizionario-pausa.spec.ts` | 22 | pulizia «ehm/uhm» e ripetizioni, dizionario (aggiungi, rimuovi, importa/esporta, file sbagliato), pausa/ripresa/ferma a voce, scorciatoie `Alt+Maiusc+D` ed `Esc` |
+| `e2e/f06-backup-lingua-microfono.spec.ts` | 20 | copia di sicurezza (anche in un browser vuoto), cambio lingua al volo (barra, voce, mentre ascolta), prova del microfono, avviso «non arriva testo» |
+| `e2e/f07-selezione-elenchi-maiuscolo.spec.ts` | 17 | selezione a voce, maiuscolo/minuscolo (conserva il grassetto), elenchi, «mostra comandi», punto automatico |
+| `e2e/f08-offline-whisper.spec.ts` | 11 | scelta offline e persistenza, stato del modello, download fallito, browser senza motore integrato, **trascrizione vera** (EN piccolo, IT piccolo e medio) |
+| `e2e/f09-gara-impostazioni.spec.ts` | 2 | scegliere la lingua prima che le impostazioni siano lette (difetto BUG-005): database ritardato di proposito |
+| `e2e/f10-foglio-a4.spec.ts` | 19 | misure A4, un solo foglio da vuoto, testo che passa al foglio dopo anche a metà paragrafo, titoli ed elenchi, zoom, esportazione senza spazi di pagina |
+| `e2e/f11-a-capo-e-bandierine.spec.ts` | 17 | a capo al margine destro (anche parole lunghissime, indirizzi web), bandierine, menu nelle 4 lingue, voce che segue la bandiera |
+| `e2e/export-email.spec.ts` | 13 | esportazione in 5 formati con il nome scelto, «Salva con nome», invio per email (testo corto/lungo, senza Condividi) |
+| `e2e/salvataggio-barra-a11y.spec.ts` | 9 | salvataggio dopo il ricaricamento, barra, accessibilità con axe, nessuno scorrimento orizzontale |
+| `src/commands/parser.test.ts` | 41 | tutti i comandi nelle 4 lingue, cancella con numeri, formattazione, selezione, elenchi, cambio lingua, punteggiatura attaccata (come la scrive Whisper) |
+| `src/speech/segmenter.test.ts` | 16 | taglio delle frasi dalle pause con segnali finti, frasi inventate sul silenzio |
+| `src/text/edit.test.ts` | 16 | cancella parole/frasi, intervalli, titolo |
+| `src/text/clean.test.ts` | 11 | parole riempitive, ripetizioni, dizionario, importazione |
+| `src/export/export.test.ts` | 9 | blocchi → txt/md/html, creazione dei file docx e pdf |
+| `src/store/backup.test.ts` | 9 | copia di sicurezza: scrittura, lettura, file sbagliati, valori mancanti |
+| `src/editor/PageLayout.test.ts` | 9 | calcolo dei fogli: nessuna riga a cavallo, altezze diverse, righe più alte del foglio |
 
 ## Da provare a mano (non automatizzabile qui)
-- [ ] Dettare con un microfono vero in Chrome, Edge e Safari (qualità, comando o parola?).
+- [ ] **Dettare con un microfono vero** (voce umana, rumore) in Chrome, Edge e Safari, con il motore del browser **e** con Whisper offline.
 - [ ] Android Chrome: la frase si ripete? (problema noto della Web Speech API)
-- [ ] Aprire i .docx in Word vero e controllare titoli, elenchi, grassetto, spazio prima di "?" in francese.
-- [ ] Il PDF con parole lunghissime o molte pagine.
-- [ ] "Salva con nome" vero in Chrome/Edge (finestra del sistema).
-- [ ] "Condividi file" su telefono; "Apri la posta" con il tuo programma di posta.
-- [ ] Due schede aperte insieme: vince l'ultimo salvataggio (da decidere).
-- [ ] Lettore di schermo vero (NVDA / VoiceOver).
-- [ ] Firefox: l'avviso compare.
+- [ ] Aprire i .docx in **Word vero**: titoli, elenchi, grassetto, spazio prima di «?» in francese, foglio A4.
+- [ ] Il PDF con molte pagine o parole lunghissime.
+- [ ] «Salva con nome» vero in Chrome/Edge (finestra del sistema).
+- [ ] «Condividi file» su telefono; «Apri la posta» con il tuo programma di posta.
+- [ ] Un lettore di schermo vero (NVDA, VoiceOver).
+- [ ] Firefox e Safari veri con Whisper offline.
+- [ ] Documenti di molte decine di pagine: i fogli restano scorrevoli?
+- [ ] Spagnolo: comandi riletti da un madrelingua.
+- [ ] Due schede aperte insieme (vince l'ultimo salvataggio: da decidere).

@@ -1,5 +1,7 @@
 # Recon: Dictate (Microsoft 365)
 
+> **Documento storico**: lo studio iniziale della funzione Dictate, scritto prima che il prodotto avesse nome e prima delle tappe M2-M5. Il progetto è oggi Elodict; per lo stato attuale vedi `RIEPILOGO.md`, `features.csv` e `parity.md`. Le decisioni dell'utente su piattaforma e lingue (sezioni 8b e 10) sono ancora valide.
+
 Data: 2026-11-08. Metodo: clean-room, solo pagine di aiuto pubbliche. Nessun account, nessun codice, nessuna API privata.
 
 ## 0. In parole semplici
