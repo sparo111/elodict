@@ -92,3 +92,38 @@ export function readRawDatabase(page: Page) {
       }),
   );
 }
+
+/** Un documento salvato, con poche parole, per le prove dell'elenco. */
+export function makeDoc(id: string, title: string, text: string, updatedAt: number, extra: Record<string, unknown> = {}) {
+  return {
+    id,
+    title,
+    content: { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text }] }] },
+    language: "it",
+    createdAt: updatedAt,
+    updatedAt,
+    ...extra,
+  };
+}
+
+/** Aggiunge documenti al database già creato dall'app (versione nuova). Poi la pagina va ricaricata. */
+export function putDocuments(page: Page, docs: unknown[]) {
+  return page.evaluate(
+    (docs) =>
+      new Promise<void>((resolve, reject) => {
+        const open = indexedDB.open("elodict");
+        open.onerror = () => reject(open.error);
+        open.onsuccess = () => {
+          const db = open.result;
+          const tx = db.transaction("documents", "readwrite");
+          for (const d of docs) tx.objectStore("documents").put(d);
+          tx.oncomplete = () => {
+            db.close();
+            resolve();
+          };
+          tx.onerror = () => reject(tx.error);
+        };
+      }),
+    docs,
+  );
+}

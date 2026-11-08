@@ -79,3 +79,25 @@ describe("intervalli", () => {
     expect(rangeOfLast("   ", "word")).toBeNull();
   });
 });
+
+describe("casi limite", () => {
+  it("solo spazi: niente parola da cancellare; una frase fatta di soli spazi si cancella tutta", () => {
+    expect(charsToDelete("   ", "deleteWord")).toBe(0);
+    expect(charsToDelete("   ", "deleteSentence")).toBe(3);
+    expect(charsToDelete("", "deleteWord")).toBe(0);
+  });
+  it("da X a Y: se manca X o Y non fa niente", () => {
+    expect(rangeFromTo("Ciao mondo", "", "mondo")).toBeNull();
+    expect(rangeFromTo("Ciao mondo", "ciao", "")).toBeNull();
+  });
+  it("da X a Y: ignora gli X senza Y dopo e prova quelli prima; senza spazio davanti non lo toglie", () => {
+    // l'ultimo «a» non ha nessun «z» dopo di sé: si passa a quello prima, che sta all'inizio (nessuno spazio davanti)
+    const s = "a b z a c";
+    const r = rangeFromTo(s, "a", "z")!;
+    expect(r).toEqual({ start: 0, end: 5 });
+    expect(rangeFromTo("a b", "a", "z")).toBeNull();
+  });
+  it("il titolo si ferma alla prima riga non vuota e toglie la punteggiatura finale", () => {
+    expect(deriveTitle("\n\n  Ciao a tutti...\nsecondo", "x")).toBe("Ciao a tutti");
+  });
+});

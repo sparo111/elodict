@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
-import { detectInstallCase, isIOS, type InstallEnv } from "./detect";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { detectInstallCase, isIOS, readInstallEnv, type InstallEnv } from "./detect";
 
 const UA = {
   chromeWin: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
@@ -92,5 +92,39 @@ describe("isIOS", () => {
   it("Windows e Android no", () => {
     expect(isIOS(UA.chromeWin, 10)).toBe(false);
     expect(isIOS(UA.chromeAndroid, 5)).toBe(false);
+  });
+});
+
+describe("readInstallEnv (dal dispositivo vero)", () => {
+  afterEach(() => vi.unstubAllGlobals());
+  const device = (nav: Record<string, unknown>, standaloneMedia?: boolean) => {
+    vi.stubGlobal("navigator", { userAgent: "UA-prova", maxTouchPoints: 5, ...nav });
+    if (standaloneMedia === undefined) vi.stubGlobal("matchMedia", undefined);
+    else vi.stubGlobal("matchMedia", (q: string) => ({ matches: q.includes("standalone") && standaloneMedia }));
+  };
+
+  it("riporta il programma, lo schermo a tocco e l'invito ricevuto", () => {
+    device({}, false);
+    expect(readInstallEnv(true, false)).toEqual({ userAgent: "UA-prova", maxTouchPoints: 5, standalone: false, hasPrompt: true });
+  });
+
+  it("è «già installata» se lo dice l'evento di installazione", () => {
+    device({}, false);
+    expect(readInstallEnv(false, true).standalone).toBe(true);
+  });
+
+  it("è «già installata» se è aperta come app (display-mode standalone)", () => {
+    device({}, true);
+    expect(readInstallEnv(false, false).standalone).toBe(true);
+  });
+
+  it("è «già installata» su iPhone se Safari la apre dalla schermata Home (navigator.standalone)", () => {
+    device({ standalone: true }, false);
+    expect(readInstallEnv(false, false).standalone).toBe(true);
+  });
+
+  it("senza matchMedia non si rompe: non installata", () => {
+    device({});
+    expect(readInstallEnv(false, false).standalone).toBe(false);
   });
 });

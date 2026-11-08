@@ -36,8 +36,8 @@ Le prove con Whisper vero hanno bisogno di internet e delle registrazioni di pro
 
 ## Stato
 - **Parità con Dictate: 75,9 / 100**, funzioni obbligatorie 10 su 10; difetti aperti: nessuno.
-- **159 prove sulla logica e 404 nel browser** (computer e telefono): 393 riuscite, 11 saltate di proposito.
-- **Non ancora fatto o verificato**: nessuna prova con una voce umana vera; scelta del microfono provata solo con microfoni finti; elenco dei documenti salvati (oggi si salva solo l'ultimo); `.docx` mai aperti in Word vero; spagnolo da far rivedere a un madrelingua; controlli sul marchio; **non è pubblicato online** (è pronto il flusso per GitHub Pages: vedi `.github/workflows/deploy.yml`); installazione mai provata su un iPhone o un Android veri.
+- **188 prove sulla logica e 454 nel browser** (computer e telefono): 442 riuscite, 12 saltate di proposito.
+- **Non ancora fatto o verificato**: nessuna prova con una voce umana vera; scelta del microfono provata solo con microfoni finti; elenco dei documenti provato solo con Chromium; `.docx` mai aperti in Word vero; spagnolo da far rivedere a un madrelingua; controlli sul marchio; **non è pubblicato online** (è pronto il flusso per GitHub Pages: vedi `.github/workflows/deploy.yml`); installazione mai provata su un iPhone o un Android veri.
 
 ## Dove leggere di più
 | file | per cosa |

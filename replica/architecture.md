@@ -28,7 +28,7 @@ Non servono: login, pagamenti, Postgres, provider di email, lavori in background
 ## 2. Dati (nel browser, non SQL)
 La forma dei dati è in **`src/store/db.ts`** (database Dexie `elodict`) e **`src/store/backup.ts`** (copia di sicurezza). Non c'è più un file di schema separato.
 
-- `documents` (indice su `updatedAt`): `id`, `title`, `content` (JSON di TipTap), `language`, `createdAt`, `updatedAt`. Oggi si salva **solo l'ultimo documento**.
+- `documents` (indici su `updatedAt` e `deletedAt`; database alla versione 2): `id`, `title`, `content` (JSON di TipTap), `language`, `createdAt`, `updatedAt`, e facoltativi `titleCustom` (nome scelto dall'utente), `openedAt` (ultima apertura), `deletedAt` (nel cestino da). Più documenti, fino a 200.
 - `settings` (una riga, `id: "main"`): `dictationLanguage`, `uiLanguage`, `cleanFillers`, `cleanRepeats`, `autoPeriod`, `engine` (`browser` | `offline`), `whisperModel` (`tiny` | `base`), `dictionary` (voci «come lo sente → come lo vuoi»).
 - `localStorage`: solo i flag `elodict-model-tiny|base` (modello offline già scaricato).
 - Copia di sicurezza: un file JSON `{ app: "elodict", version: 1, documents, settings }`, controllato campo per campo prima di importare (200 documenti e 20 MB al massimo).
@@ -80,7 +80,7 @@ microfono → motore (browser | Whisper) → testo finale
 | M3 | selezione, maiuscolo/minuscolo, elenchi, «mostra comandi», punto automatico | fatta |
 | M4 | Whisper offline nel browser | fatta |
 | M5 | foglio A4, a capo, zoom, bandierine | fatta |
-| dopo | scelta del microfono, trascrizione di un file audio, cronologia dei documenti, pubblicazione | da fare |
+| dopo | trascrizione di un file audio, pubblicazione | da fare |
 
 ## 7. Rischi principali oggi
 1. **Nessuna voce umana vera provata** (solo riconoscimento finto, microfono finto e voci di sintesi).

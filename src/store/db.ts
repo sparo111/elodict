@@ -2,7 +2,8 @@
 import Dexie, { type Table } from "dexie";
 import type { Lang } from "../commands/types";
 import type { DictEntry } from "../text/clean";
-import { buildBackup, type ParsedBackup } from "./backup";
+import { buildBackup, stringifyBackup, type ParsedBackup } from "./backup";
+import { migrateToV2 } from "./migrations";
 
 export interface DocumentRow {
   id: string;
@@ -11,6 +12,9 @@ export interface DocumentRow {
   language: Lang;
   createdAt: number;
   updatedAt: number;
+  titleCustom?: boolean; // il nome l'ha scelto l'utente (altrimenti viene dalle prime parole)
+  openedAt?: number;     // ultima volta che è stato aperto (serve a riaprire quello giusto)
+  deletedAt?: number;    // se c'è, è nel cestino da questo momento
 }
 
 export interface SettingsRow {
@@ -33,10 +37,24 @@ class AppDB extends Dexie {
   constructor() {
     super("elodict");
     this.version(1).stores({ documents: "id, updatedAt", settings: "id" });
+    // v2: elenco dei documenti e cestino (indice sulla data di eliminazione). I dati di prima restano com'erano.
+    this.version(2).stores({ documents: "id, updatedAt, deletedAt", settings: "id" }).upgrade(migrateToV2);
   }
 }
 
-const db = new AppDB();
+export const db = new AppDB();
+
+export type DbStatus = { ok: true } | { ok: false; error: string };
+
+/** Il database si apre (e, se serve, si aggiorna)? Se no, non si tocca niente: i dati restano dove sono. */
+export async function checkDatabase(): Promise<DbStatus> {
+  try {
+    await db.open();
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : String(e) };
+  }
+}
 
 export function defaultLang(): Lang {
   const l = (typeof navigator !== "undefined" ? navigator.language : "it").slice(0, 2);
@@ -74,27 +92,21 @@ export async function saveSettings(s: SettingsRow): Promise<boolean> {
   }
 }
 
-export async function loadLastDocument(): Promise<DocumentRow | undefined> {
-  try {
-    return await db.documents.orderBy("updatedAt").last();
-  } catch {
-    return undefined;
-  }
-}
-
+/** Salva un documento. I campi che l'editor non conosce (ultima apertura, cestino) restano com'erano. */
 export async function saveDocument(row: DocumentRow): Promise<boolean> {
   try {
-    await db.documents.put(row);
+    const previous = await db.documents.get(row.id);
+    await db.documents.put({ ...previous, ...row });
     return true;
   } catch {
     return false;
   }
 }
 
-/** Tutti i documenti e le impostazioni, come testo JSON pronto da scaricare. */
+/** Tutti i documenti (non quelli nel cestino) e le impostazioni, come testo JSON pronto da scaricare. Lancia `BackupLimitError` se non ci stanno. */
 export async function exportBackup(): Promise<string> {
   const [documents, settings] = await Promise.all([db.documents.toArray(), db.settings.get("main")]);
-  return JSON.stringify(buildBackup(settings, documents), null, 2);
+  return stringifyBackup(buildBackup(settings, documents.filter((d) => !d.deletedAt)));
 }
 
 /** Rimette nel browser i documenti e le impostazioni di una copia già controllata. I documenti con lo stesso id vengono sostituiti. */

@@ -5,6 +5,7 @@ import UnderlineExt from "@tiptap/extension-underline";
 import { Toolbar } from "./components/Toolbar";
 import { Paper, type Zoom } from "./components/Paper";
 import { InstallBanner } from "./install/Install";
+import { DatabaseProblem } from "./documents/ui/DatabaseProblem";
 import { UpdateBanner } from "./pwa/UpdateBanner";
 import { useAppUpdate } from "./pwa/useAppUpdate";
 import { PageLayout } from "./editor/PageLayout";
@@ -27,10 +28,16 @@ export function App() {
   const settings = useSettings();
   const { prefs } = settings;
   const s = strings[prefs.uiLanguage];
-  const store = useDocumentStore(prefs.dictationLanguage, prefs.uiLanguage);
   const { toast, flash } = useToast();
 
   const [isEmpty, setIsEmpty] = useState(true);
+  const lastInsert = useRef<{ from: number; to: number } | null>(null);
+  // quando nell'editor entra un altro documento: il vuoto si ricalcola e «grassetto questo» riparte da zero
+  const onSwitched = useCallback((ed: Editor) => {
+    setIsEmpty(ed.isEmpty);
+    lastInsert.current = null;
+  }, []);
+  const store = useDocumentStore(prefs.dictationLanguage, prefs.uiLanguage, onSwitched);
   const [pages, setPages] = useState(1);
   const [zoom, setZoom] = useState<Zoom>("fit");
   const scaleRef = useRef(1);
@@ -71,7 +78,6 @@ export function App() {
   }, [editor, s.editorLabel]);
 
   // Dettatura: il testo riconosciuto passa da applyTranscript (sempre con le impostazioni di adesso).
-  const lastInsert = useRef<{ from: number; to: number } | null>(null);
   const onTextRef = useRef<(text: string) => void>(() => undefined);
   const dictation = useDictation({
     engine: prefs.engine,
@@ -107,6 +113,7 @@ export function App() {
     flush: store.flush,
     reload: hydrate,
     onDone: () => flash(s.backupDone),
+    onTooBig: (reason) => flash(reason === "too-many" ? s.backupTooMany : s.backupTooBig, 10_000),
   });
 
   // «Nuova versione pronta»: prima di ricaricare si salva il documento.
@@ -114,10 +121,11 @@ export function App() {
   const saveBeforeUpdate = useCallback(() => flush(editor), [flush, editor]);
   const update = useAppUpdate(saveBeforeUpdate);
 
-  const title = deriveTitle(editor?.getText({ blockSeparator: "\n" }) ?? "", s.defaultTitle);
+  const title = store.customTitle ?? deriveTitle(editor?.getText({ blockSeparator: "\n" }) ?? "", s.defaultTitle);
 
   return (
     <div className="flex min-h-full flex-col bg-bg text-text">
+      {store.problem && <DatabaseProblem s={s} />}
       <UpdateBanner s={s} ready={update.ready} busy={update.busy} saveFailed={update.saveFailed} onApply={() => void update.apply()} onLater={update.later} />
       <InstallBanner s={s} enabled={settings.ready && prefs.onboardingDone} />
       <Header
@@ -205,6 +213,7 @@ export function App() {
           window.setTimeout(openTryBox, 100);
         }}
         onDone={flash}
+        documents={store}
       />
     </div>
   );

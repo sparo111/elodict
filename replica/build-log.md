@@ -104,3 +104,13 @@ Il bundle JS principale era 597 kB (188 kB compresso) a quel punto; docx e PDF s
 - Con «Il browser» a dettare la scelta non vale (il riconoscimento del browser non lo permette): l'app lo scrive sotto l'elenco, solo quando è scelto il browser.
 - `whisper.ts` portato a 256 righe spostando il programma audio in `speech/worklet.ts`.
 - Più difficile del previsto: niente. Scartato: ripartire con l'altro microfono anche con il browser (non si può).
+
+## T-004 — Elenco dei documenti con ricerca
+- Prima di cambiare lo schema: `e2e/f14-migrazione-database.spec.ts` (MIG-H1/H2), scritta e fatta passare **sullo schema attuale**, che parte da un database della versione 1 con un documento e impostazioni complete (dizionario, microfono scelto, motore…). Poi schema v2 e la stessa prova, resa più severa (versione del database, migrazione eseguita).
+- Schema v2: indice su `deletedAt`; migrazione `migrateToV2` aggiunge `openedAt = updatedAt` ai documenti già presenti, nient'altro. Se non riesce: nessuna cancellazione (la modifica di schema è una sola transazione, si annulla tutta), `DatabaseProblem` avvisa, non si salva niente e si offre «Scarica la copia di sicurezza» letta con `rawBackup.ts` senza passare dalla migrazione.
+- Punto di innesco per provare il guasto: `window.__ELODICT_FAIL_MIGRATION__` (letto solo in `store/migrations.ts`). Scelto perché Dexie 4 apre senza errori anche un database di versione più alta, quindi non c'è un guasto «naturale» da riprodurre.
+- Elenco (`documents/ui`): titolo, data, prime parole; apri, nuovo, rinomina, duplica, elimina con conferma → cestino 30 giorni (ripristina / elimina per sempre con conferma); ricerca per più parole, senza maiuscole e accenti, con la parola evidenziata (`<mark>`). Un documento nuovo entra nell'elenco solo quando ci si scrive.
+- Cambiare documento: salva prima quello aperto; `editorSwap.replaceDocument` azzera la cronologia di «annulla» (altrimenti «annulla» riporterebbe il testo dell'altro documento: provato togliendo il ripristino). Un nome scelto dall'utente non viene più riscritto dal salvataggio automatico (`titleCustom`) e vale come nome del file esportato.
+- Limiti: 200 documenti (nuovo e duplica si fermano con un avviso) e copia di sicurezza solo se entra nei limiti (200 documenti, 20 MB): se non entra, nessun file e un messaggio che dice cosa fare. Il cestino non entra nella copia.
+- Copertura: `vite.config.ts` ha soglie (righe 90 %, rami 80 %) cartella per cartella sulla logica pura; `src/documents/` è stata tenuta pura spostando le schermate in `documents/ui/`.
+- Più difficile del previsto: axe segnalava che il testo visibile del pulsante «apri» non era nel nome accessibile → il pulsante ora contiene solo il titolo. Nessun altro intoppo.

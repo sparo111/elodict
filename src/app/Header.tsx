@@ -1,10 +1,10 @@
-import { Download, HelpCircle, Mail, Settings } from "lucide-react";
+import { Download, FolderOpen, HelpCircle, Mail, Settings } from "lucide-react";
 import { Flags } from "../components/Flags";
 import { InstallButton } from "../install/Install";
 import type { Lang } from "../commands/types";
 import type { Strings } from "../i18n";
 
-export type DialogName = "settings" | "help" | "export" | "send";
+export type DialogName = "settings" | "help" | "export" | "send" | "documents";
 
 interface Props {
   s: Strings;
@@ -19,6 +19,7 @@ const iconBtn = "inline-flex h-10 items-center gap-2 rounded-md px-2 text-sm fon
 /** Intestazione: nome, bandierine e i quattro pulsanti (Installa, Invia, Esporta, Aiuto, Impostazioni). */
 export function Header({ s, uiLang, onLang, onOpen }: Props) {
   const items = [
+    { name: "documents", label: s.documents, Icon: FolderOpen },
     { name: "send", label: s.send, Icon: Mail },
     { name: "export", label: s.export, Icon: Download },
     { name: "help", label: s.help, Icon: HelpCircle },

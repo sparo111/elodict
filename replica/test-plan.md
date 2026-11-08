@@ -97,3 +97,20 @@ Dispositivi finti: copione che sostituisce l'elenco e le richieste di apertura; 
 | MIC-W1 | Whisper vero (modello piccolo): chiede il dispositivo scelto; scollegato durante l'ascolto → riparte con il predefinito e avvisa; riavvio con dispositivo assente → ripiego con avviso (solo computer, si salta senza rete) | riuscita |
 | U-devices | 10 prove sulla logica: elenco, `isMissing`, `openMic` (scelto, ripiego, permesso negato non ripiega, nessun microfono) | riuscite |
 Non coperto: due microfoni veri, scollegamento vero, Chrome con più dispositivi e il riconoscimento del browser.
+
+## T-004 — Documenti, migrazione, limiti (`e2e/f14-…`, `e2e/f15-…`, `src/documents/documents.test.ts`, `src/store/backup.test.ts`)
+| caso | cosa si controlla | esito |
+| --- | --- | --- |
+| MIG-H1 | database della versione 1 (documento + impostazioni complete) → versione 2: impostazioni identiche campo per campo, documento identico + `openedAt`; l'app usa motore e dizionario salvati | riuscita |
+| MIG-H2 | il documento di prima si modifica e si salva | riuscita |
+| MIG-H3 | tre documenti vecchi: tutti migrati, si riapre l'ultimo modificato | riuscita |
+| MIG-N1 | migrazione che fallisce: avviso, nessun salvataggio, copia scaricabile con i dati di prima, database ancora alla versione 1 e identico; poi, senza guasto, migra senza perdere niente | riuscita |
+| LIB-H1…H7 | elenco vuoto/pieno, nuovo, «annulla» non porta testo dell'altro, rinomina (resta e dà il nome al file), nome vuoto, duplica, riapre l'ultimo, salva prima di cambiare | riuscite |
+| LIB-S1/S2 | ricerca per testo e titolo, accenti/maiuscole, più parole, nessun risultato | riuscite |
+| LIB-T1…T6 | cestino: conferma e annulla, ripristina, elimina per sempre, elimina il documento aperto, unico documento, scadenza a 30 giorni (31 gg sì, 29 gg no), il cestino non compare in elenco/ricerca/avvio | riuscite |
+| LIB-L1…L4 | 200 documenti: niente nuovo né duplica; copia di sicurezza a 200 sì (senza cestino), 201 e >20 MB no con avviso | riuscite |
+| LIB-A1/A2 | axe su elenco, ricerca, conferme, cestino; testi in inglese, francese, spagnolo | riuscite |
+| U-documents | 15 prove: testo semplice, ricerca e pezzetto, cestino, ordine, copie | riuscite |
+| U-backup | limiti in scrittura (200/201 documenti, >20 MB), nome scelto, campi interni esclusi | riuscite |
+Verifiche con errore introdotto a mano: togliendo il ripristino di «annulla», LIB-H2 fallisce.
+Non coperto: quota piena, due schede durante l'aggiornamento, altri browser, database vecchio creato da una vera app vecchia.

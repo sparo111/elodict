@@ -3,6 +3,8 @@ import { ExportDialog } from "../components/dialogs/ExportDialog";
 import { HelpDialog } from "../components/dialogs/HelpDialog";
 import { SendDialog } from "../components/dialogs/SendDialog";
 import { SettingsDialog } from "../components/dialogs/SettingsDialog";
+import { DocumentsDialog } from "../documents/ui/DocumentsDialog";
+import type { OpenDocumentControl } from "../documents/ui/useLibrary";
 import { InstallDialog } from "../install/Install";
 import { Onboarding } from "../onboarding/Onboarding";
 import { docToBlocks, toText } from "../export/blocks";
@@ -26,6 +28,7 @@ interface Props {
   onFinishOnboarding: (choice?: Pick<Prefs, "engine" | "whisperModel">) => void;
   onTryBox: () => void;
   onDone: (msg: string) => void;
+  documents: OpenDocumentControl;
 }
 
 /** Tutte le finestre dell'app: impostazioni, installazione, primo avvio, aiuto, esporta, invia. */
@@ -45,6 +48,7 @@ export function AppDialogs(p: Props) {
         onRestore={p.onRestore}
         onRedoSetup={p.onRedoSetup}
       />
+      <DocumentsDialog open={p.dialog === "documents"} onClose={p.onClose} s={s} lang={prefs.uiLanguage} editor={editor} control={p.documents} />
       <InstallDialog s={s} lang={prefs.uiLanguage} />
       <Onboarding
         open={p.settingsReady && !prefs.onboardingDone}

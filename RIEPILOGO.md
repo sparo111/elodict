@@ -58,8 +58,9 @@ Il lavoro è stato guidato dal pacchetto di competenze **replica-skill** di Clau
 ```bash
 npm install
 npm run dev          # apre il sito (di solito http://localhost:5173); prima copia i file di Whisper in public/ort
-npm test             # 159 prove sulla logica (Vitest), pochi secondi
-npm run test:e2e     # 404 prove nel browser (Playwright, Chromium); avvia da solo il sito di sviluppo (porta 5199) e due copie costruite (5200 radice, 5201 sotto /elodict/)
+npm test             # 188 prove sulla logica (Vitest), pochi secondi
+npm run coverage     # le stesse prove con la copertura; FALLISCE se la logica pura scende sotto: righe 90 %, rami 80 % (cartella per cartella, vedi vite.config.ts)
+npm run test:e2e     # 454 prove nel browser (Playwright, Chromium); avvia da solo il sito di sviluppo (porta 5199) e due copie costruite (5200 radice, 5201 sotto /elodict/)
 npm run build        # controlla i tipi e crea la cartella dist/
 ```
 
@@ -117,7 +118,7 @@ npm run build        # controlla i tipi e crea la cartella dist/
 | file | cosa fa |
 | --- | --- |
 | `App.tsx` (~210 righe) | la regia: collega i moduli di `app/` e disegna la pagina |
-| `app/` | `applyTranscript.ts` (applica una frase all'editor: parole, punteggiatura, comandi), `useSettings.ts` (impostazioni: lettura, scelte, salvataggio; protezione BUG-005), `useDocumentStore.ts` (salvataggio automatico e ripresa dell'ultimo documento), `useDictation.ts` (microfono, pausa, scorciatoie), `useBackupActions.ts`, `useToast.ts`; schermate: `Header.tsx`, `Notices.tsx`, `TryBox.tsx`, `TalkBar.tsx`, `AppDialogs.tsx` |
+| `app/` | `applyTranscript.ts` (applica una frase all'editor: parole, punteggiatura, comandi), `useSettings.ts` (impostazioni: lettura, scelte, salvataggio; protezione BUG-005), `useDocumentStore.ts` (salvataggio automatico, apertura di un altro documento, ripresa dell'ultimo; controlla che il database si apra), `editorSwap.ts` (mette un altro documento nell'editor e azzera «annulla»), `useDictation.ts` (microfono, pausa, scorciatoie), `useBackupActions.ts`, `useToast.ts`; schermate: `Header.tsx`, `Notices.tsx`, `TryBox.tsx`, `TalkBar.tsx`, `AppDialogs.tsx` |
 | `i18n.ts` | tutti i testi in 4 lingue |
 | `main.tsx`, `index.css` | avvio, stile dei fogli A4 e dell'editor |
 | `commands/` | `types.ts` (tipi di azione), `it/en/fr/es.ts` (comandi per lingua), `parser.ts` (da frase a passi), `syntax.ts` («cancella 3 parole», «da X a Y»), `format.ts` (genera i comandi di formattazione), `index.ts` (elenco lingue, codici voce) |
@@ -126,7 +127,8 @@ npm run build        # controlla i tipi e crea la cartella dist/
 | `editor/PageLayout.ts`, `editor/measure.ts` | `PageLayout` inserisce gli spazi fra i fogli; **`planPages`** è una funzione pura provata a parte. `measure.ts` misura le righe **un blocco alla volta e ricorda i blocchi non cambiati** (`LineCache`): dopo una modifica si rimisura solo il blocco toccato |
 | `components/` | `Paper.tsx` (fogli e zoom), `Toolbar.tsx`, `Flags.tsx` (bandierine in SVG), `dialogs/` (`SettingsDialog`, `HelpDialog`, `ExportDialog`, `SendDialog`), `OfflineSection.tsx`, `MicTest.tsx` (scelta e prova del microfono), `Modal.tsx` (usa l'elemento nativo `<dialog>`) |
 | `text/` | `clean.ts` (parole riempitive, ripetizioni, dizionario), `edit.ts` (cancella/seleziona intervalli, titolo) |
-| `store/` | `db.ts` (Dexie: tabelle `documents` e `settings`), `backup.ts` (controllo e formato della copia di sicurezza) |
+| `store/` | `db.ts` (Dexie: tabelle `documents` e `settings`, **versione 2**), `migrations.ts` (migrazione 1→2), `documents.ts` (elenco, cestino, rinomina, duplica, elimina), `rawBackup.ts` (copia di emergenza letta «così com'è»), `backup.ts` (controllo, formato e **limiti** della copia di sicurezza) |
+| `documents/` | **logica pura dell'elenco**: `plainText.ts` (testo semplice di un documento), `search.ts` (ricerca senza maiuscole/accenti, con pezzetto evidenziato), `trash.ts` (30 giorni), `order.ts` (ordine, copie); `ui/` = schermate (`DocumentsDialog`, `DocumentItem`, `useLibrary`, `DatabaseProblem`) |
 | `export/` | `blocks.ts` (documento → blocchi → txt/md/html), `build.ts` (docx, pdf, «Salva con nome») |
 | `share/email.ts` | `mailto:` e Web Share |
 
@@ -168,7 +170,7 @@ npm run build        # controlla i tipi e crea la cartella dist/
 
 ## 8. Dati e privacy
 
-- **IndexedDB** (Dexie, database `elodict`): tabella `documents` (id, titolo, contenuto JSON di TipTap, lingua, date) e `settings` (una riga: lingue, pulizia, punto automatico, motore, modello, dizionario, primo avvio fatto, microfono scelto). Oggi **si salva solo l'ultimo documento** (l'elenco dei documenti non esiste).
+- **IndexedDB** (Dexie, database `elodict`): tabella `documents` (id, titolo, contenuto JSON di TipTap, lingua, date) e `settings` (una riga: lingue, pulizia, punto automatico, motore, modello, dizionario, primo avvio fatto, microfono scelto). I documenti sono tanti: elenco con ricerca, rinomina, duplica e **cestino di 30 giorni** (`deletedAt`); all'avvio si riapre l'ultimo modificato o aperto (`openedAt`). Un documento è «nuovo» solo quando ci si scrive (non si creano righe vuote). Massimo 200 documenti, come la copia di sicurezza. Il database è alla **versione 2**: la migrazione aggiunge a ogni documento l'ultima apertura e non tocca altro; se non riesce, l'app non cancella niente, avvisa e offre la copia di emergenza (`rawBackup.ts`).
 - **localStorage**: solo i flag `elodict-model-tiny|base` (modello offline scaricato).
 - **Copia di sicurezza**: JSON `{ app: "elodict", version: 1, documents, settings }`, controllato campo per campo prima di importare (non importa niente a metà). Limiti: 200 documenti, 20 MB.
 - Cosa dichiara l'app all'utente: «su Chrome l'audio è elaborato da Google; il testo resta sul dispositivo»; con Whisper offline: «l'audio non lascia il dispositivo».
@@ -183,7 +185,7 @@ npm run build        # controlla i tipi e crea la cartella dist/
 ## 10. Stato delle funzioni e punteggio
 
 - **Parità con Dictate: 75,9 / 100** (era 43,1 all'inizio); **funzioni obbligatorie 10 su 10**; soglia «pubblicabile» = 80. Si ricalcola con `parity.py` della skill `replica-diff` leggendo `replica/features.csv`.
-- Mancano per salire: punteggiatura automatica vera (oggi è una regola semplice), trascrizione di un file audio caricato, cronologia dei documenti con ricerca, selezione «da X a Y» e per paragrafo, emoji/tabelle/commenti a voce.
+- Mancano per salire: punteggiatura automatica vera (oggi è una regola semplice), trascrizione di un file audio caricato, selezione «da X a Y» e per paragrafo, emoji/tabelle/commenti a voce.
 - Cose nostre non presenti nell'originale (non contano nel punteggio): Whisper offline, copia di sicurezza, esportazioni, email, bandierine, zoom, casella «Prova senza microfono».
 
 ## 11. Marchio e nome
@@ -225,6 +227,8 @@ npm run build        # controlla i tipi e crea la cartella dist/
 **Resta da fare (nessuno di questi punti è un errore, sono scelte rimandate):**
 - **La cartella si chiama ancora `mia-dictate`** mentre il prodotto è Elodict (nome di lavoro).
 - **Scelta del microfono**: provata con dispositivi **finti** (elenco e richieste simulati, audio del microfono finto di Chrome) e con Whisper vero. Mai provata con due microfoni veri né scollegandone uno davvero. Con «Il browser» a dettare **la scelta non vale**: il riconoscimento del browser non permette di scegliere il microfono (lo dice l'app); non verificato su Chrome vero con più microfoni.
+- **Migrazione del database**: provata con un database finto «della versione 1» creato a mano con la stessa struttura (non con una vera app vecchia) e con un guasto simulato (`__ELODICT_FAIL_MIGRATION__`, punto di innesco dichiarato in `store/migrations.ts`). Non provata: quota piena, più schede aperte durante l'aggiornamento (Dexie può restare «bloccato» finché non si chiude l'altra scheda), browser diversi da Chromium.
+- **Cestino**: il conto dei 30 giorni usa l'orologio del dispositivo; provato con date finte nel database.
 - **Documenti molto lunghi**: l'impaginazione ora è incrementale (T002). Provata su 50 fogli; oltre non misurato. Il browser rifà comunque il disegno di tutta la pagina a ogni modifica.
 - **Nessuna pagina di presentazione né pubblicazione** (fasi `replica-launch` e `replica-deploy`).
 - **Nessuna licenza scelta** per il codice (il README lo dice).
@@ -246,7 +250,6 @@ npm run build        # controlla i tipi e crea la cartella dist/
 
 1. Decidere nome definitivo e cartella (sezione 11).
 2. **Trascrizione di un file audio** (la scelta del microfono è fatta: T003).
-3. **Cronologia dei documenti** (oggi solo l'ultimo) con ricerca.
 4. Scegliere una licenza (`App.tsx` è già stato diviso: T002).
 5. `replica-launch` (pagina di presentazione: gratis, senza account, senza limiti, 4 lingue, foglio A4) e `replica-deploy`.
 6. **Una persona vera che prova con un microfono vero** e dice cosa non va: è la prova che manca di più.

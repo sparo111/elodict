@@ -89,5 +89,43 @@ export default defineConfig({
   // La libreria del riconoscimento offline carica da sola i suoi file: non va rielaborata da Vite.
   optimizeDeps: { exclude: ["@huggingface/transformers"] },
   worker: { format: "es" },
-  test: { environment: "node", include: ["src/**/*.test.ts"] },
+  test: {
+    environment: "node",
+    include: ["src/**/*.test.ts"],
+    // Copertura (npm run coverage): soglie solo sulla logica pura, cartella per cartella. Schermate e funzioni che
+    // dipendono dal browser sono provate dalle prove nel browser (Playwright), che questo strumento non misura.
+    coverage: {
+      provider: "v8",
+      reporter: ["text"],
+      include: [
+        "src/commands/**",
+        "src/text/**",
+        "src/documents/*.ts",
+        "src/store/backup.ts",
+        "src/audio/devices.ts",
+        "src/export/blocks.ts",
+        "src/speech/segmenter.ts",
+        "src/onboarding/eta.ts",
+        "src/onboarding/mic.ts",
+        "src/install/detect.ts",
+        "src/pwa/basePath.ts",
+      ],
+      exclude: ["**/*.test.ts", "src/commands/types.ts"],
+      thresholds: Object.fromEntries(
+        [
+          "src/commands/**",
+          "src/text/**",
+          "src/documents/*.ts",
+          "src/store/backup.ts",
+          "src/audio/devices.ts",
+          "src/export/blocks.ts",
+          "src/speech/segmenter.ts",
+          "src/onboarding/eta.ts",
+          "src/onboarding/mic.ts",
+          "src/install/detect.ts",
+          "src/pwa/basePath.ts",
+        ].map((glob) => [glob, { lines: 90, branches: 80 }]),
+      ),
+    },
+  },
 });

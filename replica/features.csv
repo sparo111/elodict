@@ -69,3 +69,7 @@ Primo avvio guidato in 3 schermate (lingua / microfono / come ascoltare),install
 Avviso nuova versione con salvataggio prima del ricaricamento,installazione,could,no,yes,provato con versione finta
 Impaginazione veloce su documenti di 50 fogli (misura per blocco),editor,could,no,yes,T002: da 50-60 ms a 3-7 ms per modifica; provata
 Scelta del microfono (con ripiego se è scollegato),impostazioni,should,no,yes,T003: provata con dispositivi finti e con Whisper vero; con il riconoscimento del browser la scelta non vale (lo dice l'app)
+"Elenco dei documenti con ricerca (apri, nuovo, rinomina, duplica)",documenti,should,no,yes,T004: provato con Chromium; il documento nuovo entra in elenco quando ci si scrive
+Cestino di 30 giorni (ripristina / elimina per sempre con conferma),documenti,should,no,yes,T004: scadenza provata con date finte
+Migrazione del database senza perdere dati; se fallisce avvisa e offre la copia di emergenza,documenti,must,no,yes,T004: provata con un database v1 costruito a mano e con un guasto simulato
+Limiti della copia di sicurezza rispettati anche scrivendo (200 documenti / 20 MB),documenti,should,no,yes,T004

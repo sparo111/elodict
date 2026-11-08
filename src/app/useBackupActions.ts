@@ -1,7 +1,7 @@
 import type { Editor } from "@tiptap/react";
 import { downloadFile } from "../export/build";
 import { exportBackup, restoreBackup } from "../store/db";
-import { parseBackup } from "../store/backup";
+import { BackupLimitError, parseBackup } from "../store/backup";
 
 /** Copia di sicurezza: scarica tutto in un file / ripristina da un file. */
 export function useBackupActions(opts: {
@@ -9,10 +9,18 @@ export function useBackupActions(opts: {
   flush: (editor: Editor | null) => Promise<boolean>;
   reload: () => Promise<void>;
   onDone: () => void;
+  /** la copia non ci sta nei limiti (troppi documenti o troppo grande) */
+  onTooBig: (reason: "too-many" | "too-big") => void;
 }) {
   const backup = async () => {
     await opts.flush(opts.editor); // salva subito l'ultima modifica
-    const json = await exportBackup();
+    let json: string;
+    try {
+      json = await exportBackup();
+    } catch (e) {
+      if (e instanceof BackupLimitError) return opts.onTooBig(e.reason);
+      throw e;
+    }
     const day = new Date().toISOString().slice(0, 10);
     downloadFile(new File([json], `elodict-copia-${day}.json`, { type: "application/json" }));
     opts.onDone();

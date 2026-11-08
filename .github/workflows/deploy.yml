@@ -26,8 +26,8 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
-      - name: Prove automatiche (unitarie)
-        run: npm test
+      - name: Prove automatiche sulla logica, con le soglie di copertura
+        run: npm run coverage
       - name: Costruisce l'app (l'indirizzo contiene il nome del repository)
         run: npm run build
         env:

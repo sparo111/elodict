@@ -19,6 +19,15 @@ export interface ParsedBackup {
 }
 
 export const MAX_BACKUP_BYTES = 20 * 1024 * 1024;
+export const MAX_BACKUP_DOCUMENTS = 200;
+
+/** La copia di sicurezza non può contenere tutto: troppi documenti o troppo grande. Non si scrive un file che poi non si potrebbe rileggere. */
+export class BackupLimitError extends Error {
+  constructor(readonly reason: "too-many" | "too-big") {
+    super(reason);
+    this.name = "BackupLimitError";
+  }
+}
 const isLang = (v: unknown): v is Lang => typeof v === "string" && (LANGS as string[]).includes(v);
 const isObj = (v: unknown): v is Record<string, unknown> => typeof v === "object" && v !== null && !Array.isArray(v);
 
@@ -34,6 +43,14 @@ export function buildBackup(settings: SettingsRow | undefined, documents: Docume
   };
 }
 
+/** Il testo del file di copia di sicurezza. Rispetta gli stessi limiti che si controllano in lettura. */
+export function stringifyBackup(file: BackupFile): string {
+  if (file.documents.length > MAX_BACKUP_DOCUMENTS) throw new BackupLimitError("too-many");
+  const json = JSON.stringify(file, null, 2);
+  if (json.length > MAX_BACKUP_BYTES) throw new BackupLimitError("too-big");
+  return json;
+}
+
 /** Controlla un file di copia di sicurezza. Se qualcosa non torna, lancia un errore: non importa niente a metà. */
 export function parseBackup(json: string): ParsedBackup {
   if (json.length > MAX_BACKUP_BYTES) throw new Error("troppo grande");
@@ -41,7 +58,7 @@ export function parseBackup(json: string): ParsedBackup {
   if (!isObj(data) || data.app !== "elodict" || data.version !== 1 || !Array.isArray(data.documents)) {
     throw new Error("formato");
   }
-  if (data.documents.length > 200) throw new Error("troppi documenti");
+  if (data.documents.length > MAX_BACKUP_DOCUMENTS) throw new Error("troppi documenti");
 
   const documents: DocumentRow[] = data.documents.map((d) => {
     if (
@@ -52,7 +69,9 @@ export function parseBackup(json: string): ParsedBackup {
     ) {
       throw new Error("documento non valido");
     }
-    return { id: d.id, title: d.title, content: d.content, language: d.language, createdAt: d.createdAt, updatedAt: d.updatedAt };
+    const row: DocumentRow = { id: d.id, title: d.title, content: d.content, language: d.language, createdAt: d.createdAt, updatedAt: d.updatedAt };
+    if (d.titleCustom === true) row.titleCustom = true; // un nome scelto dall'utente resta
+    return row;
   });
 
   let settings: ParsedBackup["settings"] = null;
