@@ -51,7 +51,8 @@ export const SYNTAX: Record<Lang, EditSyntax> = {
   },
 };
 
-export const normalizeWord = (w: string) => w.toLowerCase().replace(/[’‘]/g, "'");
+export const normalizeWord = (w: string) =>
+  w.toLowerCase().replace(/[’‘]/g, "'").replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, "");
 
 function parseNumber(w: string | undefined, syn: EditSyntax): number | undefined {
   if (w === undefined) return undefined;

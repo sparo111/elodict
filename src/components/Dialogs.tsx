@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { FileText, Mail, Share2, Trash2 } from "lucide-react";
 import { Modal } from "./Modal";
 import { MicTest } from "./MicTest";
+import { OfflineSection } from "./OfflineSection";
 import { COMMANDS, LANGS, LANG_NAME } from "../commands";
 import { SYNTAX } from "../commands/syntax";
 import { parseDictionary } from "../text/clean";
@@ -138,6 +139,8 @@ export function SettingsDialog({ open, onClose, s, value, onChange, onBackup, on
           </div>
           {importError && <p role="alert" className="text-sm text-danger">{s.dictImportError}</p>}
         </section>
+
+        <OfflineSection s={s} engine={value.engine} model={value.whisperModel} onEngine={(engine) => onChange({ engine })} onModel={(whisperModel) => onChange({ whisperModel })} />
 
         <section className="flex flex-col gap-2 border-t border-border pt-4" aria-labelledby="mic-title">
           <h3 id="mic-title" className="text-sm font-semibold">{s.micTitle}</h3>

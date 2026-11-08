@@ -51,3 +51,18 @@ Autosalvataggio, 4 lingue (EN/FR/ES), export .docx/.pdf/.md, email, impostazioni
 - Avviso "ascolto ma non arriva testo" dopo 10 s (non in pausa), con scorciatoia alla prova del microfono; anche "non ti sento" la offre.
 - Test: 74 sulla logica, 204 nel browser (desktop + telefono), tutti verdi. Nessun difetto nuovo trovato in questo giro.
 - Non verificato: voce vera; il comportamento del cambio lingua con il riconoscimento vero di Chrome (nel test il riconoscimento è simulato); la barra di livello con microfoni reali (nel test c'è un microfono finto di Chrome).
+
+## M3 / C (2026-11-08) — funzioni piccole
+- Selezione a voce (tutto, ultima parola, ultima frase, deseleziona), maiuscolo/minuscolo su "questo / ultima parola / ultima frase" (conserva grassetto e corsivo), elenchi (puntato, numerato, voce successiva, esci), "mostra comandi", punto automatico facoltativo (regola semplice).
+- Test: 102 sulla logica, 238 nel browser.
+
+## M4 / B (2026-11-08) — riconoscimento offline con Whisper nel browser
+- Scelta in Impostazioni: "il browser" (veloce, serve internet) oppure "offline" (Whisper via Transformers.js 3.8, onnxruntime-web, solo CPU/WebAssembly). Modelli: piccolo (Xenova/whisper-tiny, ~40 MB) e medio (Xenova/whisper-base, ~80 MB, scelto di partenza). Download una volta da huggingface.co, poi nella memoria del browser; tasto per eliminarli.
+- I file del motore (onnxruntime) sono copiati in `public/ort` da `scripts/copy-ort.mjs` (a `npm run dev` e `npm run build`): il sito non carica codice da altri siti, solo i pesi del modello.
+- Il microfono è ascoltato con AudioWorklet; `src/speech/segmenter.ts` taglia le frasi dalle pause (700 ms) e scarta il rumore; il modello gira in un lavoratore (`whisper.worker.ts`); `cleanWhisperText` scarta le frasi inventate sul silenzio ("Thank you", "[BLANK_AUDIO]"…).
+- I comandi vocali funzionano anche con la punteggiatura che Whisper attacca alle parole ("virgola," = virgola).
+- **Provato davvero** con voci di sintesi di Windows (script `e2e/make-fixtures.ps1`) come microfono finto di Chrome: EN «Hello world! This is a test of the offline dictation.» (perfetto); IT modello medio «Ciao a tutti! Questa è una prova della dettatura» (perfetto); IT modello piccolo «…della ditatura» (1 parola sbagliata).
+- BUG-005 trovato e corretto (vedi bugs.md).
+- Test: 102 sulla logica (16 sul taglio delle frasi), 261 nel browser (5 saltate di proposito).
+- **Non verificato:** voce umana vera (la sintesi è molto più pulita); microfoni veri e rumore; computer lenti (con Whisper medio la risposta può arrivare con secondi di ritardo); Firefox e Safari veri (simulati togliendo il riconoscimento integrato); WebGPU (non usato); uso con la pagina pubblicata online (il file del motore pesa 22 MB, sotto il limite di 25 MB dei servizi gratuiti più comuni).
+- **Limiti noti:** la scelta del microfono ancora non c'è (usa quello predefinito); il testo arriva a fine frase, non parola per parola (Whisper non lavora a flusso); la prima volta c'è il download del modello.

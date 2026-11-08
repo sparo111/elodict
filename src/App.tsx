@@ -6,18 +6,18 @@ import { closeHistory } from "@tiptap/pm/history";
 import { Toolbar } from "./components/Toolbar";
 import { AlertTriangle, Download, HelpCircle, Mail, Mic, Settings, Square } from "lucide-react";
 import { strings } from "./i18n";
-import { COMMANDS, VOICE_CODE } from "./commands";
+import { COMMANDS } from "./commands";
 import type { Lang } from "./commands/types";
 import { compose, parseTranscript } from "./commands/parser";
 import { charsToDelete, deriveTitle, rangeFromTo, rangeOfLast } from "./text/edit";
 import { SYNTAX } from "./commands/syntax";
 import { dedupeRepeats, stripFillers, type DictEntry } from "./text/clean";
 import {
-  createRecognizer,
-  isSpeechSupported,
   type RecognizerError,
   type RecognizerState,
 } from "./speech/recognizer";
+import { createEngine, isEngineSupported, type Engine, type EngineKind } from "./speech/engine";
+import type { WhisperModelId } from "./speech/whisper";
 import { docToBlocks, toText } from "./export/blocks";
 import {
   defaultLang,
@@ -57,13 +57,16 @@ function transformRange(editor: Editor, range: { from: number; to: number }, fn:
 }
 
 export function App() {
-  const supported = isSpeechSupported();
   const [dictLang, setDictLang] = useState<Lang>(defaultLang());
   const [uiLang, setUiLang] = useState<Lang>(defaultLang());
   const s = strings[uiLang];
   const [cleanFillers, setCleanFillers] = useState(true);
   const [cleanRepeats, setCleanRepeats] = useState(false);
   const [autoPeriod, setAutoPeriod] = useState(false);
+  const [engine, setEngine] = useState<EngineKind>("browser");
+  const [whisperModel, setWhisperModel] = useState<WhisperModelId>("base");
+  const [loadPct, setLoadPct] = useState<number | null>(null);
+  const supported = isEngineSupported(engine);
   const [dictionary, setDictionary] = useState<DictEntry[]>([]);
   const [paused, setPaused] = useState(false);
   const pausedRef = useRef(false);
@@ -120,16 +123,32 @@ export function App() {
     },
   });
 
+  // Applica un gruppo di impostazioni allo schermo (le setter di React non cambiano mai).
+  const applyPrefs = (p: Partial<Omit<SettingsRow, "id">>) => {
+    if (p.dictationLanguage !== undefined) setDictLang(p.dictationLanguage);
+    if (p.uiLanguage !== undefined) setUiLang(p.uiLanguage);
+    if (p.cleanFillers !== undefined) setCleanFillers(p.cleanFillers);
+    if (p.cleanRepeats !== undefined) setCleanRepeats(p.cleanRepeats);
+    if (p.autoPeriod !== undefined) setAutoPeriod(p.autoPeriod);
+    if (p.engine !== undefined) setEngine(p.engine);
+    if (p.whisperModel !== undefined) setWhisperModel(p.whisperModel);
+    if (p.dictionary !== undefined) setDictionary(p.dictionary);
+  };
+  const settingsLoaded = useRef(false);
+  const pendingPrefs = useRef<Partial<Omit<SettingsRow, "id">>>({});
+
   // Rilegge impostazioni e ultimo documento dal salvataggio del browser.
   const hydrate = useCallback(async () => {
     if (!editor) return;
     const [settings, last] = await Promise.all([loadSettings(), loadLastDocument()]);
-    setDictLang(settings.dictationLanguage);
-    setUiLang(settings.uiLanguage);
-    setCleanFillers(settings.cleanFillers);
-    setCleanRepeats(settings.cleanRepeats);
-    setAutoPeriod(settings.autoPeriod);
-    setDictionary(settings.dictionary);
+    // Se l'utente ha già cambiato qualcosa prima che le impostazioni fossero lette, la sua scelta vince
+    // e le altre impostazioni salvate (per esempio il dizionario) non vengono toccate.
+    const pending = pendingPrefs.current;
+    pendingPrefs.current = {};
+    const merged: SettingsRow = { ...settings, ...pending };
+    applyPrefs(merged);
+    settingsLoaded.current = true;
+    if (Object.keys(pending).length) void saveSettings(merged);
     if (last) {
       docId.current = last.id;
       createdAt.current = last.createdAt;
@@ -140,9 +159,14 @@ export function App() {
   }, [editor]);
 
   // All'avvio: recupera impostazioni e ultimo documento salvato.
+  // Una volta sola per editor: in sviluppo React avvia gli effetti due volte, e il secondo caricamento,
+  // arrivando dopo una scelta dell'utente, la sovrascriverebbe.
+  const hydratedFor = useRef<Editor | null>(null);
   useEffect(() => {
+    if (!editor || hydratedFor.current === editor) return;
+    hydratedFor.current = editor;
     void hydrate();
-  }, [hydrate]);
+  }, [editor, hydrate]);
 
   // Copia di sicurezza: scarica tutto in un file / ripristina da un file.
   const backupNow = async () => {
@@ -166,6 +190,11 @@ export function App() {
 
   // Cambia una o più impostazioni e le salva sul dispositivo.
   const savePrefs = (over: Partial<Omit<SettingsRow, "id">>) => {
+    if (!settingsLoaded.current) {
+      pendingPrefs.current = { ...pendingPrefs.current, ...over };
+      applyPrefs(over);
+      return;
+    }
     const next: SettingsRow = {
       id: "main",
       dictationLanguage: dictLang,
@@ -173,15 +202,12 @@ export function App() {
       cleanFillers,
       cleanRepeats,
       autoPeriod,
+      engine,
+      whisperModel,
       dictionary,
       ...over,
     };
-    setDictLang(next.dictationLanguage);
-    setUiLang(next.uiLanguage);
-    setCleanFillers(next.cleanFillers);
-    setCleanRepeats(next.cleanRepeats);
-    setAutoPeriod(next.autoPeriod);
-    setDictionary(next.dictionary);
+    applyPrefs(next);
     void saveSettings(next);
   };
   const savePrefsRef = useRef(savePrefs);
@@ -300,13 +326,13 @@ export function App() {
   const applyRef = useRef(applyTranscript);
   applyRef.current = applyTranscript;
 
-  // Il microfono si ricrea quando cambia la lingua.
-  const recRef = useRef<ReturnType<typeof createRecognizer> | null>(null);
+  // Il microfono si ricrea quando cambia la lingua o chi ascolta (browser / offline).
+  const recRef = useRef<Engine | null>(null);
   useEffect(() => {
     if (!supported) return;
     // Se la lingua cambia mentre si sta ascoltando, il vecchio microfono si spegne e quello nuovo riparte.
     let alive = true;
-    const rec = createRecognizer(VOICE_CODE[dictLang], {
+    const rec = createEngine(engine, dictLang, whisperModel, {
       onInterim: (t) => {
         if (!alive) return;
         setInterim(pausedRef.current ? "" : t);
@@ -320,7 +346,11 @@ export function App() {
       onState: (st) => {
         if (!alive) return;
         setState(st);
+        if (st !== "starting") setLoadPct(null);
         if (st === "idle") setPausedBoth(false);
+      },
+      onProgress: (pct) => {
+        if (alive) setLoadPct(pct);
       },
       onError: (e) => {
         if (alive) setError(e);
@@ -337,7 +367,7 @@ export function App() {
       rec.stop();
       if (recRef.current === rec) recRef.current = null;
     };
-  }, [supported, dictLang]);
+  }, [supported, dictLang, engine, whisperModel]);
 
   const toggle = () => {
     if (state === "idle") {
@@ -423,7 +453,7 @@ export function App() {
             <AlertTriangle size={20} aria-hidden="true" className="mt-0.5 shrink-0" />
             <div>
               <p className="font-semibold">{s.unsupportedTitle}</p>
-              <p className="text-sm">{s.unsupportedBody}</p>
+              <p className="text-sm">{engine === "offline" ? s.unsupportedOfflineBody : s.unsupportedBody}</p>
             </div>
           </div>
         )}
@@ -494,12 +524,12 @@ export function App() {
           {saveState === "saved" ? s.saved : saveState === "saving" ? s.saving : s.saveError}
         </p>
         <p className="pb-1 text-xs text-muted">{s.backupHint}</p>
-        <p className="pb-28 text-xs text-muted">{s.privacy}</p>
+        <p className="pb-28 text-xs text-muted">{engine === "offline" ? s.privacyOffline : s.privacy}</p>
       </main>
 
       <div className="fixed inset-x-0 bottom-0 flex flex-col items-center gap-2 border-t border-border bg-bg px-4 py-3">
         <p className="text-sm text-muted" role="status" aria-live="polite">
-          {paused ? s.paused : state === "listening" ? s.listening : state === "starting" ? s.starting : " "}
+          {paused ? s.paused : state === "listening" ? s.listening : state === "starting" ? (loadPct !== null ? s.loadingModel.replace("{pct}", String(loadPct)) : s.starting) : " "}
           {paused && (
             <button type="button" onClick={() => setPausedBoth(false)} className="ml-3 font-semibold text-accent underline">
               {s.resume}
@@ -540,7 +570,7 @@ export function App() {
         open={dialog === "settings"}
         onClose={() => setDialog(null)}
         s={s}
-        value={{ dictationLanguage: dictLang, uiLanguage: uiLang, cleanFillers, cleanRepeats, autoPeriod, dictionary }}
+        value={{ dictationLanguage: dictLang, uiLanguage: uiLang, cleanFillers, cleanRepeats, autoPeriod, engine, whisperModel, dictionary }}
         onChange={savePrefs}
         onBackup={backupNow}
         onRestore={restoreNow}

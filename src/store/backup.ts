@@ -70,6 +70,8 @@ export function parseBackup(json: string): ParsedBackup {
       cleanFillers: s.cleanFillers,
       cleanRepeats: s.cleanRepeats,
       autoPeriod: typeof s.autoPeriod === "boolean" ? s.autoPeriod : false,
+      engine: s.engine === "offline" ? "offline" : "browser",
+      whisperModel: s.whisperModel === "tiny" ? "tiny" : "base",
       dictionary: parseDictionary(JSON.stringify(s.dictionary)),
     };
   }

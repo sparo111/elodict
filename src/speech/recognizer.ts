@@ -2,13 +2,15 @@
 // Se il browser lo ferma da solo (pausa lunga), lo riavvia finché l'utente non preme Stop.
 
 export type RecognizerState = "idle" | "starting" | "listening";
-export type RecognizerError = "not-allowed" | "no-mic" | "no-speech" | "network" | "other";
+export type RecognizerError = "not-allowed" | "no-mic" | "no-speech" | "network" | "model" | "other";
 
-interface Handlers {
+export interface Handlers {
   onInterim: (text: string) => void;
   onFinal: (text: string) => void;
   onState: (s: RecognizerState) => void;
   onError: (e: RecognizerError) => void;
+  /** Solo per il riconoscimento offline: avanzamento del download del modello, da 0 a 100. */
+  onProgress?: (pct: number) => void;
 }
 
 // Tipi minimi: TypeScript non li include ancora tutti.

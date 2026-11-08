@@ -17,6 +17,8 @@ const settings: SettingsRow = {
   cleanFillers: true,
   cleanRepeats: false,
   autoPeriod: false,
+  engine: "browser",
+  whisperModel: "base",
   dictionary: [{ from: "a", to: "B" }],
 };
 
@@ -31,6 +33,8 @@ describe("copia di sicurezza", () => {
       cleanFillers: true,
       cleanRepeats: false,
       autoPeriod: false,
+      engine: "browser",
+      whisperModel: "base",
       dictionary: [{ from: "a", to: "B" }],
     });
   });
@@ -61,5 +65,19 @@ describe("copia di sicurezza", () => {
     const b = buildBackup(settings, [doc]) as unknown as { settings: Record<string, unknown> };
     delete b.settings.autoPeriod;
     expect(parseBackup(JSON.stringify(b)).settings?.autoPeriod).toBe(false);
+  });
+  it("le copie vecchie senza i campi del riconoscimento offline si importano con i valori di partenza", () => {
+    const b = buildBackup(settings, [doc]) as unknown as { settings: Record<string, unknown> };
+    delete b.settings.engine;
+    delete b.settings.whisperModel;
+    const back = parseBackup(JSON.stringify(b)).settings;
+    expect(back?.engine).toBe("browser");
+    expect(back?.whisperModel).toBe("base");
+  });
+  it("ricorda la scelta offline", () => {
+    const b = buildBackup({ ...settings, engine: "offline", whisperModel: "tiny" }, [doc]);
+    const back = parseBackup(JSON.stringify(b)).settings;
+    expect(back?.engine).toBe("offline");
+    expect(back?.whisperModel).toBe("tiny");
   });
 });

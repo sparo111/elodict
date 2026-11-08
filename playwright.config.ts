@@ -14,7 +14,7 @@ export default defineConfig({
     launchOptions: { args: ["--use-fake-device-for-media-stream", "--use-fake-ui-for-media-stream"] },
   },
   webServer: {
-    command: "npx vite --port 5199 --strictPort",
+    command: "node scripts/copy-ort.mjs && npx vite --port 5199 --strictPort",
     url: "http://localhost:5199",
     reuseExistingServer: true,
     timeout: 60_000,

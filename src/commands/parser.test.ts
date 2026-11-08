@@ -227,3 +227,17 @@ describe("selezione, elenchi, maiuscolo e aiuto a voce", () => {
     expect(run("it", "il maiuscolo non serve")).toBe("Il maiuscolo non serve");
   });
 });
+
+describe("punteggiatura attaccata alle parole (come la scrive Whisper)", () => {
+  it("riconosce i comandi anche se hanno un segno attaccato", () => {
+    expect(run("it", "ciao virgola, come stai")).toBe("Ciao, come stai");
+    expect(run("en", "Hello comma. world")).toBe("Hello, world");
+  });
+  it("i comandi a più parole funzionano con i segni attaccati", () => {
+    expect(run("it", "come stai punto interrogativo.")).toBe("Come stai?");
+    expect(run("fr", "ça va, point d'interrogation.")).toBe(`Ça va,${NBSP}?`);
+  });
+  it("le parole normali tengono il loro segno", () => {
+    expect(run("it", "Ciao, mondo.")).toBe("Ciao, mondo.");
+  });
+});

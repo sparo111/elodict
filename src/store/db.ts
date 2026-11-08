@@ -20,6 +20,8 @@ export interface SettingsRow {
   cleanFillers: boolean;   // toglie "ehm", "uhm"
   cleanRepeats: boolean;   // toglie le parole ripetute di fila
   autoPeriod: boolean;     // aggiunge il punto dopo ogni pausa
+  engine: "browser" | "offline"; // chi ascolta: il browser o il modello offline
+  whisperModel: "tiny" | "base"; // quale modello offline
   dictionary: DictEntry[]; // dizionario personale
 }
 
@@ -47,6 +49,8 @@ export async function loadSettings(): Promise<SettingsRow> {
     cleanFillers: true,
     cleanRepeats: false,
     autoPeriod: false,
+    engine: "browser",
+    whisperModel: "base",
     dictionary: [],
   };
   try {

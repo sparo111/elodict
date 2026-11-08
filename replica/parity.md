@@ -1,10 +1,10 @@
 # Parità: mia-dictate contro Dictate (Microsoft 365)
 
-Aggiornato: 2026-11-08 (dopo le idee dai concorrenti GitHub). Storia: 43,1 → 52,9 → 58,8 → **62,7**.
+Aggiornato: 2026-11-08 (dopo le idee dai concorrenti GitHub). Storia: 43,1 → 52,9 → 58,8 → 62,7 → **72,5**.
 
 ## Verdetto: quasi pubblicabile, ma sotto la soglia
-Punteggio funzioni: **62,7 / 100**. **Tutte le 8 funzioni obbligatorie sono complete.** Difetti gravi (S1/S2) aperti: nessuno (vedi `bugs.md`).
-Per essere "pubblicabile" servono tutte le obbligatorie (fatto) **e** un punteggio di almeno 80 (manca).
+Punteggio funzioni: **72,5 / 100**. **Tutte le 8 funzioni obbligatorie sono complete.** Difetti gravi (S1/S2) aperti: nessuno (vedi `bugs.md`).
+Per essere "pubblicabile" servono tutte le obbligatorie (fatto) **e** un punteggio di almeno 80 (mancano circa 8 punti: soprattutto punteggiatura automatica vera, scelta del microfono e poche funzioni facoltative).
 
 Il punteggio pesa obbligatorie x3, consigliate x2, facoltative x1, conta le "a metà" come metà, e lascia fuori le funzioni non clonabili e quelle che ho aggiunto io (editor indipendente, esportazioni, email, ecc.: vedi sotto). Per questo il numero è più basso di quanto l'app valga per te: dentro ci sono molti comandi vocali di Microsoft facoltativi.
 
@@ -18,8 +18,8 @@ Il punteggio pesa obbligatorie x3, consigliate x2, facoltative x1, conta le "a m
 | qualità (parole dubbie) | 0 | facoltativo |
 | piattaforma / mobile | 0 | facoltativo |
 | impostazioni | 37,5 | c'è la lingua; mancano microfono, punteggiatura automatica, filtro parolacce |
-| aiuto | 50 | elenco comandi ok; manca il comando vocale "mostra comandi" |
-| comandi | 55 | fatti: punteggiatura, simboli, annulla, cancella (anche N e da X a Y), formattazione base; mancano selezione, maiuscolo, liste, emoji, tabelle, commenti |
+| aiuto | 100 | elenco comandi e "mostra comandi" a voce |
+| comandi | 70 | fatti: punteggiatura, simboli, annulla, cancella (anche N e da X a Y), formattazione base; mancano selezione, maiuscolo, liste, emoji, tabelle, commenti |
 | lingue | 100 | 4 lingue complete, cambio lingua al volo (barra e a voce) |
 | errori | 75 | |
 | core | 100 | |
@@ -29,14 +29,14 @@ Il punteggio pesa obbligatorie x3, consigliate x2, facoltative x1, conta le "a m
 | --- | --- | --- | --- |
 | Avviare la dettatura | Home > Dictate (2 passi), serve Microsoft 365 | 1 clic, nessun account, gratis | tenere: meglio |
 | Comandi di modifica/formattazione | solo in inglese | 4 lingue (parole nostre) | tenere |
-| Punteggiatura automatica | sì (alcune lingue) | no | da fare |
+| Punteggiatura automatica | sì (alcune lingue) | solo una regola semplice, facoltativa | da migliorare |
 | Pausa/ripresa a voce | sì | sì (4 lingue) | fatto |
-| Selezione a voce | sì (inglese) | no | da fare |
+| Selezione a voce | sì (inglese) | sì, base, in 4 lingue | fatto in parte |
 | Dove funziona | dentro Word/Outlook/ecc. | qualsiasi browser, 5 formati di file | tenere: scelta del prodotto |
 | Privacy audio | Microsoft dichiara di non salvare audio e testo | l'audio passa dal servizio del browser (Google su Chrome); il testo resta sul dispositivo | dichiarato nell'app |
 
 ## Cose nostre, non nell'originale (non contano nel punteggio)
-Editor indipendente · esporta Word/PDF/Markdown/testo/web con nome e cartella a scelta · invio email / condividi file · salvataggio automatico · barra con icone · casella "prova senza microfono" · 4 lingue di interfaccia.
+Riconoscimento offline con Whisper (anche su Firefox, audio che resta sul dispositivo) · copia di sicurezza · editor indipendente · esporta Word/PDF/Markdown/testo/web con nome e cartella a scelta · invio email / condividi file · salvataggio automatico · barra con icone · casella "prova senza microfono" · 4 lingue di interfaccia.
 
 ## I 5 passi successivi, in ordine
 1. Selezione a voce ("seleziona frase", "seleziona da X a Y") e maiuscolo/minuscolo.

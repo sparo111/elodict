@@ -36,3 +36,14 @@ S1: 1 (corretto) · S2: 0 · S3: 2 (corretti) · S4: 0 · aperti: 0
 
 ## Aggiornamento riepilogo
 S1: 1 · S2: 0 · S3: 2 · S4: 1 — tutti corretti, nessuno aperto.
+
+## BUG-005 — S3 — Scegliere la lingua subito dopo l'apertura poteva essere annullato (e cancellare il dizionario)  (CORRETTO)
+- **Passi:** aprire l'app e cambiare lingua prima che le impostazioni salvate siano state lette (pochi decimi di secondo, di più con il computer carico).
+- **Atteso:** la lingua scelta vale. **Ottenuto:** tornava la lingua di prima; e se la scelta veniva salvata in quel momento, il dizionario personale salvato veniva sostituito da uno vuoto.
+- **Come l'ho trovato:** una prova su telefono (CAPS-H4) falliva a volte, solo quando il computer era carico (c'erano in corso anche le prove con Whisper).
+- **Causa:** (1) in sviluppo React avvia due volte il caricamento iniziale e il secondo, arrivando dopo la scelta, la sovrascriveva; (2) le scelte fatte prima del caricamento venivano salvate sopra i dati vecchi invece che accanto.
+- **Prova:** `e2e/f09-gara-impostazioni.spec.ts` (ritarda di proposito l'apertura del database di 1,5 s): fallisce senza la correzione, passa con.
+- **Correzione:** il caricamento iniziale parte una volta sola; le scelte fatte prima si ricordano e si applicano dopo, sopra le impostazioni lette.
+
+## Riepilogo aggiornato
+S1: 1 · S2: 0 · S3: 3 · S4: 1 — tutti corretti, nessuno aperto.
