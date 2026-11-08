@@ -91,6 +91,11 @@ export function SettingsDialog({ open, onClose, s, value, onChange, onBackup, on
             <input type="checkbox" className={check} checked={value.cleanRepeats} onChange={(e) => onChange({ cleanRepeats: e.target.checked })} />
             {s.cleanRepeats}
           </label>
+          <label className="flex items-center gap-3 text-sm">
+            <input type="checkbox" className={check} checked={value.autoPeriod} onChange={(e) => onChange({ autoPeriod: e.target.checked })} />
+            {s.autoPeriod}
+          </label>
+          <p className="text-xs text-muted">{s.autoPeriodNote}</p>
         </fieldset>
 
         <section className="flex flex-col gap-2 border-t border-border pt-4" aria-labelledby="dict-title">
@@ -174,7 +179,11 @@ function describe(a: CommandAction, s: Strings): string {
     case "format":
       return `${s.fmtMark[a.mark]} · ${s.fmtTarget[a.target]}`;
     case "control":
-      return a.op === "pause" ? s.dPause : a.op === "resume" ? s.dResume : a.op === "switchLang" ? `${s.dSwitchTo} ${LANG_NAME[a.lang]}` : s.dStopDict;
+      return a.op === "pause" ? s.dPause : a.op === "resume" ? s.dResume : a.op === "switchLang" ? `${s.dSwitchTo} ${LANG_NAME[a.lang]}` : a.op === "showHelp" ? s.dShowHelp : s.dStopDict;
+    case "list":
+      return a.kind === "bullet" ? s.dListBullet : a.kind === "ordered" ? s.dListOrdered : s.dListExit;
+    case "select":
+      return a.target === "all" ? s.dSelectAll : a.target === "word" ? s.dSelectWord : a.target === "sentence" ? s.dSelectSentence : s.dDeselect;
     case "break":
       return a.paragraph ? s.dNewParagraph : s.dNewLine;
     case "edit":

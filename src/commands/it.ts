@@ -45,8 +45,17 @@ export const itCommands: CommandDef[] = [
   { phrases: ["passa all'inglese", "passa a inglese"], action: { type: "control", op: "switchLang", lang: "en" } },
   { phrases: ["passa al francese", "passa a francese"], action: { type: "control", op: "switchLang", lang: "fr" } },
   { phrases: ["passa allo spagnolo", "passa a spagnolo"], action: { type: "control", op: "switchLang", lang: "es" } },
+  { phrases: ["mostra comandi", "mostra i comandi"], action: { type: "control", op: "showHelp" } },
+  { phrases: ["elenco puntato"], action: { type: "list", kind: "bullet" } },
+  { phrases: ["elenco numerato"], action: { type: "list", kind: "ordered" } },
+  { phrases: ["esci dall'elenco", "fine elenco"], action: { type: "list", kind: "exit" } },
+  { phrases: ["voce successiva"], action: { type: "break", paragraph: true } },
+  { phrases: ["seleziona tutto"], action: { type: "select", target: "all" } },
+  { phrases: ["seleziona ultima parola"], action: { type: "select", target: "word" } },
+  { phrases: ["seleziona ultima frase"], action: { type: "select", target: "sentence" } },
+  { phrases: ["deseleziona"], action: { type: "select", target: "none" } },
   ...formatCommands(
-    { bold: ["grassetto"], italic: ["corsivo"], underline: ["sottolineato"], clear: ["rimuovi formattazione"] },
+    { bold: ["grassetto"], italic: ["corsivo"], underline: ["sottolineato"], clear: ["rimuovi formattazione"], upper: ["maiuscolo"], lower: ["minuscolo"] },
     { that: ["questo"], word: ["ultima parola"], sentence: ["ultima frase"] },
   ),
 ];

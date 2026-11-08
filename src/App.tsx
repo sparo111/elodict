@@ -41,6 +41,21 @@ function textBefore(editor: Editor): string {
   return $from.parent.textBetween(0, $from.parentOffset, "\n", "\n").slice(-400);
 }
 
+/** Cambia le maiuscole di un tratto di testo senza perdere grassetto, corsivo ecc. */
+function transformRange(editor: Editor, range: { from: number; to: number }, fn: (t: string) => string) {
+  const { state } = editor;
+  const pieces: { start: number; end: number; text: string; marks: readonly import("@tiptap/pm/model").Mark[] }[] = [];
+  state.doc.nodesBetween(range.from, range.to, (node, pos) => {
+    if (!node.isText || !node.text) return;
+    const start = Math.max(range.from, pos);
+    const end = Math.min(range.to, pos + node.nodeSize);
+    pieces.push({ start, end, text: node.text.slice(start - pos, end - pos), marks: node.marks });
+  });
+  const tr = state.tr;
+  for (const p of pieces.reverse()) tr.replaceWith(p.start, p.end, state.schema.text(fn(p.text), p.marks));
+  editor.view.dispatch(tr);
+}
+
 export function App() {
   const supported = isSpeechSupported();
   const [dictLang, setDictLang] = useState<Lang>(defaultLang());
@@ -48,6 +63,7 @@ export function App() {
   const s = strings[uiLang];
   const [cleanFillers, setCleanFillers] = useState(true);
   const [cleanRepeats, setCleanRepeats] = useState(false);
+  const [autoPeriod, setAutoPeriod] = useState(false);
   const [dictionary, setDictionary] = useState<DictEntry[]>([]);
   const [paused, setPaused] = useState(false);
   const pausedRef = useRef(false);
@@ -112,6 +128,7 @@ export function App() {
     setUiLang(settings.uiLanguage);
     setCleanFillers(settings.cleanFillers);
     setCleanRepeats(settings.cleanRepeats);
+    setAutoPeriod(settings.autoPeriod);
     setDictionary(settings.dictionary);
     if (last) {
       docId.current = last.id;
@@ -155,6 +172,7 @@ export function App() {
       uiLanguage: uiLang,
       cleanFillers,
       cleanRepeats,
+      autoPeriod,
       dictionary,
       ...over,
     };
@@ -162,6 +180,7 @@ export function App() {
     setUiLang(next.uiLanguage);
     setCleanFillers(next.cleanFillers);
     setCleanRepeats(next.cleanRepeats);
+    setAutoPeriod(next.autoPeriod);
     setDictionary(next.dictionary);
     void saveSettings(next);
   };
@@ -195,7 +214,14 @@ export function App() {
             if (a.op === "pause") setPausedBoth(true);
             else if (a.op === "resume") setPausedBoth(false);
             else if (a.op === "switchLang") savePrefsRef.current({ dictationLanguage: a.lang });
+            else if (a.op === "showHelp") setDialog("help");
             else recRef.current?.stop();
+            continue;
+          }
+          if (a.type === "list") {
+            if (a.kind === "bullet") editor.chain().focus().toggleBulletList().run();
+            else if (a.kind === "ordered") editor.chain().focus().toggleOrderedList().run();
+            else if (!editor.chain().focus().liftListItem("listItem").run()) editor.chain().focus().clearNodes().run();
             continue;
           }
           const before = textBefore(editor);
@@ -203,7 +229,14 @@ export function App() {
           // Converte una posizione nella stringa `before` in una posizione nel documento.
           const abs = (i: number) => pos - (before.length - i);
 
-          if (a.type === "edit") {
+          if (a.type === "select") {
+            if (a.target === "all") editor.chain().focus().selectAll().run();
+            else if (a.target === "none") editor.chain().focus().setTextSelection(editor.state.selection.to).run();
+            else {
+              const r = rangeOfLast(before, a.target);
+              if (r) editor.chain().focus().setTextSelection({ from: abs(r.start), to: abs(r.end) }).run();
+            }
+          } else if (a.type === "edit") {
             if (a.op === "undo") {
               editor.chain().focus().undo().run();
             } else if (a.op === "deleteRange") {
@@ -227,9 +260,13 @@ export function App() {
               range = { from: range.from + (t.length - t.trimStart().length), to: range.to - (t.length - t.trimEnd().length) };
             }
             if (range && range.to > range.from) {
-              const c = editor.chain().focus().setTextSelection(range);
-              if (a.mark === "clear") c.unsetAllMarks().setTextSelection(pos).run();
-              else c.setMark(a.mark).setTextSelection(pos).unsetMark(a.mark).run();
+              if (a.mark === "upper" || a.mark === "lower") {
+                transformRange(editor, range, a.mark === "upper" ? (t) => t.toUpperCase() : (t) => t.toLowerCase());
+              } else {
+                const c = editor.chain().focus().setTextSelection(range);
+                if (a.mark === "clear") c.unsetAllMarks().setTextSelection(pos).run();
+                else c.setMark(a.mark).setTextSelection(pos).unsetMark(a.mark).run();
+              }
             }
           }
           continue;
@@ -237,17 +274,27 @@ export function App() {
 
         // Un pezzo alla volta: se un comando non può essere eseguito, gli altri restano validi.
         const startPos = editor.state.selection.from;
-        for (const seg of compose(step.tokens, textBefore(editor))) {
+        const segs = compose(step.tokens, textBefore(editor));
+        // Punto automatico (facoltativo): solo se la frase finisce con una parola.
+        if (autoPeriod && step.tokens[step.tokens.length - 1]?.kind === "word") {
+          const lastSeg = segs[segs.length - 1];
+          if (lastSeg && lastSeg.kind === "text") lastSeg.text += ".";
+          else segs.push({ kind: "text", text: "." });
+        }
+        for (const seg of segs) {
           const c = editor.chain().focus();
           if (seg.kind === "text") c.insertContent(seg.text).run();
-          else if (seg.paragraph) c.splitBlock().run();
-          else c.setHardBreak().run();
+          else if (seg.paragraph) {
+            // dentro un elenco "nuovo paragrafo" crea la voce successiva
+            if (editor.isActive("listItem")) c.splitListItem("listItem").run();
+            else c.splitBlock().run();
+          } else c.setHardBreak().run();
         }
         const endPos = editor.state.selection.to;
         if (endPos > startPos) lastInsert.current = { from: startPos, to: endPos };
       }
     },
-    [editor, dictLang, cleanFillers, cleanRepeats, dictionary],
+    [editor, dictLang, cleanFillers, cleanRepeats, autoPeriod, dictionary],
   );
 
   const applyRef = useRef(applyTranscript);
@@ -493,7 +540,7 @@ export function App() {
         open={dialog === "settings"}
         onClose={() => setDialog(null)}
         s={s}
-        value={{ dictationLanguage: dictLang, uiLanguage: uiLang, cleanFillers, cleanRepeats, dictionary }}
+        value={{ dictationLanguage: dictLang, uiLanguage: uiLang, cleanFillers, cleanRepeats, autoPeriod, dictionary }}
         onChange={savePrefs}
         onBackup={backupNow}
         onRestore={restoreNow}

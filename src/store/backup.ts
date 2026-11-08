@@ -69,6 +69,7 @@ export function parseBackup(json: string): ParsedBackup {
       uiLanguage: s.uiLanguage,
       cleanFillers: s.cleanFillers,
       cleanRepeats: s.cleanRepeats,
+      autoPeriod: typeof s.autoPeriod === "boolean" ? s.autoPeriod : false,
       dictionary: parseDictionary(JSON.stringify(s.dictionary)),
     };
   }

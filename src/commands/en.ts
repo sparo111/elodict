@@ -46,8 +46,17 @@ export const enCommands: CommandDef[] = [
   { phrases: ["switch to english"], action: { type: "control", op: "switchLang", lang: "en" } },
   { phrases: ["switch to french"], action: { type: "control", op: "switchLang", lang: "fr" } },
   { phrases: ["switch to spanish"], action: { type: "control", op: "switchLang", lang: "es" } },
+  { phrases: ["show commands"], action: { type: "control", op: "showHelp" } },
+  { phrases: ["bullet list"], action: { type: "list", kind: "bullet" } },
+  { phrases: ["numbered list"], action: { type: "list", kind: "ordered" } },
+  { phrases: ["exit list"], action: { type: "list", kind: "exit" } },
+  { phrases: ["next item"], action: { type: "break", paragraph: true } },
+  { phrases: ["select all"], action: { type: "select", target: "all" } },
+  { phrases: ["select last word"], action: { type: "select", target: "word" } },
+  { phrases: ["select last sentence"], action: { type: "select", target: "sentence" } },
+  { phrases: ["unselect", "deselect"], action: { type: "select", target: "none" } },
   ...formatCommands(
-    { bold: ["bold"], italic: ["italicize", "italics"], underline: ["underline"], clear: ["clear formatting"] },
+    { bold: ["bold"], italic: ["italicize", "italics"], underline: ["underline"], clear: ["clear formatting"], upper: ["uppercase"], lower: ["lowercase"] },
     { that: ["that"], word: ["last word"], sentence: ["last sentence"] },
   ),
 ];

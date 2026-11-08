@@ -47,8 +47,17 @@ export const esCommands: CommandDef[] = [
   { phrases: ["cambia a inglés", "cambia a ingles"], action: { type: "control", op: "switchLang", lang: "en" } },
   { phrases: ["cambia a francés", "cambia a frances"], action: { type: "control", op: "switchLang", lang: "fr" } },
   { phrases: ["cambia a español", "cambia a espanol"], action: { type: "control", op: "switchLang", lang: "es" } },
+  { phrases: ["muestra comandos", "mostrar comandos"], action: { type: "control", op: "showHelp" } },
+  { phrases: ["lista con viñetas"], action: { type: "list", kind: "bullet" } },
+  { phrases: ["lista numerada"], action: { type: "list", kind: "ordered" } },
+  { phrases: ["salir de la lista", "fin de lista"], action: { type: "list", kind: "exit" } },
+  { phrases: ["siguiente elemento"], action: { type: "break", paragraph: true } },
+  { phrases: ["selecciona todo"], action: { type: "select", target: "all" } },
+  { phrases: ["selecciona última palabra"], action: { type: "select", target: "word" } },
+  { phrases: ["selecciona última frase"], action: { type: "select", target: "sentence" } },
+  { phrases: ["deselecciona"], action: { type: "select", target: "none" } },
   ...formatCommands(
-    { bold: ["negrita"], italic: ["cursiva"], underline: ["subrayado"], clear: ["quitar formato"] },
+    { bold: ["negrita"], italic: ["cursiva"], underline: ["subrayado"], clear: ["quitar formato"], upper: ["mayúsculas"], lower: ["minúsculas"] },
     { that: ["eso", "esto"], word: ["última palabra"], sentence: ["última frase"] },
   ),
 ];

@@ -16,6 +16,7 @@ const settings: SettingsRow = {
   uiLanguage: "it",
   cleanFillers: true,
   cleanRepeats: false,
+  autoPeriod: false,
   dictionary: [{ from: "a", to: "B" }],
 };
 
@@ -29,6 +30,7 @@ describe("copia di sicurezza", () => {
       uiLanguage: "it",
       cleanFillers: true,
       cleanRepeats: false,
+      autoPeriod: false,
       dictionary: [{ from: "a", to: "B" }],
     });
   });
@@ -54,5 +56,10 @@ describe("copia di sicurezza", () => {
   it("limita il numero di documenti", () => {
     const many = Array.from({ length: 201 }, (_, i) => ({ ...doc, id: `d${i}` }));
     expect(() => parseBackup(JSON.stringify(buildBackup(settings, many)))).toThrow();
+  });
+  it("le copie vecchie senza il punto automatico si importano lo stesso", () => {
+    const b = buildBackup(settings, [doc]) as unknown as { settings: Record<string, unknown> };
+    delete b.settings.autoPeriod;
+    expect(parseBackup(JSON.stringify(b)).settings?.autoPeriod).toBe(false);
   });
 });

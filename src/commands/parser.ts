@@ -43,7 +43,7 @@ export function splitSteps(tokens: Token[]): Step[] {
     run = [];
   };
   for (const t of tokens) {
-    if (t.kind === "cmd" && (t.action.type === "edit" || t.action.type === "format" || t.action.type === "control")) {
+    if (t.kind === "cmd" && (t.action.type === "edit" || t.action.type === "format" || t.action.type === "control" || t.action.type === "list" || t.action.type === "select")) {
       flush();
       steps.push({ kind: "act", action: t.action });
     } else run.push(t);

@@ -189,3 +189,41 @@ describe("cambio lingua a voce", () => {
     expect(run("it", "passa di qui")).toBe("Passa di qui");
   });
 });
+
+describe("selezione, elenchi, maiuscolo e aiuto a voce", () => {
+  const one = (lang: Lang, t: string) => {
+    const steps = parseTranscript(t, COMMANDS[lang], SYNTAX[lang]);
+    return steps.length === 1 && steps[0].kind === "act" ? steps[0].action : steps;
+  };
+  it("seleziona tutto / ultima parola / ultima frase / togli la selezione", () => {
+    expect(one("it", "seleziona tutto")).toEqual({ type: "select", target: "all" });
+    expect(one("it", "seleziona ultima parola")).toEqual({ type: "select", target: "word" });
+    expect(one("en", "select last sentence")).toEqual({ type: "select", target: "sentence" });
+    expect(one("fr", "désélectionne")).toEqual({ type: "select", target: "none" });
+    expect(one("es", "selecciona todo")).toEqual({ type: "select", target: "all" });
+  });
+  it("elenchi in 4 lingue", () => {
+    expect(one("it", "elenco puntato")).toEqual({ type: "list", kind: "bullet" });
+    expect(one("it", "esci dall'elenco")).toEqual({ type: "list", kind: "exit" });
+    expect(one("en", "numbered list")).toEqual({ type: "list", kind: "ordered" });
+    expect(one("fr", "liste à puces")).toEqual({ type: "list", kind: "bullet" });
+    expect(one("es", "salir de la lista")).toEqual({ type: "list", kind: "exit" });
+  });
+  it("maiuscolo e minuscolo", () => {
+    expect(one("it", "maiuscolo ultima parola")).toEqual({ type: "format", mark: "upper", target: "word" });
+    expect(one("en", "lowercase last sentence")).toEqual({ type: "format", mark: "lower", target: "sentence" });
+    expect(one("fr", "majuscules cela")).toEqual({ type: "format", mark: "upper", target: "that" });
+    expect(one("es", "minúsculas última frase")).toEqual({ type: "format", mark: "lower", target: "sentence" });
+  });
+  it("mostra comandi in 4 lingue", () => {
+    for (const [lang, t] of [["it", "mostra comandi"], ["en", "show commands"], ["fr", "affiche les commandes"], ["es", "muestra comandos"]] as const) {
+      expect(one(lang, t)).toEqual({ type: "control", op: "showHelp" });
+    }
+  });
+  it("la voce successiva di un elenco è un nuovo paragrafo", () => {
+    expect(run("it", "uno voce successiva due")).toBe("Uno¶Due");
+  });
+  it("le parole normali restano testo", () => {
+    expect(run("it", "il maiuscolo non serve")).toBe("Il maiuscolo non serve");
+  });
+});

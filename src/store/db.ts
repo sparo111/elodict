@@ -19,6 +19,7 @@ export interface SettingsRow {
   uiLanguage: Lang;
   cleanFillers: boolean;   // toglie "ehm", "uhm"
   cleanRepeats: boolean;   // toglie le parole ripetute di fila
+  autoPeriod: boolean;     // aggiunge il punto dopo ogni pausa
   dictionary: DictEntry[]; // dizionario personale
 }
 
@@ -45,6 +46,7 @@ export async function loadSettings(): Promise<SettingsRow> {
     uiLanguage: defaultLang(),
     cleanFillers: true,
     cleanRepeats: false,
+    autoPeriod: false,
     dictionary: [],
   };
   try {

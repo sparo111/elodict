@@ -3,23 +3,23 @@ Pulsante Dictate avvia/ferma,core,must,yes,yes,M1: tasto Detta/Ferma
 Testo dettato appare nell'editor,core,must,yes,yes,M1
 Scelta lingua di dettatura,impostazioni,must,yes,yes,"M2: impostazioni, salvata nel browser"
 Scelta microfono,impostazioni,should,yes,no,non possibile con il riconoscimento del browser (usa il microfono di sistema); possibile solo con Whisper nel browser
-Punteggiatura automatica (toggle),impostazioni,should,yes,no,solo per alcune lingue nell'originale
+Punteggiatura automatica (toggle),impostazioni,should,yes,partial,regola semplice (facoltativa): punto dopo ogni pausa; non riconosce domande/esclamazioni da sola
 Filtro parolacce con ***,impostazioni,could,yes,no,
 Comandi punteggiatura (punto/virgola/punto interrogativo/a capo),comandi,must,yes,yes,M2: EN IT FR ES + parentesi e virgolette; ¿ ¡ in spagnolo; spazio prima di ? ! : ; in francese
 Comandi simboli/valuta/matematica,comandi,could,yes,yes,@ & # * % ° + - × ÷ = $ £ € ¥ _ / in 4 lingue
 Comandi emoji (smiley ecc.),comandi,could,yes,no,
 Comando annulla (undo),comandi,must,yes,yes,M2: comandi nostri in 4 lingue
 Comandi cancella (delete that / ultima parola / ultima frase),comandi,must,yes,yes,"cancella parola/frase, 'cancella N parole/frasi', 'cancella da X a Y' in 4 lingue"
-Comandi seleziona (parola/frase/paragrafo/da X a Y),comandi,should,yes,no,
+Comandi seleziona (parola/frase/paragrafo/da X a Y),comandi,should,yes,partial,seleziona tutto / ultima parola / ultima frase / deseleziona in 4 lingue; mancano paragrafo e 'da X a Y'
 Comandi navigazione (vai a fine frase/paragrafo),comandi,could,yes,no,web
-Comandi formattazione (grassetto/corsivo/sottolineato/maiuscolo),comandi,should,yes,partial,"grassetto, corsivo, sottolineato, rimuovi formattazione su 'questo / ultima parola / ultima frase'; mancano maiuscolo/minuscolo"
+Comandi formattazione (grassetto/corsivo/sottolineato/maiuscolo),comandi,should,yes,yes,"grassetto, corsivo, sottolineato, maiuscolo, minuscolo, rimuovi formattazione su 'questo / ultima parola / ultima frase'"
 Comandi allineamento e rientro,comandi,could,yes,no,
-Comandi elenco puntato/numerato,comandi,could,yes,no,
+Comandi elenco puntato/numerato,comandi,could,yes,yes,"elenco puntato, elenco numerato, voce successiva, esci dall'elenco in 4 lingue"
 Comandi tabelle,comandi,could,yes-web,no,solo web nell'originale
 Comando aggiungi commento,comandi,could,yes,no,
 Pausa/ripresa dettatura (pause/resume dictation),controllo,should,yes,yes,a voce in 4 lingue + pulsante Riprendi; in pausa ascolta solo riprendi/ferma
 Scorciatoia da tastiera per avviare,controllo,could,yes,yes,"Alt+Maiusc+D avvia/ferma, Esc ferma"
-Pannello aiuto comandi (show commands),aiuto,should,yes,partial,M2: pulsante Aiuto con elenco; manca il comando vocale 'mostra comandi'
+Pannello aiuto comandi (show commands),aiuto,should,yes,yes,pulsante Aiuto + comando vocale 'mostra comandi' in 4 lingue
 Messaggi d'errore microfono (3 tipi),errori,must,yes,yes,"M1: bloccato, non trovato, non ti sento, rete, altro"
 Stato disattivato se documento in sola lettura,errori,could,yes,no,
 Evidenziazione parole dubbie + Ignore,qualità,could,yes-web,no,S07

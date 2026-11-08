@@ -45,8 +45,17 @@ export const frCommands: CommandDef[] = [
   { phrases: ["passe en anglais"], action: { type: "control", op: "switchLang", lang: "en" } },
   { phrases: ["passe en français", "passe en francais"], action: { type: "control", op: "switchLang", lang: "fr" } },
   { phrases: ["passe en espagnol"], action: { type: "control", op: "switchLang", lang: "es" } },
+  { phrases: ["affiche les commandes", "montre les commandes"], action: { type: "control", op: "showHelp" } },
+  { phrases: ["liste à puces"], action: { type: "list", kind: "bullet" } },
+  { phrases: ["liste numérotée"], action: { type: "list", kind: "ordered" } },
+  { phrases: ["sortir de la liste", "fin de liste"], action: { type: "list", kind: "exit" } },
+  { phrases: ["élément suivant"], action: { type: "break", paragraph: true } },
+  { phrases: ["sélectionne tout"], action: { type: "select", target: "all" } },
+  { phrases: ["sélectionne dernier mot"], action: { type: "select", target: "word" } },
+  { phrases: ["sélectionne dernière phrase"], action: { type: "select", target: "sentence" } },
+  { phrases: ["désélectionne"], action: { type: "select", target: "none" } },
   ...formatCommands(
-    { bold: ["gras"], italic: ["italique"], underline: ["souligné"], clear: ["efface la mise en forme"] },
+    { bold: ["gras"], italic: ["italique"], underline: ["souligné"], clear: ["efface la mise en forme"], upper: ["majuscules"], lower: ["minuscules"] },
     { that: ["cela", "ça"], word: ["dernier mot"], sentence: ["dernière phrase"] },
   ),
 ];
