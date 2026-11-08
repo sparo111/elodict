@@ -4,6 +4,9 @@
 import { Extension } from "@tiptap/core";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
+import { collectLines, LineCache, type Line } from "./measure";
+
+export type { Line };
 
 /** Misure in pixel a 96 per pollice: un A4 è 210 × 297 mm = 794 × 1123 px. */
 export const PAGE = {
@@ -17,11 +20,6 @@ export const PAGE = {
 export const PAGE_PITCH = PAGE.height + PAGE.gap;
 export const PAGE_CONTENT_HEIGHT = PAGE.height - PAGE.marginTop - PAGE.marginBottom;
 
-export interface Line {
-  top: number;     // in coordinate del documento, senza spazi di pagina
-  bottom: number;
-  pos: number;     // posizione nel documento dove inizia la riga
-}
 export interface Spacer {
   pos: number;
   height: number;
@@ -62,50 +60,6 @@ export interface PageLayoutOptions {
 
 const key = new PluginKey<DecorationSet>("pageLayout");
 
-type Box = { top: number; bottom: number; pos: number };
-
-/**
- * Le righe di un blocco, nelle misure vere del foglio (senza lo zoom), con la posizione nel documento dove inizia ciascuna.
- * Si scorre parola per parola: così funziona anche per le righe fuori dallo schermo.
- */
-function textLines(
-  el: Element,
-  lineHeight: number,
-  scale: number,
-  rootTop: number,
-  posAt: (node: Node, offset: number) => number | null,
-): Box[] {
-  const lines: Box[] = [];
-  const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
-  for (let n = walker.nextNode(); n; n = walker.nextNode()) {
-    const text = n.nodeValue ?? "";
-    const range = document.createRange();
-    for (const m of text.matchAll(/\S+\s*/g)) {
-      const start = m.index ?? 0;
-      range.setStart(n, start);
-      range.setEnd(n, Math.min(text.length, start + m[0].length));
-      const r = range.getClientRects()[0];
-      if (!r || (r.width === 0 && r.height === 0)) continue;
-      // tutto in misure vere: lo schermo può essere rimpicciolito dallo zoom
-      const rTop = (r.top - rootTop) / scale;
-      const rBottom = (r.bottom - rootTop) / scale;
-      const rHeight = rBottom - rTop;
-      const half = Math.max(0, (lineHeight - rHeight) / 2); // il rettangolo del testo è più basso della riga
-      const top = rTop - half;
-      const bottom = rBottom + half;
-      const last = lines[lines.length - 1];
-      if (last && rTop < last.bottom - rHeight * 0.5) {
-        last.top = Math.min(last.top, top);
-        last.bottom = Math.max(last.bottom, bottom);
-      } else {
-        const pos = posAt(n, start);
-        if (pos !== null) lines.push({ top, bottom, pos });
-      }
-    }
-  }
-  return lines;
-}
-
 export const PageLayout = Extension.create<PageLayoutOptions>({
   name: "pageLayout",
 
@@ -132,43 +86,19 @@ export const PageLayout = Extension.create<PageLayoutOptions>({
           let raf = 0;
           let lastSignature = "";
           let lastPages = 0;
+          const cache = new LineCache(); // righe già misurate, per blocco: si rimisura solo ciò che cambia
 
           const run = () => {
             const root = view.dom as HTMLElement;
             if (!root.isConnected) return;
+            const t0 = performance.now();
             const scale = opts.getScale() || 1;
 
             // si misura con gli spazi nascosti: così le posizioni sono quelle "naturali"
             root.classList.add("pg-measure");
-            const rootTop = root.getBoundingClientRect().top;
-            const lines: Line[] = [];
-            root.querySelectorAll("p, h1, h2, h3, h4, h5, h6").forEach((el) => {
-              const cs = getComputedStyle(el);
-              const lh = parseFloat(cs.lineHeight) || 24;
-              const found = textLines(el, lh, scale, rootTop, (node, offset) => {
-                try {
-                  return view.posAtDOM(node, offset);
-                } catch {
-                  return null;
-                }
-              });
-              if (found.length === 0) {
-                // blocco vuoto: una riga sola, grande quanto il blocco
-                const r = el.getBoundingClientRect();
-                let pos: number | null = null;
-                try {
-                  pos = view.posAtDOM(el, 0);
-                } catch {
-                  pos = null;
-                }
-                if (pos !== null) lines.push({ top: (r.top - rootTop) / scale, bottom: (r.bottom - rootTop) / scale, pos });
-                return;
-              }
-              for (const b of found) lines.push({ top: b.top, bottom: b.bottom, pos: b.pos });
-            });
+            const lines = collectLines(view, scale, cache);
             root.classList.remove("pg-measure");
 
-            lines.sort((a, b) => a.top - b.top);
             const { spacers, pages } = planPages(lines);
 
             const signature = spacers.map((s) => `${s.pos}:${Math.round(s.height)}`).join("|");
@@ -189,6 +119,8 @@ export const PageLayout = Extension.create<PageLayoutOptions>({
               lastPages = pages;
               opts.onPages(pages);
             }
+            // misura del tempo speso a impaginare (la leggono le prove di velocità; costo trascurabile)
+            performance.measure("pageLayout.run", { start: t0, end: performance.now() });
           };
 
           const schedule = () => {
@@ -196,7 +128,10 @@ export const PageLayout = Extension.create<PageLayoutOptions>({
             raf = requestAnimationFrame(run);
           };
           schedule();
-          void document.fonts?.ready.then(schedule);
+          void document.fonts?.ready.then(() => {
+            cache.clear(); // i caratteri sono cambiati: le righe misurate prima non valgono più
+            schedule();
+          });
 
           return {
             update(v, prev) {
