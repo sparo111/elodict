@@ -77,6 +77,52 @@ export async function buildFile(format: ExportFormat, input: BuildInput): Promis
   return new File([blob], `${safeName(input.title)}.${format}`, { type: MIME[format].split(";")[0] });
 }
 
+interface SaveHandle {
+  createWritable(): Promise<{ write(data: Blob): Promise<void>; close(): Promise<void> }>;
+}
+type PickerFn = (opts: {
+  suggestedName: string;
+  types: { description: string; accept: Record<string, string[]> }[];
+}) => Promise<SaveHandle>;
+
+const picker = (): PickerFn | undefined =>
+  typeof window === "undefined" ? undefined : (window as unknown as { showSaveFilePicker?: PickerFn }).showSaveFilePicker;
+
+/** Chrome ed Edge sul computer lasciano scegliere cartella e nome; gli altri browser no. */
+export const canPickLocation = () => picker() !== undefined;
+
+export type SaveResult = "saved" | "downloaded" | "cancelled";
+
+/**
+ * Salva il documento. Dove possibile apre la finestra "Salva con nome" (cartella + nome),
+ * altrimenti scarica il file con il nome scelto.
+ */
+export async function saveDocumentFile(format: ExportFormat, name: string, input: BuildInput): Promise<SaveResult> {
+  const pick = picker();
+  const fileInput = { ...input, title: name };
+  if (pick) {
+    let handle: SaveHandle | null = null;
+    try {
+      handle = await pick.call(window, {
+        suggestedName: `${safeName(name)}.${format}`,
+        types: [{ description: format.toUpperCase(), accept: { [MIME[format].split(";")[0]]: [`.${format}`] } }],
+      });
+    } catch (e) {
+      if ((e as Error)?.name === "AbortError") return "cancelled";
+      handle = null; // il browser non lo permette qui: si scarica normalmente
+    }
+    if (handle) {
+      const file = await buildFile(format, fileInput);
+      const w = await handle.createWritable();
+      await w.write(file);
+      await w.close();
+      return "saved";
+    }
+  }
+  downloadFile(await buildFile(format, fileInput));
+  return "downloaded";
+}
+
 export function downloadFile(file: File) {
   const url = URL.createObjectURL(file);
   const a = document.createElement("a");
