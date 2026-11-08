@@ -62,3 +62,8 @@ Trascrivere un file audio caricato,tecnologia,could,no,no,da recensioni: 21 su i
 A capo automatico a fine riga e a fine foglio (anche a metà paragrafo),editor,must,yes,yes,richiesto dall'utente; anche parole lunghissime si spezzano; provato su computer e telefono
 Bandierine accanto al nome per scegliere la lingua dell'app e della voce,lingue,should,no,yes,"richiesto dall'utente; 4 bandiere disegnate; cambiano menu, testi e voce"
 "Zoom del foglio (adatta, 75%, 100%, 125%, 150%)",editor,could,yes,yes,'Adatta' riduce il foglio sul telefono
+Installabile con un clic (icona su desktop/telefono),installazione,should,no,yes,PWA; provata solo con Chrome automatico
+Istruzioni per iPhone/Firefox/menu con disegni e pagina da stampare in 4 lingue,installazione,should,no,partial,provato con identificativi simulati; mai su iPhone vero
+Funziona senza internet dopo la prima apertura,installazione,should,no,yes,copia dell'app; con Whisper serve il download del modello una volta
+Primo avvio guidato in 3 schermate (lingua / microfono / come ascoltare),installazione,should,no,yes,saltabile; si rifà da Impostazioni
+Avviso nuova versione con salvataggio prima del ricaricamento,installazione,could,no,yes,provato con versione finta

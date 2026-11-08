@@ -5,6 +5,15 @@
 > Elodict è un **nome di lavoro** (i controlli sul marchio non sono finiti). Questa cartella si chiama ancora `mia-dictate`.
 > *English: a free, no-install, no-account web app for voice dictation into a real A4-page editor, in Italian, English, French and Spanish. A clean-room functional rebuild of Microsoft Word's "Dictate": no code, assets, colours or copy from the original. No backend.*
 
+## Per chi usa l'app
+1. Apri il link che ti hanno mandato.
+2. La prima volta ti fa 3 domande semplici: la lingua, il microfono, come vuoi che ascolti. Puoi saltarle.
+3. Premi il pulsante grande **«Installa Elodict»**. Sullo schermo (o sul telefono) compare la sua icona.
+4. Da quel momento si apre con un tocco e funziona anche **senza internet** (se hai scelto l'ascolto «Privato», dopo aver scaricato la voce una volta).
+5. Quando c'è una versione nuova, in alto compare «È pronta una nuova versione»: premi **Aggiorna**. Il tuo testo viene salvato prima.
+
+Su iPhone e iPad il programma te lo fa fare in 3 passi con i disegni. Se non sai come fare, c'è una pagina da stampare, grande e in 4 lingue: `installa.html`.
+
 ## Cosa fa
 - **Detti e il testo compare** in un foglio A4 vero (21 × 29,7 cm, margini di 2,54 cm, numero di pagina). A fine riga e a fine foglio il testo va a capo da solo, anche a metà paragrafo.
 - **Quattro lingue**, sia per i menu sia per la voce: italiano, inglese, francese, spagnolo. Le bandierine accanto al nome le cambiano insieme.
@@ -25,8 +34,8 @@ Le prove con Whisper vero hanno bisogno di internet e delle registrazioni di pro
 
 ## Stato
 - **Parità con Dictate: 75,9 / 100**, funzioni obbligatorie 10 su 10; difetti aperti: nessuno.
-- **111 prove sulla logica e 338 nel browser** (computer e telefono), tutte riuscite (5 saltate di proposito).
-- **Non ancora fatto o verificato**: nessuna prova con una voce umana vera; scelta del microfono; elenco dei documenti salvati (oggi si salva solo l'ultimo); `.docx` mai aperti in Word vero; spagnolo da far rivedere a un madrelingua; controlli sul marchio; **non è pubblicato online**.
+- **146 prove sulla logica e 370 nel browser** (computer e telefono): 363 riuscite, 7 saltate di proposito.
+- **Non ancora fatto o verificato**: nessuna prova con una voce umana vera; scelta del microfono; elenco dei documenti salvati (oggi si salva solo l'ultimo); `.docx` mai aperti in Word vero; spagnolo da far rivedere a un madrelingua; controlli sul marchio; **non è pubblicato online** (è pronto il flusso per GitHub Pages: vedi `.github/workflows/deploy.yml`); installazione mai provata su un iPhone o un Android veri.
 
 ## Dove leggere di più
 | file | per cosa |

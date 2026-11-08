@@ -51,3 +51,20 @@ Ultimo esito: **111/111** e **333 riuscite + 5 saltate di proposito** (le saltat
 - [ ] Documenti di molte decine di pagine: i fogli restano scorrevoli?
 - [ ] Spagnolo: comandi riletti da un madrelingua.
 - [ ] Due schede aperte insieme (vince l'ultimo salvataggio: da decidere).
+
+## T-001 — Installazione, primo avvio, senza internet (file `e2e/pwa-*.spec.ts`, usano la copia costruita)
+| caso | cosa si controlla | esito |
+| --- | --- | --- |
+| P-01 | manifest valido, 3 icone raggiungibili, tipo immagine giusto | riuscita |
+| P-02 | service worker attivo; elenco iniziale senza `.wasm` né `ort/`; regola «tieni dopo il primo uso» presente | riuscita |
+| P-03 | `installa.html` in 4 lingue; stampata ≤ 1 pagina A4 per lingua | riuscita |
+| P-04 | senza internet: riapertura e scrittura nel foglio (casella di prova) | riuscita (solo computer) |
+| P-05 | invito simulato del programma: un clic → richiesta di installazione | riuscita |
+| P-06 | iPhone (Safari simulato): 3 passi + controllo accessibilità | riuscita |
+| P-07 | Firefox simulato: spiegazione; già installata: pulsante e avviso spariscono; «Non ora» | riuscite |
+| P-08 | primo avvio: completo, saltato, rifatto da Impostazioni, cambio lingua, microfono rifiutato | riuscite |
+| P-09 | nuova versione: avviso, «Aggiorna», testo ancora lì dopo il ricaricamento | riuscita (solo computer) |
+| P-10 | sotto `/elodict/`: manifest, icone e file del motore raggiungibili; non alla radice | riuscita |
+| U-xx | prove sulla logica: `detect`, `basePath`, tempo stimato, microfono, copia di sicurezza con il nuovo campo | riuscite |
+Non coperto: scaricamento vero di Whisper sulla copia costruita e riapertura offline con il modello; installazione su dispositivi veri.
+

@@ -58,14 +58,16 @@ Il lavoro è stato guidato dal pacchetto di competenze **replica-skill** di Clau
 ```bash
 npm install
 npm run dev          # apre il sito (di solito http://localhost:5173); prima copia i file di Whisper in public/ort
-npm test             # 111 prove sulla logica (Vitest), pochi secondi
-npm run test:e2e     # 338 prove nel browser (Playwright, Chromium); avvia da solo il sito su http://localhost:5199
+npm test             # 146 prove sulla logica (Vitest), pochi secondi
+npm run test:e2e     # 370 prove nel browser (Playwright, Chromium); avvia da solo il sito di sviluppo (porta 5199) e due copie costruite (5200 radice, 5201 sotto /elodict/)
 npm run build        # controlla i tipi e crea la cartella dist/
 ```
 
 - `npx playwright install chromium` la prima volta.
 - Le prove con **Whisper vero** (`e2e/f08-offline-whisper.spec.ts`) hanno bisogno di **internet** (scaricano il modello) e delle registrazioni di prova: `powershell -ExecutionPolicy Bypass -File e2e/make-fixtures.ps1` (usa le voci di sintesi di Windows Elsa e Zira; i file finiscono in `e2e/fixtures/`, ignorata da git). Se mancano, quelle prove si **saltano da sole**.
-- Pubblicazione: non fatta. Il sito è statico (`dist/`); serve un hosting con HTTPS (il microfono lo richiede). Il file del motore di Whisper pesa 22 MB: sotto il limite di 25 MB dei servizi gratuiti più comuni, ma non verificato online.
+- Pubblicazione: **preparata, non fatta**. `.github/workflows/deploy.yml` costruisce l'app, lancia le prove sulla logica e la pubblica su **GitHub Pages** (gratis, con HTTPS) a ogni aggiornamento del ramo principale; l'indirizzo sotto `/<nome-repo>/` arriva dalla variabile `VITE_BASE`. Non servono COOP/COEP: il motore di Whisper gira con un solo filo (`numThreads = 1`), quindi basta un hosting statico semplice. Il repository remoto non esiste ancora (serve una tua decisione sulla licenza).
+- **Installazione**: l'app è una «PWA» fatta con `vite-plugin-pwa` (`registerType: 'prompt'`). Le prove vere del «service worker» usano la copia costruita (`npm run build:pwa-test`, cartella `dist-pwa`), non il sito di sviluppo. I file pesanti del motore (`public/ort`, ~22 MB) non sono nella copia iniziale: si tengono solo dopo il primo uso (`elodict-motore`). I pesi di Whisper li tiene già Transformers.js nella sua memoria.
+- `npm run make-icons` rigenera le icone da `public/favicon.svg`.
 
 ## 6. Architettura in una pagina
 
@@ -96,6 +98,19 @@ npm run build        # controlla i tipi e crea la cartella dist/
 - **Tutto in 4 lingue con le stesse chiavi**: `src/i18n.ts` ha un oggetto per lingua con tipo `Strings` comune; se si aggiunge una chiave a una lingua, TypeScript obbliga a metterla nelle altre.
 
 ## 7. Mappa dei file (solo quelli tracciati da git)
+
+**Installazione e primo avvio (nuovi)**
+
+| file | cosa fa |
+| --- | --- |
+| `src/install/detect.ts` | funzione pura: sceglie il caso (un clic / iPhone / Firefox / già installata / menu) |
+| `src/install/store.ts`, `Install.tsx` | cattura l'invito del programma; pulsante, avviso grande, istruzioni con disegni |
+| `src/onboarding/*` | primo avvio in 3 schermate (lingua, microfono, come ascoltare) con avanzamento e tempo stimato |
+| `src/pwa/basePath.ts` | indirizzi del motore vocale che tengono conto della sottocartella |
+| `src/pwa/useAppUpdate.ts`, `UpdateBanner.tsx` | avviso «nuova versione»; salva il documento prima di ricaricare |
+| `public/installa.html` | pagina da stampare in A4, 4 lingue |
+| `scripts/make-icons.mjs`, `public/icons/` | icone 192, 512, maskable, iPhone |
+| `.github/workflows/deploy.yml` | pubblicazione su GitHub Pages |
 
 **Codice dell'app — `src/`**
 
@@ -218,6 +233,8 @@ npm run build        # controlla i tipi e crea la cartella dist/
 - **Whisper offline**: provato con voci di sintesi in inglese (perfetto) e italiano (modello medio perfetto; modello piccolo con 1 parola sbagliata). Non provato: Firefox e Safari veri (simulati), computer lenti (il modello medio può metterci secondi), il sito pubblicato online.
 - **Spagnolo**: i comandi vengono da un riassunto, non da una lettura letterale della pagina di aiuto; serve un madrelingua.
 - **File Word aperti in Word vero**: i .docx sono creati e controllati, ma non aperti in Word.
+- **Installazione su telefono/computer veri**: provata solo con Chrome automatico (invito simulato, iPhone e Firefox simulati con il loro identificativo). Mai su un iPhone, un Android o un Windows con Edge veri. Il pulsante dell'invito vero dipende da Chrome/Edge.
+- **Aggiornamento**: provato con una versione «finta» (file del service worker cambiato a mano), non con una vera pubblicazione online.
 - **Documenti lunghissimi** (decine di pagine): il calcolo dei fogli rilegge tutto a ogni modifica, può rallentare.
 - **Stampa dal browser** non progettata (si esporta e si stampa il file).
 - **Marchio**: vedi sezione 11.

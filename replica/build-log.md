@@ -71,3 +71,10 @@ Il bundle JS principale era 597 kB (188 kB compresso) a quel punto; docx e PDF s
 - Difetti trovati mentre lo costruivo (non arrivati all'utente): (1) il metodo per trovare l'inizio di ogni riga funzionava solo per le righe visibili sullo schermo; (2) con il foglio rimpicciolito sul telefono, le misure ingrandite e quelle vere venivano mescolate e tutte le righe si fondevano in una: trovati con le prove su telefono.
 - Test: 111 sulla logica, 333 nel browser (5 saltate di proposito).
 - **Non verificato**: l'aspetto con altri font o su schermi molto grandi; la stampa dal browser (non è stata progettata: si usa Esporta); documenti di molte decine di pagine (il calcolo dei fogli rilegge tutte le parole a ogni modifica: su testi molto lunghi può diventare lento); la divisione in sillabe (le parole non si spezzano con il trattino, vanno a capo intere salvo quelle lunghissime).
+
+## T-001 — Installazione facile (PWA)
+- Fatto: manifest «Elodict», icone da `favicon.svg` (script rilanciabile), copia dell'app per l'uso senza internet (motore Whisper fuori dalla copia iniziale, tenuto dopo il primo uso), indirizzi del motore con sottocartella (`/elodict/`), pulsante «Installa» (5 casi), pagina `installa.html`, primo avvio in 3 schermate, avviso di nuova versione che salva prima di ricaricare, «Rifai la configurazione», flusso GitHub Pages.
+- Scelta diversa dalla richiesta: nel primo avvio «Privato» scarica il modello **medio (~80 MB)** e lo dice, non il piccolo da 40 MB: in italiano il piccolo ha sbagliato una parola nella prova. Si cambia in una riga (`ONBOARDING_MODEL`).
+- Più difficile del previsto: il pacchetto `dist` contiene ancora un file `.wasm` da 21 MB con nome a codice che l'app non usa (non è nella copia iniziale, ma pesa sul sito pubblicato). Da togliere in un secondo momento, dopo una prova con Whisper vero sulla copia costruita.
+- Non fatto: pubblicazione online (serve la tua decisione); installazione su dispositivi veri.
+
