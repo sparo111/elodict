@@ -2,8 +2,8 @@ import { LANGS, LANG_NAME } from "../commands";
 import type { Lang } from "../commands/types";
 
 // Bandiere disegnate a mano (le "emoji bandiera" su Windows si vedono solo come lettere).
-function Flag({ lang }: { lang: Lang }) {
-  const common = { width: 28, height: 20, viewBox: "0 0 30 20", "aria-hidden": true, focusable: false } as const;
+function Flag({ lang, width = 28 }: { lang: Lang; width?: number }) {
+  const common = { width, height: Math.round((width * 20) / 28), viewBox: "0 0 30 20", "aria-hidden": true, focusable: false } as const;
   switch (lang) {
     case "it":
       return (
@@ -49,12 +49,15 @@ interface Props {
   value: Lang;
   label: string;
   onPick: (l: Lang) => void;
+  /** «lg»: bandiere grandi con il nome della lingua sotto (primo avvio). */
+  size?: "sm" | "lg";
 }
 
 /** Le bandierine accanto al nome: scelgono la lingua dell'app (menu, testi) e della voce. */
-export function Flags({ value, label, onPick }: Props) {
+export function Flags({ value, label, onPick, size = "sm" }: Props) {
+  const big = size === "lg";
   return (
-    <div role="group" aria-label={label} className="flex items-center gap-1">
+    <div role="group" aria-label={label} className={big ? "grid grid-cols-2 gap-3 sm:grid-cols-4" : "flex items-center gap-1"}>
       {LANGS.map((l) => {
         const active = l === value;
         return (
@@ -65,13 +68,14 @@ export function Flags({ value, label, onPick }: Props) {
             aria-label={LANG_NAME[l]}
             aria-pressed={active}
             onClick={() => onPick(l)}
-            className={`inline-flex h-8 w-9 items-center justify-center rounded-md border-2 ${
-              active ? "border-accent bg-accent-soft" : "border-transparent hover:bg-surface"
-            }`}
+            className={`inline-flex items-center justify-center rounded-md border-2 ${
+              big ? "min-h-24 flex-col gap-2 px-3 py-3 text-lg font-semibold" : "h-8 w-9"
+            } ${active ? "border-accent bg-accent-soft" : big ? "border-border hover:bg-surface" : "border-transparent hover:bg-surface"}`}
           >
             <span className="overflow-hidden rounded-sm shadow-card" style={{ lineHeight: 0 }}>
-              <Flag lang={l} />
+              <Flag lang={l} width={big ? 64 : 28} />
             </span>
+            {big && <span>{LANG_NAME[l]}</span>}
           </button>
         );
       })}

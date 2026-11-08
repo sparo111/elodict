@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Elodict</title>
+<style>
+  @page { size: A4; margin: 14mm; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: Arial, Helvetica, sans-serif; color: #111; background: #fff; font-size: 17pt; line-height: 1.35; }
+  main { max-width: 190mm; margin: 0 auto; padding: 8mm; }
+  h1 { font-size: 30pt; margin: 0 0 4mm; }
+  h2 { font-size: 21pt; margin: 6mm 0 2mm; border-top: 2px solid #111; padding-top: 3mm; }
+  p { margin: 0 0 3mm; }
+  ol { margin: 0; padding-left: 9mm; }
+  li { margin-bottom: 2mm; }
+  .note { font-size: 14pt; }
+  .langs { margin-bottom: 4mm; font-size: 14pt; }
+  .langs a { margin-right: 4mm; color: #111; }
+  button { font-size: 14pt; padding: 3mm 6mm; margin-top: 3mm; }
+  [hidden] { display: none; }
+  @media print { .langs, button { display: none; } }
+</style>
+</head>
+<body>
+<main>
+  <nav class="langs" aria-label="Lingua">
+    <a href="?lang=it">Italiano</a><a href="?lang=en">English</a><a href="?lang=fr">Français</a><a href="?lang=es">Español</a>
+  </nav>
+  <h1 id="title"></h1>
+  <p id="intro"></p>
+  <section><h2 id="h-pc"></h2><ol id="pc"></ol></section>
+  <section><h2 id="h-android"></h2><ol id="android"></ol></section>
+  <section><h2 id="h-iphone"></h2><ol id="iphone"></ol></section>
+  <p class="note" id="foot"></p>
+  <button type="button" id="print"></button>
+</main>
+<script>
+(function () {
+  var T = {
+    it: {
+      title: "Come installare Elodict", intro: "Elodict si apre con un clic. Una volta installato, ha la sua icona e funziona anche senza internet.",
+      pc: "Sul computer (Windows o Mac)", android: "Sul telefono Android", iphone: "Su iPhone o iPad",
+      pcS: ["Apri il link che ti hanno mandato, con Chrome o Edge.", "Premi il pulsante grande «Installa Elodict».", "Premi «Installa» nella finestra che si apre.", "Trovi l'icona sul desktop. Premila per aprire Elodict."],
+      anS: ["Apri il link con Chrome.", "Premi «Installa Elodict».", "Premi «Installa».", "L'icona è nella schermata dei tuoi programmi."],
+      ipS: ["Apri il link con Safari (la bussola blu).", "Premi il tasto Condividi: un quadrato con una freccia in su.", "Scorri e premi «Aggiungi alla schermata Home».", "Premi «Aggiungi» in alto a destra."],
+      foot: "Se non vedi il pulsante, Elodict si può usare lo stesso: basta tenere aperta la pagina.", print: "Stampa questa pagina"
+    },
+    en: {
+      title: "How to install Elodict", intro: "Elodict opens with one click. Once installed, it has its own icon and also works without internet.",
+      pc: "On a computer (Windows or Mac)", android: "On an Android phone", iphone: "On an iPhone or iPad",
+      pcS: ["Open the link you were sent, with Chrome or Edge.", "Press the big button «Install Elodict».", "Press «Install» in the window that opens.", "The icon is on your desktop. Press it to open Elodict."],
+      anS: ["Open the link with Chrome.", "Press «Install Elodict».", "Press «Install».", "The icon is on your apps screen."],
+      ipS: ["Open the link with Safari (the blue compass).", "Press the Share button: a square with an arrow pointing up.", "Scroll and press «Add to Home Screen».", "Press «Add» at the top right."],
+      foot: "If you do not see the button, you can still use Elodict: just keep the page open.", print: "Print this page"
+    },
+    fr: {
+      title: "Comment installer Elodict", intro: "Elodict s'ouvre en un clic. Une fois installé, il a sa propre icône et marche aussi sans internet.",
+      pc: "Sur ordinateur (Windows ou Mac)", android: "Sur un téléphone Android", iphone: "Sur iPhone ou iPad",
+      pcS: ["Ouvrez le lien reçu, avec Chrome ou Edge.", "Appuyez sur le grand bouton «Installer Elodict».", "Appuyez sur «Installer» dans la fenêtre qui s'ouvre.", "L'icône est sur le bureau. Appuyez dessus pour ouvrir Elodict."],
+      anS: ["Ouvrez le lien avec Chrome.", "Appuyez sur «Installer Elodict».", "Appuyez sur «Installer».", "L'icône est dans l'écran de vos applications."],
+      ipS: ["Ouvrez le lien avec Safari (la boussole bleue).", "Appuyez sur le bouton Partager : un carré avec une flèche vers le haut.", "Faites défiler et appuyez sur «Sur l'écran d'accueil».", "Appuyez sur «Ajouter» en haut à droite."],
+      foot: "Si le bouton n'apparaît pas, vous pouvez quand même utiliser Elodict : gardez simplement la page ouverte.", print: "Imprimer cette page"
+    },
+    es: {
+      title: "Cómo instalar Elodict", intro: "Elodict se abre con un clic. Una vez instalado, tiene su propio icono y también funciona sin internet.",
+      pc: "En el ordenador (Windows o Mac)", android: "En un teléfono Android", iphone: "En iPhone o iPad",
+      pcS: ["Abre el enlace que te enviaron, con Chrome o Edge.", "Pulsa el botón grande «Instalar Elodict».", "Pulsa «Instalar» en la ventana que se abre.", "El icono está en el escritorio. Púlsalo para abrir Elodict."],
+      anS: ["Abre el enlace con Chrome.", "Pulsa «Instalar Elodict».", "Pulsa «Instalar».", "El icono está en la pantalla de tus aplicaciones."],
+      ipS: ["Abre el enlace con Safari (la brújula azul).", "Pulsa el botón Compartir: un cuadrado con una flecha hacia arriba.", "Desplázate y pulsa «Añadir a pantalla de inicio».", "Pulsa «Añadir» arriba a la derecha."],
+      foot: "Si no ves el botón, puedes usar Elodict igualmente: deja la página abierta.", print: "Imprimir esta página"
+    }
+  };
+  var q = new URLSearchParams(location.search).get("lang");
+  var lang = T[q] ? q : (T[(navigator.language || "it").slice(0, 2)] ? (navigator.language || "it").slice(0, 2) : "it");
+  var t = T[lang];
+  document.documentElement.lang = lang;
+  document.title = t.title;
+  function fill(id, items) {
+    var el = document.getElementById(id);
+    items.forEach(function (x) { var li = document.createElement("li"); li.textContent = x; el.appendChild(li); });
+  }
+  function text(id, v) { document.getElementById(id).textContent = v; }
+  text("title", t.title); text("intro", t.intro);
+  text("h-pc", t.pc); text("h-android", t.android); text("h-iphone", t.iphone);
+  fill("pc", t.pcS); fill("android", t.anS); fill("iphone", t.ipS);
+  text("foot", t.foot); text("print", t.print);
+  document.getElementById("print").addEventListener("click", function () { window.print(); });
+})();
+</script>
+</body>
+</html>
