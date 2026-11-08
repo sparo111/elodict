@@ -1,6 +1,6 @@
 # Cosa dicono gli utenti delle app che registrano e trascrivono
 
-Data: 2026-11-08. File dei dati: `reviews-recorders.csv` (600 recensioni), classifica automatica: `feedback-recorders.md`, temi usati: `themes-recorders.json`.
+Data: 2026-11-08. File dei dati: `reviews-recorders.csv` (600 recensioni; i testi originali **non sono pubblici**: stanno in `replica/privato/`, fuori dal repository), classifica automatica: `feedback-recorders.md`, temi usati: `themes-recorders.json`.
 
 ## Campione, e i suoi limiti
 - **6 app, 100 recensioni recenti ciascuna = 600 recensioni** (nessun duplicato), tutte dall'App Store americano, lette dal servizio pubblico ufficiale di Apple. Di queste **239 hanno da 1 a 3 stelle**.

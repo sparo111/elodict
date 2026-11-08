@@ -163,8 +163,9 @@ npm run build        # controlla i tipi e crea la cartella dist/
 | `test-plan.md` | piano di prova: come si esegue, cosa copre ogni file, cosa resta da provare a mano | **aggiornato** (338 + 111 prove) |
 | `architecture.md` | architettura com'è oggi: stack, dati, moduli, rischi, stato | **riscritta** (`schema.ts` è stato rimosso: la forma dei dati è in `src/store/db.ts`) |
 | `competitors.md` | progetti GitHub simili e idee prese | aggiornata |
-| `fixes.md`, `reviews.csv`, `feedback.md` | cosa dicono gli utenti di Dictate (7 testi) | aggiornati |
-| `fixes-recorders.md`, `reviews-recorders.csv`, `feedback-recorders.md`, `themes-recorders.json` | 600 recensioni di 6 app che registrano | aggiornati |
+| `fixes.md`, `feedback.md` (e `reviews.csv`, **non pubblico**) | cosa dicono gli utenti di Dictate (7 testi) | aggiornati |
+| `fixes-recorders.md`, `feedback-recorders.md`, `themes-recorders.json` (e `reviews-recorders.csv`, **non pubblico**) | 600 recensioni di 6 app che registrano | aggiornati |
+| `privato/` | i testi originali delle recensioni (`reviews.csv`, `reviews-recorders.csv`): sono di terzi, **non sono nel repository pubblico** (la cartella è in `.gitignore`); restano solo i riassunti e le classifiche | solo sul computer di chi ha lavorato al progetto |
 | `brand.md`, `brand.json` | nome, controlli, palette, logo, voce | aggiornati |
 | `design/` | token di design, specifiche dei componenti, controllo contrasto (`contrast.py`) | `tokens.*` e `components.md` **aggiornati** |
 
