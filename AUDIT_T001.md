@@ -1,6 +1,6 @@
 # AUDIT_T001 — Elodict: installazione facile
 
-Data: 8 novembre 2026. Ramo `master`. Commit del lavoro: `0dba1d7`, `d78cd70`, `3e9a37e`, `56b4b27` (+ documenti e flusso di pubblicazione).
+Data: 8 novembre 2026. Ramo `master`. Commit del lavoro: `0ca9a91`, `77374d3`, `247cff3`, `58cb9cb` (+ documenti e flusso di pubblicazione).
 
 ## Le 4 righe
 

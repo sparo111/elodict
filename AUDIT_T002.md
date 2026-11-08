@@ -1,6 +1,6 @@
 # AUDIT_T002 — App.tsx diviso e impaginazione A4 incrementale
 
-Data: 8 novembre 2026. Prima: commit `ba04200` (+ copertura, roadmap e correzione delle prove instabili). Nessun push fatto.
+Data: 8 novembre 2026. Prima: commit `5f03621` (+ copertura, roadmap e correzione delle prove instabili). Nessun push fatto.
 
 ## Numeri prima / dopo
 

@@ -118,7 +118,7 @@ Non coperto: quota piena, due schede durante l'aggiornamento, altri browser, dat
 ## T-004b — Migrazione vera, due schede, agganci per le prove
 | caso | cosa si controlla | esito |
 | --- | --- | --- |
-| MIGV-1 (`npm run test:migrazione`) | l'app di prima (commit `61b7fe8`) crea documento, dizionario di 2 voci, motore offline e microfono; la versione attuale sullo stesso profilo li ritrova identici (database 10 → 20) e li usa | riuscita |
+| MIGV-1 (`npm run test:migrazione`) | l'app di prima (tag `v-prima-di-T004`) crea documento, dizionario di 2 voci, motore offline e microfono; la versione attuale sullo stesso profilo li ritrova identici (database 10 → 20) e li usa | riuscita |
 | TAB-B1 (×4 lingue) | un'altra scheda tiene il database: avviso nella lingua dell'app, editor non scrivibile, database ancora com'era (letto con la connessione dell'altra scheda), quando la lascia si va avanti da soli e i dati sono identici | riuscite |
 | TAB-S1 (×4 lingue) | un'altra scheda chiede una versione nuova: la scheda vecchia salva ciò che stava scrivendo (senza aspettare il salvataggio automatico), chiude, avvisa; l'altra non resta bloccata; ricaricando il testo c'è | riuscite |
 | TAB-B2 | due schede della stessa versione: nessun avviso | riuscita |

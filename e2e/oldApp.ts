@@ -10,18 +10,22 @@ import { fileURLToPath } from "node:url";
  */
 export const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
-/** L'ultimo commit prima di T004 (elenco dei documenti): database alla versione 1, scelta del microfono già presente. */
-export const COMMIT_BEFORE_T004 = "61b7fe8";
+/**
+ * Il tag git della versione di PRIMA di T004 (elenco dei documenti): database alla versione 1, scelta del microfono già presente.
+ * Un tag, e non il codice di un commit, perché i codici dei commit cambiano se la storia viene riscritta; il tag viene spostato con essa
+ * (e va pubblicato insieme al resto: `git push origin v-prima-di-T004`).
+ */
+export const TAG_BEFORE_T004 = "v-prima-di-T004";
 
 /**
  * Crea la cartella con la versione di prima. `node_modules` non si copia: ogni voce è un collegamento a quella vera,
  * tranne la memoria di Vite (`.vite`), che resta separata così i due server non si pestano i piedi.
  */
-export function prepareOldWorktree(commit = COMMIT_BEFORE_T004): string {
+export function prepareOldWorktree(ref = TAG_BEFORE_T004): string {
   execFileSync("git", ["worktree", "prune"], { cwd: REPO });
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "elodict-prima-"));
   fs.rmSync(dir, { recursive: true });
-  execFileSync("git", ["worktree", "add", "--detach", dir, commit], { cwd: REPO, stdio: "ignore" });
+  execFileSync("git", ["worktree", "add", "--detach", dir, ref], { cwd: REPO, stdio: "ignore" });
   const nm = path.join(dir, "node_modules");
   fs.mkdirSync(nm);
   for (const entry of fs.readdirSync(path.join(REPO, "node_modules"), { withFileTypes: true })) {

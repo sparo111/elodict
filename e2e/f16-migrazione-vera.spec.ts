@@ -4,10 +4,10 @@ import os from "node:os";
 import path from "node:path";
 import { editor, say } from "./helpers";
 import { readRawDatabase } from "./dbhelpers";
-import { COMMIT_BEFORE_T004, prepareOldWorktree, removeWorktree, REPO, startVite, type RunningServer } from "./oldApp";
+import { TAG_BEFORE_T004, prepareOldWorktree, removeWorktree, REPO, startVite, type RunningServer } from "./oldApp";
 
 /**
- * Migrazione con un database VERO: la versione dell'app di prima (commit COMMIT_BEFORE_T004, in una cartella a parte)
+ * Migrazione con un database VERO: la versione dell'app di prima (tag TAG_BEFORE_T004, in una cartella a parte)
  * crea un documento, un dizionario e la scelta del microfono in un profilo del browser; poi la versione attuale
  * si apre sullo STESSO profilo e deve ritrovare tutto identico.
  * Si lancia da solo con: npm run test:migrazione
@@ -113,5 +113,5 @@ test("MIGV-1 un database creato dall'app di prima si apre con quella attuale e r
     removeWorktree(oldDir);
     fs.rmSync(profile, { recursive: true, force: true });
   }
-  console.log(`MIGV-1 verificata con la versione di prima (commit ${COMMIT_BEFORE_T004}) su un profilo vero`);
+  console.log(`MIGV-1 verificata con la versione di prima (tag ${TAG_BEFORE_T004}) su un profilo vero`);
 });
