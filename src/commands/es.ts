@@ -43,6 +43,10 @@ export const esCommands: CommandDef[] = [
   { phrases: ["pausa dictado", "pausar dictado"], action: { type: "control", op: "pause" } },
   { phrases: ["reanudar dictado", "reanuda dictado"], action: { type: "control", op: "resume" } },
   { phrases: ["detener dictado", "detén dictado"], action: { type: "control", op: "stop" } },
+  { phrases: ["cambia a italiano"], action: { type: "control", op: "switchLang", lang: "it" } },
+  { phrases: ["cambia a inglés", "cambia a ingles"], action: { type: "control", op: "switchLang", lang: "en" } },
+  { phrases: ["cambia a francés", "cambia a frances"], action: { type: "control", op: "switchLang", lang: "fr" } },
+  { phrases: ["cambia a español", "cambia a espanol"], action: { type: "control", op: "switchLang", lang: "es" } },
   ...formatCommands(
     { bold: ["negrita"], italic: ["cursiva"], underline: ["subrayado"], clear: ["quitar formato"] },
     { that: ["eso", "esto"], word: ["última palabra"], sentence: ["última frase"] },

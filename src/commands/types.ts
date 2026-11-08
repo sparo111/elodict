@@ -5,7 +5,9 @@ export type FormatTarget = "that" | "word" | "sentence";
 
 export type EditAction = { type: "edit"; op: EditOp; n?: number; from?: string; to?: string };
 export type FormatAction = { type: "format"; mark: FormatMark; target: FormatTarget };
-export type ControlAction = { type: "control"; op: "pause" | "resume" | "stop" };
+export type ControlAction =
+  | { type: "control"; op: "pause" | "resume" | "stop" }
+  | { type: "control"; op: "switchLang"; lang: Lang };
 
 export type CommandAction =
   /** segno che si attacca alla parola prima (. , ? ! : ; % °) */

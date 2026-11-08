@@ -168,3 +168,24 @@ describe("comandi di controllo", () => {
     }
   });
 });
+
+describe("cambio lingua a voce", () => {
+  it("passa a ognuna delle 4 lingue, detto in ognuna delle 4 lingue", () => {
+    const table = {
+      it: { it: "passa all'italiano", en: "passa all'inglese", fr: "passa al francese", es: "passa allo spagnolo" },
+      en: { it: "switch to italian", en: "switch to english", fr: "switch to french", es: "switch to spanish" },
+      fr: { it: "passe en italien", en: "passe en anglais", fr: "passe en français", es: "passe en espagnol" },
+      es: { it: "cambia a italiano", en: "cambia a inglés", fr: "cambia a francés", es: "cambia a español" },
+    } as const;
+    for (const from of Object.keys(table) as Lang[]) {
+      for (const to of Object.keys(table[from]) as Lang[]) {
+        expect(parseTranscript(table[from][to], COMMANDS[from])).toEqual([
+          { kind: "act", action: { type: "control", op: "switchLang", lang: to } },
+        ]);
+      }
+    }
+  });
+  it("la parola 'passa' da sola resta testo", () => {
+    expect(run("it", "passa di qui")).toBe("Passa di qui");
+  });
+});

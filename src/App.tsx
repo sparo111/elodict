@@ -19,7 +19,18 @@ import {
   type RecognizerState,
 } from "./speech/recognizer";
 import { docToBlocks, toText } from "./export/blocks";
-import { defaultLang, loadLastDocument, loadSettings, saveDocument, saveSettings, type SettingsRow } from "./store/db";
+import {
+  defaultLang,
+  exportBackup,
+  loadLastDocument,
+  loadSettings,
+  restoreBackup,
+  saveDocument,
+  saveSettings,
+  type SettingsRow,
+} from "./store/db";
+import { parseBackup } from "./store/backup";
+import { downloadFile } from "./export/build";
 import { ExportDialog, HelpDialog, SendDialog, SettingsDialog } from "./components/Dialogs";
 
 type SaveState = "saved" | "saving" | "error";
@@ -53,6 +64,11 @@ export function App() {
   const [saveState, setSaveState] = useState<SaveState>("saved");
   const [dialog, setDialog] = useState<null | "settings" | "help" | "export" | "send">(null);
   const [tryText, setTryText] = useState("");
+  const [activity, setActivity] = useState(0);
+  const [noText, setNoText] = useState(false);
+  const stateRef = useRef<RecognizerState>("idle");
+  stateRef.current = state;
+  const resumeAfterSwitch = useRef(false);
 
   const docId = useRef<string>(crypto.randomUUID());
   const createdAt = useRef(Date.now());
@@ -88,28 +104,46 @@ export function App() {
     },
   });
 
+  // Rilegge impostazioni e ultimo documento dal salvataggio del browser.
+  const hydrate = useCallback(async () => {
+    if (!editor) return;
+    const [settings, last] = await Promise.all([loadSettings(), loadLastDocument()]);
+    setDictLang(settings.dictationLanguage);
+    setUiLang(settings.uiLanguage);
+    setCleanFillers(settings.cleanFillers);
+    setCleanRepeats(settings.cleanRepeats);
+    setDictionary(settings.dictionary);
+    if (last) {
+      docId.current = last.id;
+      createdAt.current = last.createdAt;
+      editor.commands.setContent(last.content as never, false);
+      setIsEmpty(editor.isEmpty);
+    }
+    loaded.current = true;
+  }, [editor]);
+
   // All'avvio: recupera impostazioni e ultimo documento salvato.
   useEffect(() => {
-    if (!editor) return;
-    let cancelled = false;
-    (async () => {
-      const [settings, last] = await Promise.all([loadSettings(), loadLastDocument()]);
-      if (cancelled) return;
-      setDictLang(settings.dictationLanguage);
-      setUiLang(settings.uiLanguage);
-      setCleanFillers(settings.cleanFillers);
-      setCleanRepeats(settings.cleanRepeats);
-      setDictionary(settings.dictionary);
-      if (last) {
-        docId.current = last.id;
-        createdAt.current = last.createdAt;
-        editor.commands.setContent(last.content as never, false);
-        setIsEmpty(editor.isEmpty);
-      }
-      loaded.current = true;
-    })();
-    return () => { cancelled = true; };
-  }, [editor]);
+    void hydrate();
+  }, [hydrate]);
+
+  // Copia di sicurezza: scarica tutto in un file / ripristina da un file.
+  const backupNow = async () => {
+    if (editor) await persist(editor); // salva subito l'ultima modifica
+    const json = await exportBackup();
+    const day = new Date().toISOString().slice(0, 10);
+    downloadFile(new File([json], `mia-dictate-copia-${day}.json`, { type: "application/json" }));
+    flash(s.backupDone);
+  };
+  const restoreNow = async (file: File): Promise<number | null> => {
+    try {
+      const n = await restoreBackup(parseBackup(await file.text()));
+      await hydrate();
+      return n;
+    } catch {
+      return null;
+    }
+  };
 
   useEffect(() => { document.documentElement.lang = uiLang; }, [uiLang]);
 
@@ -131,6 +165,8 @@ export function App() {
     setDictionary(next.dictionary);
     void saveSettings(next);
   };
+  const savePrefsRef = useRef(savePrefs);
+  savePrefsRef.current = savePrefs;
 
   // Applica una frase (detta o scritta nella casella di prova).
   // Ultimo testo scritto a voce: serve per "grassetto questo".
@@ -145,7 +181,9 @@ export function App() {
       let steps = parseTranscript(text, COMMANDS[dictLang], SYNTAX[dictLang], dictionary);
       if (pausedRef.current) {
         // In pausa si ascoltano solo i comandi "riprendi" e "ferma".
-        steps = steps.filter((st) => st.kind === "act" && st.action.type === "control" && st.action.op !== "pause");
+        steps = steps.filter(
+          (st) => st.kind === "act" && st.action.type === "control" && (st.action.op === "resume" || st.action.op === "stop"),
+        );
       }
       for (const step of steps) {
         // Ogni frase detta è un passo a sé per "annulla", anche se arriva subito dopo un'altra.
@@ -156,6 +194,7 @@ export function App() {
           if (a.type === "control") {
             if (a.op === "pause") setPausedBoth(true);
             else if (a.op === "resume") setPausedBoth(false);
+            else if (a.op === "switchLang") savePrefsRef.current({ dictationLanguage: a.lang });
             else recRef.current?.stop();
             continue;
           }
@@ -218,18 +257,38 @@ export function App() {
   const recRef = useRef<ReturnType<typeof createRecognizer> | null>(null);
   useEffect(() => {
     if (!supported) return;
-    recRef.current = createRecognizer(VOICE_CODE[dictLang], {
-      onInterim: (t) => setInterim(pausedRef.current ? "" : t),
-      onFinal: (text) => applyRef.current(text),
+    // Se la lingua cambia mentre si sta ascoltando, il vecchio microfono si spegne e quello nuovo riparte.
+    let alive = true;
+    const rec = createRecognizer(VOICE_CODE[dictLang], {
+      onInterim: (t) => {
+        if (!alive) return;
+        setInterim(pausedRef.current ? "" : t);
+        if (t) setActivity((n) => n + 1);
+      },
+      onFinal: (text) => {
+        if (!alive) return;
+        if (text.trim()) setActivity((n) => n + 1);
+        applyRef.current(text);
+      },
       onState: (st) => {
+        if (!alive) return;
         setState(st);
         if (st === "idle") setPausedBoth(false);
       },
-      onError: setError,
+      onError: (e) => {
+        if (alive) setError(e);
+      },
     });
+    recRef.current = rec;
+    if (resumeAfterSwitch.current) {
+      resumeAfterSwitch.current = false;
+      rec.start();
+    }
     return () => {
-      recRef.current?.stop();
-      recRef.current = null;
+      alive = false;
+      resumeAfterSwitch.current = stateRef.current !== "idle";
+      rec.stop();
+      if (recRef.current === rec) recRef.current = null;
     };
   }, [supported, dictLang]);
 
@@ -241,6 +300,14 @@ export function App() {
       recRef.current?.stop();
     }
   };
+
+  // Ascolta ma non arriva testo da un po': avvisa e dice cosa controllare.
+  useEffect(() => {
+    setNoText(false);
+    if (state !== "listening" || paused) return;
+    const id = window.setTimeout(() => setNoText(true), 10000);
+    return () => window.clearTimeout(id);
+  }, [state, paused, activity]);
 
   // Scorciatoie: Alt+Maiusc+D avvia/ferma, Esc ferma.
   const toggleRef = useRef(toggle);
@@ -292,7 +359,15 @@ export function App() {
       </header>
 
       {editor && (
-        <Toolbar editor={editor} s={s} listening={active} micDisabled={!supported} onMic={toggle} />
+        <Toolbar
+          editor={editor}
+          s={s}
+          listening={active}
+          micDisabled={!supported}
+          onMic={toggle}
+          lang={dictLang}
+          onLang={(l) => savePrefs({ dictationLanguage: l })}
+        />
       )}
 
       <main className="mx-auto flex w-full max-w-editor flex-1 flex-col px-4">
@@ -309,11 +384,24 @@ export function App() {
         {error && (
           <div role="alert" className="mt-4 flex items-start justify-between gap-3 rounded-md border border-danger p-4 text-danger">
             <p className="text-sm">{s.errors[error]}</p>
-            {error !== "no-speech" && (
+            {error !== "no-speech" ? (
               <button type="button" onClick={toggle} className="shrink-0 text-sm font-semibold underline">
                 {s.retry}
               </button>
+            ) : (
+              <button type="button" onClick={() => setDialog("settings")} className="shrink-0 text-sm font-semibold underline">
+                {s.noTextAction}
+              </button>
             )}
+          </div>
+        )}
+
+        {noText && !error && (
+          <div role="status" className="mt-4 flex items-start justify-between gap-3 rounded-md bg-accent-soft p-4 text-text">
+            <p className="text-sm">{s.noText}</p>
+            <button type="button" onClick={() => setDialog("settings")} className="shrink-0 text-sm font-semibold text-accent underline">
+              {s.noTextAction}
+            </button>
           </div>
         )}
 
@@ -358,6 +446,7 @@ export function App() {
         <p className="pb-1 text-xs text-muted" role="status">
           {saveState === "saved" ? s.saved : saveState === "saving" ? s.saving : s.saveError}
         </p>
+        <p className="pb-1 text-xs text-muted">{s.backupHint}</p>
         <p className="pb-28 text-xs text-muted">{s.privacy}</p>
       </main>
 
@@ -406,6 +495,8 @@ export function App() {
         s={s}
         value={{ dictationLanguage: dictLang, uiLanguage: uiLang, cleanFillers, cleanRepeats, dictionary }}
         onChange={savePrefs}
+        onBackup={backupNow}
+        onRestore={restoreNow}
       />
       <HelpDialog open={dialog === "help"} onClose={() => setDialog(null)} s={s} dictationLang={dictLang} />
       <ExportDialog

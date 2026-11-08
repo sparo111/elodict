@@ -41,6 +41,10 @@ export const itCommands: CommandDef[] = [
   { phrases: ["pausa dettatura", "metti in pausa"], action: { type: "control", op: "pause" } },
   { phrases: ["riprendi dettatura", "riprendi la dettatura"], action: { type: "control", op: "resume" } },
   { phrases: ["ferma dettatura", "ferma la dettatura"], action: { type: "control", op: "stop" } },
+  { phrases: ["passa all'italiano", "passa a italiano"], action: { type: "control", op: "switchLang", lang: "it" } },
+  { phrases: ["passa all'inglese", "passa a inglese"], action: { type: "control", op: "switchLang", lang: "en" } },
+  { phrases: ["passa al francese", "passa a francese"], action: { type: "control", op: "switchLang", lang: "fr" } },
+  { phrases: ["passa allo spagnolo", "passa a spagnolo"], action: { type: "control", op: "switchLang", lang: "es" } },
   ...formatCommands(
     { bold: ["grassetto"], italic: ["corsivo"], underline: ["sottolineato"], clear: ["rimuovi formattazione"] },
     { that: ["questo"], word: ["ultima parola"], sentence: ["ultima frase"] },

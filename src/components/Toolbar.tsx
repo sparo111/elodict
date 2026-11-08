@@ -2,6 +2,8 @@ import type { ReactNode } from "react";
 import { useEditorState, type Editor } from "@tiptap/react";
 import { Bold, Heading2, Italic, List, ListOrdered, Mic, Redo2, Square, Underline, Undo2 } from "lucide-react";
 import type { Strings } from "../i18n";
+import { LANGS, LANG_NAME } from "../commands";
+import type { Lang } from "../commands/types";
 
 interface Props {
   editor: Editor;
@@ -9,6 +11,8 @@ interface Props {
   listening: boolean;
   micDisabled: boolean;
   onMic: () => void;
+  lang: Lang;
+  onLang: (l: Lang) => void;
 }
 
 const base =
@@ -36,7 +40,7 @@ function Tool({ label, active, disabled, onClick, children }: {
 
 const Divider = () => <span className="mx-1 h-6 w-px shrink-0 bg-border" aria-hidden="true" />;
 
-export function Toolbar({ editor, s, listening, micDisabled, onMic }: Props) {
+export function Toolbar({ editor, s, listening, micDisabled, onMic, lang, onLang }: Props) {
   const st = useEditorState({
     editor,
     selector: ({ editor: e }) => ({
@@ -66,6 +70,17 @@ export function Toolbar({ editor, s, listening, micDisabled, onMic }: Props) {
         >
           {listening ? <Square size={18} aria-hidden="true" /> : <Mic size={20} aria-hidden="true" />}
         </button>
+        <select
+          aria-label={s.dictationLang}
+          title={s.dictationLang}
+          value={lang}
+          onChange={(e) => onLang(e.target.value as Lang)}
+          className="h-10 shrink-0 rounded-md border border-border-input bg-bg px-2 text-sm font-semibold"
+        >
+          {LANGS.map((l) => (
+            <option key={l} value={l}>{LANG_NAME[l]}</option>
+          ))}
+        </select>
         <Divider />
         <Tool label={s.tbUndo} disabled={!st.canUndo} onClick={() => run().undo().run()}>
           <Undo2 size={18} aria-hidden="true" />

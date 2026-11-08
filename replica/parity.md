@@ -1,9 +1,9 @@
 # Parità: mia-dictate contro Dictate (Microsoft 365)
 
-Aggiornato: 2026-11-08 (dopo le idee dai concorrenti GitHub). Storia: 43,1 → 52,9 → **58,8**.
+Aggiornato: 2026-11-08 (dopo le idee dai concorrenti GitHub). Storia: 43,1 → 52,9 → 58,8 → **62,7**.
 
 ## Verdetto: quasi pubblicabile, ma sotto la soglia
-Punteggio funzioni: **58,8 / 100**. **Tutte le 8 funzioni obbligatorie sono complete.** Difetti gravi (S1/S2) aperti: nessuno (vedi `bugs.md`).
+Punteggio funzioni: **62,7 / 100**. **Tutte le 8 funzioni obbligatorie sono complete.** Difetti gravi (S1/S2) aperti: nessuno (vedi `bugs.md`).
 Per essere "pubblicabile" servono tutte le obbligatorie (fatto) **e** un punteggio di almeno 80 (manca).
 
 Il punteggio pesa obbligatorie x3, consigliate x2, facoltative x1, conta le "a metà" come metà, e lascia fuori le funzioni non clonabili e quelle che ho aggiunto io (editor indipendente, esportazioni, email, ecc.: vedi sotto). Per questo il numero è più basso di quanto l'app valga per te: dentro ci sono molti comandi vocali di Microsoft facoltativi.
@@ -20,7 +20,7 @@ Il punteggio pesa obbligatorie x3, consigliate x2, facoltative x1, conta le "a m
 | impostazioni | 37,5 | c'è la lingua; mancano microfono, punteggiatura automatica, filtro parolacce |
 | aiuto | 50 | elenco comandi ok; manca il comando vocale "mostra comandi" |
 | comandi | 55 | fatti: punteggiatura, simboli, annulla, cancella (anche N e da X a Y), formattazione base; mancano selezione, maiuscolo, liste, emoji, tabelle, commenti |
-| lingue | 60 | 4 lingue complete sulle basi; mancano formattazione maiuscolo/minuscolo e il cambio lingua al volo |
+| lingue | 100 | 4 lingue complete, cambio lingua al volo (barra e a voce) |
 | errori | 75 | |
 | core | 100 | |
 
@@ -42,7 +42,7 @@ Editor indipendente · esporta Word/PDF/Markdown/testo/web con nome e cartella a
 1. Selezione a voce ("seleziona frase", "seleziona da X a Y") e maiuscolo/minuscolo.
 2. Punteggiatura automatica nelle impostazioni (la scelta del microfono non è possibile con il riconoscimento del browser: vedi `competitors.md`).
 3. Valutare il riconoscimento offline nel browser (Whisper): funzionerebbe anche su Firefox e con scelta del microfono.
-4. Cambio lingua al volo e comando vocale "mostra comandi".
+4. Comando vocale "mostra comandi" (il cambio lingua al volo è fatto).
 5. Dai concorrenti: cronologia dei documenti con ricerca ed elenchi a voce. Parole riempitive e dizionario personale sono già fatti (non contano nel punteggio).
 
 Per diventare "meglio dell'originale" serve `/replica-entrepreneur`. In ogni caso, prima di pubblicare, la prova con un microfono vero e con Word vero (vedi `test-plan.md`).

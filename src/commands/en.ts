@@ -42,6 +42,10 @@ export const enCommands: CommandDef[] = [
   { phrases: ["pause dictation"], action: { type: "control", op: "pause" } },
   { phrases: ["resume dictation"], action: { type: "control", op: "resume" } },
   { phrases: ["stop dictation"], action: { type: "control", op: "stop" } },
+  { phrases: ["switch to italian"], action: { type: "control", op: "switchLang", lang: "it" } },
+  { phrases: ["switch to english"], action: { type: "control", op: "switchLang", lang: "en" } },
+  { phrases: ["switch to french"], action: { type: "control", op: "switchLang", lang: "fr" } },
+  { phrases: ["switch to spanish"], action: { type: "control", op: "switchLang", lang: "es" } },
   ...formatCommands(
     { bold: ["bold"], italic: ["italicize", "italics"], underline: ["underline"], clear: ["clear formatting"] },
     { that: ["that"], word: ["last word"], sentence: ["last sentence"] },

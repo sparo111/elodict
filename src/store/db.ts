@@ -2,6 +2,7 @@
 import Dexie, { type Table } from "dexie";
 import type { Lang } from "../commands/types";
 import type { DictEntry } from "../text/clean";
+import { buildBackup, type ParsedBackup } from "./backup";
 
 export interface DocumentRow {
   id: string;
@@ -78,4 +79,19 @@ export async function saveDocument(row: DocumentRow): Promise<boolean> {
   } catch {
     return false;
   }
+}
+
+/** Tutti i documenti e le impostazioni, come testo JSON pronto da scaricare. */
+export async function exportBackup(): Promise<string> {
+  const [documents, settings] = await Promise.all([db.documents.toArray(), db.settings.get("main")]);
+  return JSON.stringify(buildBackup(settings, documents), null, 2);
+}
+
+/** Rimette nel browser i documenti e le impostazioni di una copia già controllata. I documenti con lo stesso id vengono sostituiti. */
+export async function restoreBackup(parsed: ParsedBackup): Promise<number> {
+  await db.transaction("rw", db.documents, db.settings, async () => {
+    if (parsed.documents.length) await db.documents.bulkPut(parsed.documents);
+    if (parsed.settings) await db.settings.put({ id: "main", ...parsed.settings });
+  });
+  return parsed.documents.length;
 }

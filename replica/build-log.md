@@ -43,3 +43,11 @@ Autosalvataggio, 4 lingue (EN/FR/ES), export .docx/.pdf/.md, email, impostazioni
 - Test: 66 sulla logica, 164 nel browser (desktop + telefono), tutti verdi.
 - Limite scoperto: la scelta del microfono non è possibile con il riconoscimento del browser.
 - Non verificato: voce vera; quanto le liste di "ehm/uhm" corrispondano a ciò che il riconoscimento vero scrive (alcuni motori li tolgono già da soli).
+
+## M2e (2026-11-08) — dalle recensioni delle app che registrano (vedi fixes-recorders.md)
+- Copia di sicurezza: scarica/ripristina un file JSON con tutti i documenti e le impostazioni; il file viene controllato prima e non importa niente a metà (`src/store/backup.ts`). Promemoria sempre visibile.
+- Cambio lingua al volo: selettore nella barra e comandi "passa all'inglese", "switch to italian", "passe en français", "cambia a español". Se stava ascoltando, il microfono riparte nella nuova lingua; i vecchi eventi del microfono vengono ignorati per evitare stati sbagliati.
+- Prova del microfono (Impostazioni): barra di livello, nome del microfono, messaggi per bloccato / assente / silenzioso; il microfono si spegne chiudendo la finestra.
+- Avviso "ascolto ma non arriva testo" dopo 10 s (non in pausa), con scorciatoia alla prova del microfono; anche "non ti sento" la offre.
+- Test: 74 sulla logica, 204 nel browser (desktop + telefono), tutti verdi. Nessun difetto nuovo trovato in questo giro.
+- Non verificato: voce vera; il comportamento del cambio lingua con il riconoscimento vero di Chrome (nel test il riconoscimento è simulato); la barra di livello con microfoni reali (nel test c'è un microfono finto di Chrome).

@@ -41,6 +41,10 @@ export const frCommands: CommandDef[] = [
   { phrases: ["pause dictée", "mets en pause"], action: { type: "control", op: "pause" } },
   { phrases: ["reprends la dictée", "reprendre la dictée"], action: { type: "control", op: "resume" } },
   { phrases: ["arrête la dictée", "arrêter la dictée"], action: { type: "control", op: "stop" } },
+  { phrases: ["passe en italien"], action: { type: "control", op: "switchLang", lang: "it" } },
+  { phrases: ["passe en anglais"], action: { type: "control", op: "switchLang", lang: "en" } },
+  { phrases: ["passe en français", "passe en francais"], action: { type: "control", op: "switchLang", lang: "fr" } },
+  { phrases: ["passe en espagnol"], action: { type: "control", op: "switchLang", lang: "es" } },
   ...formatCommands(
     { bold: ["gras"], italic: ["italique"], underline: ["souligné"], clear: ["efface la mise en forme"] },
     { that: ["cela", "ça"], word: ["dernier mot"], sentence: ["dernière phrase"] },

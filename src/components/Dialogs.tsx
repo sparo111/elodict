@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { FileText, Mail, Share2, Trash2 } from "lucide-react";
 import { Modal } from "./Modal";
+import { MicTest } from "./MicTest";
 import { COMMANDS, LANGS, LANG_NAME } from "../commands";
 import { SYNTAX } from "../commands/syntax";
 import { parseDictionary } from "../text/clean";
@@ -19,9 +20,18 @@ interface SettingsProps {
   s: Strings;
   value: Omit<SettingsRow, "id">;
   onChange: (over: Partial<Omit<SettingsRow, "id">>) => void;
+  onBackup: () => Promise<void>;
+  onRestore: (file: File) => Promise<number | null>;
 }
 
-export function SettingsDialog({ open, onClose, s, value, onChange }: SettingsProps) {
+export function SettingsDialog({ open, onClose, s, value, onChange, onBackup, onRestore }: SettingsProps) {
+  const [backupMsg, setBackupMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const restoreFile = async (file: File | undefined) => {
+    if (!file) return;
+    setBackupMsg(null);
+    const n = await onRestore(file);
+    setBackupMsg(n === null ? { ok: false, text: s.backupError } : { ok: true, text: s.backupOk.replace("{n}", String(n)) });
+  };
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [importError, setImportError] = useState(false);
@@ -124,6 +134,29 @@ export function SettingsDialog({ open, onClose, s, value, onChange }: SettingsPr
           {importError && <p role="alert" className="text-sm text-danger">{s.dictImportError}</p>}
         </section>
 
+        <section className="flex flex-col gap-2 border-t border-border pt-4" aria-labelledby="mic-title">
+          <h3 id="mic-title" className="text-sm font-semibold">{s.micTitle}</h3>
+          <MicTest s={s} />
+        </section>
+
+        <section className="flex flex-col gap-2 border-t border-border pt-4" aria-labelledby="backup-title">
+          <h3 id="backup-title" className="text-sm font-semibold">{s.backupTitle}</h3>
+          <p className="text-sm text-muted">{s.backupHelp}</p>
+          <div className="flex flex-wrap gap-2">
+            <button type="button" onClick={() => void onBackup()} className="h-9 rounded-md border border-border-input px-3 text-sm font-semibold hover:bg-surface">
+              {s.backupExport}
+            </button>
+            <label className="inline-flex h-9 cursor-pointer items-center rounded-md border border-border-input px-3 text-sm font-semibold hover:bg-surface focus-within:outline focus-within:outline-2 focus-within:outline-accent">
+              {s.backupImport}
+              <input type="file" accept="application/json,.json" className="sr-only"
+                onChange={(e) => { void restoreFile(e.target.files?.[0]); e.target.value = ""; }} />
+            </label>
+          </div>
+          {backupMsg && (
+            <p role={backupMsg.ok ? "status" : "alert"} className={`text-sm ${backupMsg.ok ? "" : "text-danger"}`}>{backupMsg.text}</p>
+          )}
+        </section>
+
         <p className="text-sm text-muted">{s.settingsNote}</p>
       </div>
     </Modal>
@@ -141,7 +174,7 @@ function describe(a: CommandAction, s: Strings): string {
     case "format":
       return `${s.fmtMark[a.mark]} · ${s.fmtTarget[a.target]}`;
     case "control":
-      return a.op === "pause" ? s.dPause : a.op === "resume" ? s.dResume : s.dStopDict;
+      return a.op === "pause" ? s.dPause : a.op === "resume" ? s.dResume : a.op === "switchLang" ? `${s.dSwitchTo} ${LANG_NAME[a.lang]}` : s.dStopDict;
     case "break":
       return a.paragraph ? s.dNewParagraph : s.dNewLine;
     case "edit":
