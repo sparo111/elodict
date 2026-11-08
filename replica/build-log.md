@@ -78,3 +78,8 @@ Il bundle JS principale era 597 kB (188 kB compresso) a quel punto; docx e PDF s
 - Più difficile del previsto: il pacchetto `dist` contiene ancora un file `.wasm` da 21 MB con nome a codice che l'app non usa (non è nella copia iniziale, ma pesa sul sito pubblicato). Da togliere in un secondo momento, dopo una prova con Whisper vero sulla copia costruita.
 - Non fatto: pubblicazione online (serve la tua decisione); installazione su dispositivi veri.
 
+
+## T-001b — «Cos'è Elodict»
+- Riquadro con 7 frasi in cima a `installa.html` (4 lingue) e frase n. 1 nella schermata della lingua del primo avvio. Testi identici a quelli ricevuti, nessuna correzione necessaria.
+- Una sola sorgente: i testi stanno in `src/i18n.ts` (`whatTitle`, `what1`..`what7`); un plugin in `vite.config.ts` li scrive in `public/installa-testi.js` (file generato, ignorato da git) a ogni avvio o costruzione, e la pagina statica lo carica.
+- Per stare in un foglio A4 (francese in due pagine) ho ridotto margini e spazi e poi i passi di installazione a 14 pt; il riquadro è a 14,5 pt.

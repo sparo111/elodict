@@ -5,15 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Elodict</title>
 <style>
-  @page { size: A4; margin: 14mm; }
+  .what { border: 2px solid #111; border-radius: 3mm; padding: 2mm 4mm; margin-bottom: 2mm; font-size: 14.5pt; }
+  .what h2 { border: 0; padding: 0; margin: 0 0 1.5mm; }
+  .what ul { margin: 0; padding-left: 6mm; }
+  .what li { margin-bottom: 0.8mm; }
+  @page { size: A4; margin: 10mm; }
   * { box-sizing: border-box; }
-  body { margin: 0; font-family: Arial, Helvetica, sans-serif; color: #111; background: #fff; font-size: 17pt; line-height: 1.35; }
-  main { max-width: 190mm; margin: 0 auto; padding: 8mm; }
-  h1 { font-size: 30pt; margin: 0 0 4mm; }
-  h2 { font-size: 21pt; margin: 6mm 0 2mm; border-top: 2px solid #111; padding-top: 3mm; }
-  p { margin: 0 0 3mm; }
-  ol { margin: 0; padding-left: 9mm; }
-  li { margin-bottom: 2mm; }
+  body { margin: 0; font-family: Arial, Helvetica, sans-serif; color: #111; background: #fff; font-size: 15pt; line-height: 1.25; }
+  main { max-width: 190mm; margin: 0 auto; padding: 4mm; }
+  h1 { font-size: 26pt; margin: 0 0 2mm; }
+  h2 { font-size: 18pt; margin: 3mm 0 1mm; border-top: 2px solid #111; padding-top: 2mm; }
+  p { margin: 0 0 2mm; }
+  ol { margin: 0; padding-left: 9mm; font-size: 14pt; }
+  li { margin-bottom: 0.8mm; }
   .note { font-size: 14pt; }
   .langs { margin-bottom: 4mm; font-size: 14pt; }
   .langs a { margin-right: 4mm; color: #111; }
@@ -28,6 +32,7 @@
     <a href="?lang=it">Italiano</a><a href="?lang=en">English</a><a href="?lang=fr">Français</a><a href="?lang=es">Español</a>
   </nav>
   <h1 id="title"></h1>
+  <section class="what" aria-labelledby="what-title"><h2 id="what-title"></h2><ul id="what-list"></ul></section>
   <p id="intro"></p>
   <section><h2 id="h-pc"></h2><ol id="pc"></ol></section>
   <section><h2 id="h-android"></h2><ol id="android"></ol></section>
@@ -35,6 +40,7 @@
   <p class="note" id="foot"></p>
   <button type="button" id="print"></button>
 </main>
+<script src="installa-testi.js"></script>
 <script>
 (function () {
   var T = {
@@ -84,6 +90,8 @@
   text("title", t.title); text("intro", t.intro);
   text("h-pc", t.pc); text("h-android", t.android); text("h-iphone", t.iphone);
   fill("pc", t.pcS); fill("android", t.anS); fill("iphone", t.ipS);
+  var w = (window.ELODICT_WHAT || {})[lang];
+  if (w) { text("what-title", w.title); fill("what-list", w.items); } else { document.querySelector(".what").hidden = true; }
   text("foot", t.foot); text("print", t.print);
   document.getElementById("print").addEventListener("click", function () { window.print(); });
 })();

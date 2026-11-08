@@ -3,6 +3,7 @@ import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
 import { normalizeBase } from "./src/pwa/basePath";
+import { strings } from "./src/i18n";
 
 // I colori dell'app installabile vengono dai token di design, non scritti a mano qui.
 const tokens = JSON.parse(fs.readFileSync("replica/design/tokens.json", "utf8")).color as Record<string, string>;
@@ -15,11 +16,30 @@ function themeColor(): Plugin {
   return { name: "elodict-theme-color", transformIndexHtml: (html) => html.replaceAll("%THEME_COLOR%", tokens.accent) };
 }
 
+/**
+ * La pagina stampabile "installa.html" è statica e non può leggere i18n.ts: i testi di «Cos'è Elodict»
+ * si scrivono da lì in public/installa-testi.js (file generato, non si modifica a mano) a ogni avvio o costruzione.
+ */
+function installaTesti(): Plugin {
+  return {
+    name: "elodict-installa-testi",
+    buildStart() {
+      const out: Record<string, { title: string; items: string[] }> = {};
+      for (const [lang, s] of Object.entries(strings)) {
+        out[lang] = { title: s.whatTitle, items: [s.what1, s.what2, s.what3, s.what4, s.what5, s.what6, s.what7] };
+      }
+      fs.writeFileSync("public/installa-testi.js", `window.ELODICT_WHAT = ${JSON.stringify(out)};
+`);
+    },
+  };
+}
+
 export default defineConfig({
   base,
   plugins: [
     react(),
     themeColor(),
+    installaTesti(),
     VitePWA({
       // «prompt»: nessun aggiornamento silenzioso; è l'utente a premere «Aggiorna».
       registerType: "prompt",

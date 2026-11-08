@@ -66,6 +66,28 @@ test.describe("versione installabile: file", () => {
     }
   });
 
+  test("il riquadro «Cos'è Elodict» c'è in 4 lingue, con titolo, e cambiando lingua cambia il testo", async ({ page }) => {
+    const titles = { it: "Cos'è Elodict", en: "What is Elodict", fr: "Qu'est-ce qu'Elodict", es: "Qué es Elodict" } as const;
+    const first = {
+      it: "Elodict serve a scrivere con la voce",
+      en: "Elodict lets you write with your voice",
+      fr: "Elodict vous permet d'écrire avec la voix",
+      es: "Elodict te permite escribir con la voz",
+    } as const;
+    await page.goto("/installa.html?lang=it");
+    for (const lang of ["en", "fr", "es", "it"] as const) {
+      const name = { it: "Italiano", en: "English", fr: "Français", es: "Español" }[lang];
+      await page.getByRole("link", { name }).click();
+      const box = page.getByRole("region", { name: titles[lang] });
+      await expect(box).toBeVisible();
+      await expect(page.getByRole("heading", { name: titles[lang] })).toBeVisible();
+      await expect(box.getByRole("listitem")).toHaveCount(7);
+      await expect(box).toContainText(first[lang]);
+    }
+    const axe = await new AxeBuilder({ page }).analyze();
+    expect(axe.violations).toEqual([]);
+  });
+
   test("«Come si installa» stampata occupa al massimo una pagina per lingua", async ({ page }) => {
     for (const lang of ["it", "en", "fr", "es"]) {
       await page.goto(`/installa.html?lang=${lang}`);
@@ -166,6 +188,7 @@ test.describe("primo avvio guidato", () => {
     await expect(dlg).toBeVisible();
     const axe = await new AxeBuilder({ page }).include("dialog[open]").analyze();
     expect(axe.violations).toEqual([]);
+    await expect(dlg).toContainText("Elodict serve a scrivere con la voce");
     await dlg.getByRole("button", { name: "Avanti" }).click();
     await page.getByRole("button", { name: "Consenti il microfono" }).click();
     await expect(page.getByText("Microfono pronto.")).toBeVisible();

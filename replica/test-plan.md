@@ -68,3 +68,5 @@ Ultimo esito: **111/111** e **333 riuscite + 5 saltate di proposito** (le saltat
 | U-xx | prove sulla logica: `detect`, `basePath`, tempo stimato, microfono, copia di sicurezza con il nuovo campo | riuscite |
 Non coperto: scaricamento vero di Whisper sulla copia costruita e riapertura offline con il modello; installazione su dispositivi veri.
 
+
+| P-11 | «Cos'è Elodict»: riquadro con titolo e 7 voci in 4 lingue, cambia con le bandierine, axe senza errori (computer e telefono 390 px); frase 1 nel primo avvio; stampa ancora 1 pagina A4 per lingua | riuscita |

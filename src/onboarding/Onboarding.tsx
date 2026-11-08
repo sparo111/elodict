@@ -110,6 +110,7 @@ export function Onboarding({ open, s, lang, onLang, onSkip, onFinish, onTryBox }
 
           {step === 1 && (
             <>
+              <p className="text-lg">{s.what1}</p>
               <p className="text-lg">{s.ob1Body}</p>
               <Flags size="lg" value={lang} label={s.flagsLabel} onPick={onLang} />
               <button type="button" onClick={() => setStep(2)} className={`${big} bg-accent text-on-accent`}>
