@@ -4,6 +4,10 @@
 /** "elodict" → "/elodict/"; "" o undefined → "/"; un indirizzo completo resta tale, con la barra finale. */
 export function normalizeBase(raw: string | undefined): string {
   const value = (raw ?? "").trim();
+  // Git Bash su Windows cambia "/elodict/" in "C:/Program Files/Git/elodict/" prima di passarlo ai programmi: il sito verrebbe rotto.
+  if (/^[A-Za-z]:[\\/]/.test(value)) {
+    throw new Error(`VITE_BASE non valido ("${value}"): sembra un percorso di Windows. In Git Bash scrivi: MSYS_NO_PATHCONV=1 VITE_BASE=/elodict/ npm run build`);
+  }
   if (/^https?:\/\//i.test(value)) return value.endsWith("/") ? value : `${value}/`;
   let b = value || "/";
   if (!b.startsWith("/")) b = `/${b}`;

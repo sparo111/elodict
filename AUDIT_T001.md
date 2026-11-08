@@ -52,7 +52,7 @@ Il motore vocale gira con **un solo filo** (`numThreads = 1`), quindi **non** se
 **Prima decidi**: non c'è ancora una licenza. Rendere il repository pubblico senza licenza significa «tutti i diritti riservati»: altri possono vederlo ma non riusarlo. Scegline una (per esempio MIT) prima di renderlo pubblico.
 
 ```bash
-cd <cartella del progetto>
+cd <la cartella del progetto>
 
 # 1) controlla che sia tutto salvato
 git status

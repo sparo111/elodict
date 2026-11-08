@@ -2,6 +2,12 @@ import { describe, expect, it } from "vitest";
 import { normalizeBase, ortBaseUrl } from "./basePath";
 
 describe("normalizeBase", () => {
+  it("rifiuta un percorso di Windows (Git Bash trasforma /elodict/ in C:/Program Files/Git/elodict/) invece di costruire un sito rotto", () => {
+    expect(() => normalizeBase("C:/Program Files/Git/elodict/")).toThrowError(/MSYS_NO_PATHCONV/);
+    expect(() => normalizeBase("D:\\cartella\\elodict")).toThrowError(/MSYS_NO_PATHCONV/);
+    expect(normalizeBase("https://esempio.it/elodict")).toBe("https://esempio.it/elodict/"); // gli indirizzi veri restano validi
+  });
+
   it("senza valore: la radice", () => {
     expect(normalizeBase(undefined)).toBe("/");
     expect(normalizeBase("")).toBe("/");
