@@ -81,7 +81,7 @@ npm run build        # controlla i tipi e crea la cartella dist/
    parseTranscript → tokenize + dizionario + comandi con numeri  (src/commands/parser.ts, syntax.ts)
                                                     │  passi: "scrivi questo" oppure "agisci" (cancella, formatta, seleziona, elenco, pausa, lingua…)
                                                     ▼
-   App.tsx: applyTranscript  ──►  editor TipTap (ProseMirror)
+   app/applyTranscript.ts  ──►  editor TipTap (ProseMirror)
                                                     │
                     ┌───────────────────────────────┼─────────────────────────────┐
                     ▼                               ▼                             ▼
@@ -92,7 +92,7 @@ npm run build        # controlla i tipi e crea la cartella dist/
 
 **Principi che tengono insieme il progetto**
 - **Nessun server.** Tutto nel browser. Cosa esce dal dispositivo: l'audio verso il servizio vocale del browser (Google, su Chrome) solo con il motore «browser»; il download dei pesi di Whisper da `huggingface.co`. Il testo non esce mai.
-- **I comandi sono dati, non codice sparso**: ogni lingua ha un elenco `{ frasi, azione }`. Aggiungere un comando = una riga in 4 file + una voce nell'aiuto (`describe()` in `Dialogs.tsx`) + una prova.
+- **I comandi sono dati, non codice sparso**: ogni lingua ha un elenco `{ frasi, azione }`. Aggiungere un comando = una riga in 4 file + una voce nell'aiuto (`describe()` in `components/dialogs/HelpDialog.tsx`) + una prova.
 - **Passo per passo**: una frase detta si scompone in «passi»; ogni pezzo viene eseguito da solo, così un comando che non può agire (es. «cancella» su documento vuoto) non fa perdere il resto (difetto BUG-001).
 - **I fogli A4 sono solo decorazioni** (spazi invisibili): il documento resta una colonna sola, quindi esportare non porta mai spazi di impaginazione.
 - **Tutto in 4 lingue con le stesse chiavi**: `src/i18n.ts` ha un oggetto per lingua con tipo `Strings` comune; se si aggiunge una chiave a una lingua, TypeScript obbliga a metterla nelle altre.
@@ -116,13 +116,14 @@ npm run build        # controlla i tipi e crea la cartella dist/
 
 | file | cosa fa |
 | --- | --- |
-| `App.tsx` (~620 righe) | il cuore: stato, caricamento impostazioni, applica le frasi all'editor, tasti, finestre. File grande: è il primo candidato a essere diviso |
+| `App.tsx` (~210 righe) | la regia: collega i moduli di `app/` e disegna la pagina |
+| `app/` | `applyTranscript.ts` (applica una frase all'editor: parole, punteggiatura, comandi), `useSettings.ts` (impostazioni: lettura, scelte, salvataggio; protezione BUG-005), `useDocumentStore.ts` (salvataggio automatico e ripresa dell'ultimo documento), `useDictation.ts` (microfono, pausa, scorciatoie), `useBackupActions.ts`, `useToast.ts`; schermate: `Header.tsx`, `Notices.tsx`, `TryBox.tsx`, `TalkBar.tsx`, `AppDialogs.tsx` |
 | `i18n.ts` | tutti i testi in 4 lingue |
 | `main.tsx`, `index.css` | avvio, stile dei fogli A4 e dell'editor |
 | `commands/` | `types.ts` (tipi di azione), `it/en/fr/es.ts` (comandi per lingua), `parser.ts` (da frase a passi), `syntax.ts` («cancella 3 parole», «da X a Y»), `format.ts` (genera i comandi di formattazione), `index.ts` (elenco lingue, codici voce) |
 | `speech/` | `recognizer.ts` (motore del browser, riavvio automatico), `whisper.ts` (motore offline: microfono + modello), `whisper.worker.ts` (il modello gira qui), `segmenter.ts` (taglia le frasi dalle pause, pulisce le frasi «inventate»), `engine.ts` (sceglie tra i due) |
-| `editor/PageLayout.ts` | calcola dove finisce ogni foglio e inserisce gli spazi; **`planPages`** è una funzione pura provata a parte |
-| `components/` | `Paper.tsx` (fogli e zoom), `Toolbar.tsx`, `Flags.tsx` (bandierine in SVG), `Dialogs.tsx` (impostazioni, aiuto, esporta, invia), `OfflineSection.tsx`, `MicTest.tsx`, `Modal.tsx` (usa l'elemento nativo `<dialog>`) |
+| `editor/PageLayout.ts`, `editor/measure.ts` | `PageLayout` inserisce gli spazi fra i fogli; **`planPages`** è una funzione pura provata a parte. `measure.ts` misura le righe **un blocco alla volta e ricorda i blocchi non cambiati** (`LineCache`): dopo una modifica si rimisura solo il blocco toccato |
+| `components/` | `Paper.tsx` (fogli e zoom), `Toolbar.tsx`, `Flags.tsx` (bandierine in SVG), `dialogs/` (`SettingsDialog`, `HelpDialog`, `ExportDialog`, `SendDialog`), `OfflineSection.tsx`, `MicTest.tsx`, `Modal.tsx` (usa l'elemento nativo `<dialog>`) |
 | `text/` | `clean.ts` (parole riempitive, ripetizioni, dizionario), `edit.ts` (cancella/seleziona intervalli, titolo) |
 | `store/` | `db.ts` (Dexie: tabelle `documents` e `settings`), `backup.ts` (controllo e formato della copia di sicurezza) |
 | `export/` | `blocks.ts` (documento → blocchi → txt/md/html), `build.ts` (docx, pdf, «Salva con nome») |
@@ -222,7 +223,7 @@ npm run build        # controlla i tipi e crea la cartella dist/
 
 **Resta da fare (nessuno di questi punti è un errore, sono scelte rimandate):**
 - **La cartella si chiama ancora `mia-dictate`** mentre il prodotto è Elodict (nome di lavoro).
-- **`src/App.tsx` è lungo (~620 righe)**: conviene spezzarlo (applicazione delle frasi, impostazioni, intestazione) prima di aggiungere altro.
+- **Documenti molto lunghi**: l'impaginazione ora è incrementale (T002). Provata su 50 fogli; oltre non misurato. Il browser rifà comunque il disegno di tutta la pagina a ogni modifica.
 - **Nessuna pagina di presentazione né pubblicazione** (fasi `replica-launch` e `replica-deploy`).
 - **Nessuna licenza scelta** per il codice (il README lo dice).
 - `replica/recon.md` e le sezioni 8b/10 restano come registro storico delle decisioni iniziali.
@@ -244,7 +245,7 @@ npm run build        # controlla i tipi e crea la cartella dist/
 1. Decidere nome definitivo e cartella (sezione 11).
 2. **Scelta del microfono** (con Whisper è fattibile) e **trascrizione di un file audio**.
 3. **Cronologia dei documenti** (oggi solo l'ultimo) con ricerca.
-4. Spezzare `App.tsx` e scegliere una licenza.
+4. Scegliere una licenza (`App.tsx` è già stato diviso: T002).
 5. `replica-launch` (pagina di presentazione: gratis, senza account, senza limiti, 4 lingue, foglio A4) e `replica-deploy`.
 6. **Una persona vera che prova con un microfono vero** e dice cosa non va: è la prova che manca di più.
 7. Controlli sul marchio e parere di un avvocato prima di spendere soldi sul nome.

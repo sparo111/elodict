@@ -8,7 +8,7 @@ Stati comuni: `focus-visible` = anello 2 px colore accent con distanza 2 px; `di
 
 ---
 
-**Intestazione** (`App.tsx`)
+**Intestazione** (`app/Header.tsx`)
 - a sinistra: nome dell'app e **Flags**; a destra: Invia, Esporta, Aiuto, Impostazioni (sul telefono solo icone, con `aria-label`); sul telefono la riga va a capo se non ci sta tutto
 - usa: testo `lg`, bordo `border`
 
@@ -38,7 +38,7 @@ Stati comuni: `focus-visible` = anello 2 px colore accent con distanza 2 px; `di
 **Testo provvisorio**
 - sotto il foglio, corsivo grigio (`muted`), mentre si parla; sparisce quando la frase è finale
 
-**Finestre** (`components/Modal.tsx` + `Dialogs.tsx`)
+**Finestre** (`components/Modal.tsx` + `components/dialogs/*`, riunite in `app/AppDialogs.tsx`)
 - larghezza 34 rem al massimo, titolo, tasto Chiudi, clic fuori o `Esc` per chiudere
 - **Impostazioni**: lingua della voce, lingua dei menu · pulizia del testo (3 caselle) · dizionario personale (aggiungi, rimuovi, importa/esporta) · «Chi ascolta la tua voce» (browser / offline, modello, scarica, elimina) · prova del microfono · copia di sicurezza
 - **Aiuto**: elenco dei comandi della lingua della voce, scorciatoie ed esempi con numeri

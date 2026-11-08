@@ -88,3 +88,10 @@ Il bundle JS principale era 597 kB (188 kB compresso) a quel punto; docx e PDF s
 - Frase di dedica (chiave `dedication` in `src/i18n.ts`, 4 lingue, testo italiano dell'autore invariato) in: `installa.html` (prima riga dopo il nome, prima di «Cos'è Elodict», corsivo centrato), prima schermata del primo avvio, in fondo a Impostazioni, in cima al README. Non entra nei documenti né nelle esportazioni.
 - La pagina statica la riceve da `public/installa-testi.js` (stesso meccanismo di T-001b).
 - Per tornare a 1 foglio A4 per lingua: margini e spazi ridotti, titoli e passi di installazione più piccoli (13 pt). Dedica (14 pt) e riquadro (14,5 pt) invariati.
+
+## T-002 — App.tsx diviso, impaginazione incrementale
+- `App.tsx` da 671 a ~210 righe. Nuova cartella `src/app/`: `applyTranscript.ts`, `useSettings.ts`, `useDocumentStore.ts`, `useDictation.ts`, `useBackupActions.ts`, `useToast.ts`, `Header`, `Notices`, `TryBox`, `TalkBar`, `AppDialogs`. `Dialogs.tsx` (382 righe) diviso in `components/dialogs/` (4 file). Nessun file nuovo supera 180 righe (`i18n.ts`, 880 righe, è solo l'elenco dei testi e non è stato toccato).
+- Impaginazione: `measure.ts` ricorda le righe misurate per blocco (`LineCache`, chiave = larghezza + zoom; svuotata a caratteri caricati). Dopo una modifica si rimisura solo il blocco cambiato. `planPages` è rimasta pura e identica.
+- Tempi su un documento di 50 fogli (300 paragrafi), per una modifica: **prima 50–60 ms, dopo 3–7 ms**; con computer 4 volte più lento **prima 250–285 ms, dopo 15–50 ms**. Soglia delle prove: 30 ms (120 ms col computer lento).
+- Cambio di comportamento (voluto): due scelte di impostazione fatte nello stesso istante ora si sommano, prima la seconda poteva cancellare la prima (`useSettings` tiene sempre l'ultimo valore).
+- Più difficile del previsto: niente di grave. Nota: la misura dei tempi resta nel codice (`performance.measure("pageLayout.run")`), costo trascurabile.

@@ -72,3 +72,12 @@ Non coperto: scaricamento vero di Whisper sulla copia costruita e riapertura off
 | P-11 | «Cos'è Elodict»: riquadro con titolo e 7 voci in 4 lingue, cambia con le bandierine, axe senza errori (computer e telefono 390 px); frase 1 nel primo avvio; stampa ancora 1 pagina A4 per lingua | riuscita |
 
 | P-12 | dedica: prima riga di `installa.html` (dopo il nome, prima di «Cos'è»), nelle 4 lingue; prima schermata del primo avvio; fondo di Impostazioni (computer e telefono); assente da Markdown, testo e pagina web esportati | riuscita |
+
+## T-002 — Impaginazione su documenti lunghi (`e2e/f12-velocita-50-pagine.spec.ts`, solo computer)
+| caso | cosa si controlla | esito |
+| --- | --- | --- |
+| LAYOUT-P1 | 50 fogli: dopo una modifica (inizio, fine, inizio) l'impaginazione impiega meno di 30 ms | riuscita (3–7 ms) |
+| LAYOUT-P2 | come P1 con CPU 4 volte più lenta, soglia 120 ms | riuscita (15–50 ms) |
+| LAYOUT-E1 | dopo modifiche in tre punti i fogli sono identici a quelli ricalcolati da zero dopo il ricaricamento; verificata con una modifica sbagliata a mano (la prova fallisce) | riuscita |
+| U-measure | `LineCache`: ritrova il blocco, si svuota se cambiano larghezza/zoom, `clear()` | riuscite (3) |
+| SEL-R1 | BUG-006: la selezione a voce con il disegno ritardato di mezzo secondo | riuscita |

@@ -67,3 +67,4 @@ Istruzioni per iPhone/Firefox/menu con disegni e pagina da stampare in 4 lingue,
 Funziona senza internet dopo la prima apertura,installazione,should,no,yes,copia dell'app; con Whisper serve il download del modello una volta
 Primo avvio guidato in 3 schermate (lingua / microfono / come ascoltare),installazione,should,no,yes,saltabile; si rifà da Impostazioni
 Avviso nuova versione con salvataggio prima del ricaricamento,installazione,could,no,yes,provato con versione finta
+Impaginazione veloce su documenti di 50 fogli (misura per blocco),editor,could,no,yes,T002: da 50-60 ms a 3-7 ms per modifica; provata
