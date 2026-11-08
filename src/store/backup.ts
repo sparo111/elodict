@@ -72,6 +72,7 @@ export function parseBackup(json: string): ParsedBackup {
       autoPeriod: typeof s.autoPeriod === "boolean" ? s.autoPeriod : false,
       engine: s.engine === "offline" ? "offline" : "browser",
       whisperModel: s.whisperModel === "tiny" ? "tiny" : "base",
+      onboardingDone: s.onboardingDone === true,
       dictionary: parseDictionary(JSON.stringify(s.dictionary)),
     };
   }

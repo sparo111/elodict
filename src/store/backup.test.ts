@@ -20,6 +20,7 @@ const settings: SettingsRow = {
   engine: "browser",
   whisperModel: "base",
   dictionary: [{ from: "a", to: "B" }],
+  onboardingDone: true,
 };
 
 describe("copia di sicurezza", () => {
@@ -36,6 +37,7 @@ describe("copia di sicurezza", () => {
       engine: "browser",
       whisperModel: "base",
       dictionary: [{ from: "a", to: "B" }],
+      onboardingDone: true,
     });
   });
   it("funziona anche senza impostazioni", () => {

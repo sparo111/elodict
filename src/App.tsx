@@ -5,6 +5,11 @@ import UnderlineExt from "@tiptap/extension-underline";
 import { closeHistory } from "@tiptap/pm/history";
 import { Toolbar } from "./components/Toolbar";
 import { Flags } from "./components/Flags";
+import { InstallBanner, InstallButton, InstallDialog } from "./install/Install";
+import { Onboarding } from "./onboarding/Onboarding";
+import { readOnboardingMirror, writeOnboardingMirror } from "./onboarding/state";
+import { UpdateBanner } from "./pwa/UpdateBanner";
+import { useAppUpdate } from "./pwa/useAppUpdate";
 import { Paper, type Zoom } from "./components/Paper";
 import { PageLayout } from "./editor/PageLayout";
 import { AlertTriangle, Download, HelpCircle, Mail, Mic, Settings, Square } from "lucide-react";
@@ -71,6 +76,8 @@ export function App() {
   const [loadPct, setLoadPct] = useState<number | null>(null);
   const supported = isEngineSupported(engine);
   const [dictionary, setDictionary] = useState<DictEntry[]>([]);
+  const [onboardingDone, setOnboardingDone] = useState(readOnboardingMirror);
+  const [settingsReady, setSettingsReady] = useState(false);
   const [paused, setPaused] = useState(false);
   const pausedRef = useRef(false);
   const setPausedBoth = (v: boolean) => {
@@ -112,6 +119,7 @@ export function App() {
         updatedAt: Date.now(),
       });
       setSaveState(ok ? "saved" : "error");
+      return ok;
     },
     [dictLang, uiLang],
   );
@@ -139,6 +147,7 @@ export function App() {
     if (p.engine !== undefined) setEngine(p.engine);
     if (p.whisperModel !== undefined) setWhisperModel(p.whisperModel);
     if (p.dictionary !== undefined) setDictionary(p.dictionary);
+    if (p.onboardingDone !== undefined) setOnboardingDone(p.onboardingDone);
   };
   const settingsLoaded = useRef(false);
   const pendingPrefs = useRef<Partial<Omit<SettingsRow, "id">>>({});
@@ -152,9 +161,13 @@ export function App() {
     const pending = pendingPrefs.current;
     pendingPrefs.current = {};
     const merged: SettingsRow = { ...settings, ...pending };
+    // «Primo avvio fatto» se lo dice la memoria locale (si legge subito) oppure le impostazioni salvate.
+    merged.onboardingDone = merged.onboardingDone || readOnboardingMirror();
+    writeOnboardingMirror(merged.onboardingDone);
     applyPrefs(merged);
     settingsLoaded.current = true;
-    if (Object.keys(pending).length) void saveSettings(merged);
+    setSettingsReady(true);
+    if (Object.keys(pending).length || merged.onboardingDone !== settings.onboardingDone) void saveSettings(merged);
     if (last) {
       docId.current = last.id;
       createdAt.current = last.createdAt;
@@ -214,6 +227,7 @@ export function App() {
       engine,
       whisperModel,
       dictionary,
+      onboardingDone,
       ...over,
     };
     applyPrefs(next);
@@ -421,11 +435,39 @@ export function App() {
   const title = deriveTitle(editor?.getText({ blockSeparator: "\n" }) ?? "", s.defaultTitle);
   const active = state !== "idle";
 
+  // Primo avvio: chiuderlo (anche saltandolo) lo segna come fatto; da Impostazioni si può rifare.
+  const finishOnboarding = (choice?: { engine: "browser" | "offline"; whisperModel: "tiny" | "base" }) => {
+    writeOnboardingMirror(true);
+    savePrefs({ onboardingDone: true, ...choice });
+  };
+  const redoSetup = () => {
+    writeOnboardingMirror(false);
+    setDialog(null);
+    savePrefs({ onboardingDone: false });
+  };
+  const goTryBox = () => {
+    finishOnboarding();
+    window.setTimeout(() => {
+      const box = document.querySelector("details");
+      if (box) box.open = true;
+      document.getElementById("try")?.focus();
+    }, 100);
+  };
+
+  // «Nuova versione pronta»: prima di ricaricare si salva il documento.
+  const saveBeforeUpdate = useCallback(async () => {
+    window.clearTimeout(saveTimer.current);
+    return editor ? persist(editor) : true;
+  }, [editor, persist]);
+  const update = useAppUpdate(saveBeforeUpdate);
+
   const iconBtn =
     "inline-flex h-10 items-center gap-2 rounded-md px-2 text-sm font-semibold hover:bg-surface sm:px-3";
 
   return (
     <div className="flex min-h-full flex-col bg-bg text-text">
+      <UpdateBanner s={s} ready={update.ready} busy={update.busy} saveFailed={update.saveFailed} onApply={() => void update.apply()} onLater={update.later} />
+      <InstallBanner s={s} enabled={settingsReady && onboardingDone} />
       <header className="flex min-h-14 flex-wrap items-center justify-between gap-x-3 gap-y-1 border-b border-border px-4 py-1">
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
           <h1 className="text-lg">{s.appName}</h1>
@@ -436,6 +478,7 @@ export function App() {
           />
         </div>
         <nav className="flex items-center gap-1">
+          <InstallButton s={s} />
           <button type="button" className={iconBtn} onClick={() => setDialog("send")} aria-label={s.send}>
             <Mail size={18} aria-hidden="true" /><span className="hidden sm:inline">{s.send}</span>
           </button>
@@ -586,10 +629,21 @@ export function App() {
         open={dialog === "settings"}
         onClose={() => setDialog(null)}
         s={s}
-        value={{ dictationLanguage: dictLang, uiLanguage: uiLang, cleanFillers, cleanRepeats, autoPeriod, engine, whisperModel, dictionary }}
+        value={{ dictationLanguage: dictLang, uiLanguage: uiLang, cleanFillers, cleanRepeats, autoPeriod, engine, whisperModel, dictionary, onboardingDone }}
         onChange={savePrefs}
         onBackup={backupNow}
         onRestore={restoreNow}
+        onRedoSetup={redoSetup}
+      />
+      <InstallDialog s={s} lang={uiLang} />
+      <Onboarding
+        open={settingsReady && !onboardingDone}
+        s={s}
+        lang={uiLang}
+        onLang={(l) => savePrefs({ uiLanguage: l, dictationLanguage: l })}
+        onSkip={() => finishOnboarding()}
+        onFinish={finishOnboarding}
+        onTryBox={goTryBox}
       />
       <HelpDialog open={dialog === "help"} onClose={() => setDialog(null)} s={s} dictationLang={dictLang} />
       <ExportDialog

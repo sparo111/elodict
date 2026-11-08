@@ -23,9 +23,10 @@ interface SettingsProps {
   onChange: (over: Partial<Omit<SettingsRow, "id">>) => void;
   onBackup: () => Promise<void>;
   onRestore: (file: File) => Promise<number | null>;
+  onRedoSetup: () => void;
 }
 
-export function SettingsDialog({ open, onClose, s, value, onChange, onBackup, onRestore }: SettingsProps) {
+export function SettingsDialog({ open, onClose, s, value, onChange, onBackup, onRestore, onRedoSetup }: SettingsProps) {
   const [backupMsg, setBackupMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const restoreFile = async (file: File | undefined) => {
     if (!file) return;
@@ -164,6 +165,14 @@ export function SettingsDialog({ open, onClose, s, value, onChange, onBackup, on
             <p role={backupMsg.ok ? "status" : "alert"} className={`text-sm ${backupMsg.ok ? "" : "text-danger"}`}>{backupMsg.text}</p>
           )}
         </section>
+
+        <button
+          type="button"
+          onClick={onRedoSetup}
+          className="h-10 self-start rounded-md border border-border-input px-4 text-sm font-semibold hover:bg-surface"
+        >
+          {s.redoSetup}
+        </button>
 
         <p className="text-sm text-muted">{s.settingsNote}</p>
       </div>

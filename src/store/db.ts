@@ -23,6 +23,7 @@ export interface SettingsRow {
   engine: "browser" | "offline"; // chi ascolta: il browser o il modello offline
   whisperModel: "tiny" | "base"; // quale modello offline
   dictionary: DictEntry[]; // dizionario personale
+  onboardingDone: boolean; // il primo avvio guidato è stato fatto (o saltato)
 }
 
 class AppDB extends Dexie {
@@ -52,6 +53,7 @@ export async function loadSettings(): Promise<SettingsRow> {
     engine: "browser",
     whisperModel: "base",
     dictionary: [],
+    onboardingDone: false,
   };
   try {
     // Le impostazioni salvate da versioni vecchie non hanno i campi nuovi: si completano.
