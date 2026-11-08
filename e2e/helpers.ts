@@ -58,3 +58,13 @@ export async function setLanguage(page: Page, which: "dictation" | "ui", value: 
   await dialog.getByRole("combobox").nth(which === "dictation" ? 0 : 1).selectOption(value);
   await page.keyboard.press("Escape");
 }
+
+/**
+ * Testo selezionato sullo schermo. L'editor prende il focus (e quindi mostra la selezione) un frame dopo il comando:
+ * si aspetta quel segnale preciso invece di leggere subito (BUG-006).
+ */
+export async function selectedText(page: Page) {
+  await expect(editor(page)).toBeFocused();
+  return page.evaluate(() => window.getSelection()?.toString() ?? "");
+}
+

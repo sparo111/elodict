@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { editor, say, watchErrors } from "./helpers";
+import { editor, say, selectedText, watchErrors } from "./helpers";
 
 const openSettings = (page: Page) => page.getByRole("button", { name: "Impostazioni" }).click();
 
@@ -11,7 +11,7 @@ test.describe("Selezione a voce", () => {
   test("SEL-H1 seleziono l'ultima frase e la prossima frase detta la sostituisce", async ({ page }) => {
     await say(page, "va bene punto domani vengo punto");
     await say(page, "seleziona ultima frase");
-    const sel = await page.evaluate(() => window.getSelection()?.toString());
+    const sel = await selectedText(page);
     expect(sel).toBe("Domani vengo.");
     await say(page, "dopodomani");
     await expect(editor(page)).toHaveText("Va bene. Dopodomani");
@@ -20,15 +20,30 @@ test.describe("Selezione a voce", () => {
   test("SEL-H2 seleziono l'ultima parola", async ({ page }) => {
     await say(page, "uno due tre");
     await say(page, "seleziona ultima parola");
-    expect(await page.evaluate(() => window.getSelection()?.toString())).toBe("tre");
+    expect(await selectedText(page)).toBe("tre");
   });
 
   test("SEL-H3 seleziono tutto e poi tolgo la selezione", async ({ page }) => {
     await say(page, "uno due tre");
     await say(page, "seleziona tutto");
-    expect(await page.evaluate(() => window.getSelection()?.toString())).toContain("Uno due tre");
+    expect(await selectedText(page)).toContain("Uno due tre");
     await say(page, "deseleziona");
-    expect(await page.evaluate(() => window.getSelection()?.toString())).toBe("");
+    expect(await selectedText(page)).toBe("");
+  });
+
+  test("SEL-R1 la selezione si vede anche se il browser è lento a disegnare (BUG-006)", async ({ page }) => {
+    // Riproduce la lentezza: ogni «frame» arriva con mezzo secondo di ritardo.
+    await page.addInitScript(() => {
+      const raf = window.requestAnimationFrame.bind(window);
+      window.requestAnimationFrame = (cb) => {
+        setTimeout(() => raf(cb), 500);
+        return 0;
+      };
+    });
+    await page.goto("/");
+    await say(page, "uno due tre");
+    await say(page, "seleziona ultima parola");
+    expect(await selectedText(page)).toBe("tre");
   });
 
   test("SEL-E1 su documento vuoto non rompe nulla", async ({ page }) => {

@@ -47,3 +47,14 @@ S1: 1 · S2: 0 · S3: 2 · S4: 1 — tutti corretti, nessuno aperto.
 
 ## Riepilogo aggiornato
 S1: 1 · S2: 0 · S3: 3 · S4: 1 — tutti corretti, nessuno aperto.
+
+## BUG-006 — S4 — Due prove di selezione a voce cadevano quando il computer era carico  (CORRETTO, difetto della prova, non dell'app)
+- **Passi:** corsa completa delle prove su computer (SEL-H2 e SEL-H3 in `e2e/f07`); da sole passavano.
+- **Atteso:** la selezione letta è «tre» / tutto il testo. **Ottenuto:** testo vuoto.
+- **Causa:** dopo un comando `seleziona…` TipTap dà il focus all'editor dentro un `requestAnimationFrame` (lo fa apposta, per iOS e Android). La selezione disegnata sullo schermo arriva quindi un frame dopo; la prova la leggeva subito. Lo stato interno dell'editor era già giusto (SEL-H1, che dipende da quello, non cadeva mai). Per chi usa l'app il ritardo è di circa 16 ms e non si nota: l'app non cambia.
+- **Come l'ho riprodotto:** con `requestAnimationFrame` ritardato di 400 ms la vecchia prova falliva sempre (ricevuto `""`).
+- **Prova:** SEL-R1 in `e2e/f07-selezione-elenchi-maiuscolo.spec.ts` (frame ritardati di 500 ms).
+- **Correzione:** l'helper `selectedText()` in `e2e/helpers.ts` aspetta il segnale preciso che l'editor ha il focus, poi legge. Non ho allungato i tempi né ripetuto le prove. Ripetute 3 volte: 108 su 108.
+
+## Riepilogo aggiornato (2)
+S1: 1 · S2: 0 · S3: 3 · S4: 2 — tutti corretti, nessuno aperto.
