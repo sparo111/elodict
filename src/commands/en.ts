@@ -1,4 +1,5 @@
-// English voice commands. The edit commands (undo, delete) are our own wording.
+// English voice commands. The edit and formatting commands are our own wording.
+import { formatCommands } from "./format";
 import type { CommandDef } from "./types";
 
 export const enCommands: CommandDef[] = [
@@ -13,9 +14,33 @@ export const enCommands: CommandDef[] = [
   { phrases: ["close parenthesis", "right parenthesis", "close parentheses", "right parentheses"], action: { type: "close", char: ")" } },
   { phrases: ["open quote", "open quotes"], action: { type: "open", char: "“" } },
   { phrases: ["close quote", "close quotes"], action: { type: "close", char: "”" } },
+  // symbols
+  { phrases: ["at sign"], action: { type: "symbol", char: "@" } },
+  { phrases: ["asterisk"], action: { type: "symbol", char: "*" } },
+  { phrases: ["ampersand", "and sign"], action: { type: "symbol", char: "&" } },
+  { phrases: ["hashtag", "number sign", "pound sign"], action: { type: "symbol", char: "#" } },
+  { phrases: ["percent sign", "percent"], action: { type: "punct", char: "%" } },
+  { phrases: ["degree symbol"], action: { type: "punct", char: "°" } },
+  { phrases: ["plus sign"], action: { type: "symbol", char: "+" } },
+  { phrases: ["minus sign"], action: { type: "symbol", char: "-" } },
+  { phrases: ["multiplication sign"], action: { type: "symbol", char: "×" } },
+  { phrases: ["division sign"], action: { type: "symbol", char: "÷" } },
+  { phrases: ["equal sign", "equals sign"], action: { type: "symbol", char: "=" } },
+  { phrases: ["dollar sign"], action: { type: "symbol", char: "$" } },
+  { phrases: ["pound sterling sign"], action: { type: "symbol", char: "£" } },
+  { phrases: ["euro sign"], action: { type: "symbol", char: "€" } },
+  { phrases: ["yen sign"], action: { type: "symbol", char: "¥" } },
+  { phrases: ["underscore"], action: { type: "symbol", char: "_" } },
+  { phrases: ["forward slash"], action: { type: "symbol", char: "/" } },
+  { phrases: ["backslash"], action: { type: "symbol", char: "\\" } },
+  // lines and editing
   { phrases: ["new paragraph"], action: { type: "break", paragraph: true } },
   { phrases: ["new line"], action: { type: "break", paragraph: false } },
   { phrases: ["undo"], action: { type: "edit", op: "undo" } },
   { phrases: ["delete word"], action: { type: "edit", op: "deleteWord" } },
   { phrases: ["delete sentence"], action: { type: "edit", op: "deleteSentence" } },
+  ...formatCommands(
+    { bold: ["bold"], italic: ["italicize", "italics"], underline: ["underline"], clear: ["clear formatting"] },
+    { that: ["that"], word: ["last word"], sentence: ["last sentence"] },
+  ),
 ];

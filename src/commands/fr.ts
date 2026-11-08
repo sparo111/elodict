@@ -1,4 +1,5 @@
-// Commandes vocales en français. En français, ? ! : ; sont précédés d'une espace insécable.
+// Commandes vocales en français. En français, ? ! : ; % sont précédés d'une espace insécable.
+import { formatCommands } from "./format";
 import type { CommandDef } from "./types";
 
 export const frCommands: CommandDef[] = [
@@ -13,9 +14,32 @@ export const frCommands: CommandDef[] = [
   { phrases: ["parenthèse fermante", "parenthèse droite", "fermer la parenthèse"], action: { type: "close", char: ")" } },
   { phrases: ["guillemet ouvrant", "guillemet gauche", "ouvrir les guillemets"], action: { type: "open", char: "«" } },
   { phrases: ["guillemet fermant", "guillemet droit", "fermer les guillemets"], action: { type: "close", char: "»" } },
+  // symboles
+  { phrases: ["arobase"], action: { type: "symbol", char: "@" } },
+  { phrases: ["astérisque"], action: { type: "symbol", char: "*" } },
+  { phrases: ["esperluette"], action: { type: "symbol", char: "&" } },
+  { phrases: ["signe dièse"], action: { type: "symbol", char: "#" } },
+  { phrases: ["signe pourcentage", "pour cent"], action: { type: "punct", char: "%", spaceBefore: true } },
+  { phrases: ["symbole degré"], action: { type: "punct", char: "°" } },
+  { phrases: ["signe plus"], action: { type: "symbol", char: "+" } },
+  { phrases: ["signe moins"], action: { type: "symbol", char: "-" } },
+  { phrases: ["signe multiplication"], action: { type: "symbol", char: "×" } },
+  { phrases: ["signe division"], action: { type: "symbol", char: "÷" } },
+  { phrases: ["signe égal"], action: { type: "symbol", char: "=" } },
+  { phrases: ["signe dollar"], action: { type: "symbol", char: "$" } },
+  { phrases: ["signe livre sterling"], action: { type: "symbol", char: "£" } },
+  { phrases: ["signe euro"], action: { type: "symbol", char: "€" } },
+  { phrases: ["signe yen"], action: { type: "symbol", char: "¥" } },
+  { phrases: ["trait de soulignement"], action: { type: "symbol", char: "_" } },
+  { phrases: ["barre oblique"], action: { type: "symbol", char: "/" } },
+  // lignes et modification
   { phrases: ["nouveau paragraphe"], action: { type: "break", paragraph: true } },
   { phrases: ["saut de ligne", "à la ligne"], action: { type: "break", paragraph: false } },
   { phrases: ["annule", "annuler"], action: { type: "edit", op: "undo" } },
   { phrases: ["efface mot", "supprime mot"], action: { type: "edit", op: "deleteWord" } },
   { phrases: ["efface phrase", "supprime phrase"], action: { type: "edit", op: "deleteSentence" } },
+  ...formatCommands(
+    { bold: ["gras"], italic: ["italique"], underline: ["souligné"], clear: ["efface la mise en forme"] },
+    { that: ["cela", "ça"], word: ["dernier mot"], sentence: ["dernière phrase"] },
+  ),
 ];

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { FileText, Mail, Share2 } from "lucide-react";
 import { Modal } from "./Modal";
 import { COMMANDS, LANGS, LANG_NAME } from "../commands";
+import { SYNTAX } from "../commands/syntax";
 import type { CommandAction, Lang } from "../commands/types";
 import type { Strings } from "../i18n";
 import { buildFile, canPickLocation, FORMATS, saveDocumentFile, type ExportFormat } from "../export/build";
@@ -48,11 +49,14 @@ function describe(a: CommandAction, s: Strings): string {
     case "punct":
     case "open":
     case "close":
+    case "symbol":
       return a.char;
+    case "format":
+      return `${s.fmtMark[a.mark]} · ${s.fmtTarget[a.target]}`;
     case "break":
       return a.paragraph ? s.dNewParagraph : s.dNewLine;
     case "edit":
-      return a.op === "undo" ? s.dUndo : a.op === "deleteWord" ? s.dDeleteWord : s.dDeleteSentence;
+      return a.op === "undo" ? s.dUndo : a.op === "deleteWord" ? s.dDeleteWord : a.op === "deleteSentence" ? s.dDeleteSentence : s.dDeleteRange;
   }
 }
 
@@ -67,6 +71,10 @@ export function HelpDialog({ open, onClose, s, dictationLang }: { open: boolean;
             <span className="shrink-0 text-right font-mono text-sm text-muted">{describe(c.action, s)}</span>
           </li>
         ))}
+      </ul>
+      <h3 className="mb-1 mt-5 text-sm font-semibold">{s.helpExamples}</h3>
+      <ul className="list-disc pl-5 text-sm">
+        {SYNTAX[dictationLang].examples.map((e) => <li key={e}>«{e}»</li>)}
       </ul>
     </Modal>
   );

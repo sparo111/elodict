@@ -28,3 +28,11 @@ Il bundle JS principale è 597 kB (188 kB compresso); docx e PDF si caricano sol
 
 ## Prossimi passi (M2)
 Autosalvataggio, 4 lingue (EN/FR/ES), export .docx/.pdf/.md, email, impostazioni, aiuto comandi.
+
+## M2c (2026-11-08) — chiuse le funzioni obbligatorie
+- Cancella N parole/frasi ("cancella 3 parole") e cancella da X a Y, in 4 lingue (`src/commands/syntax.ts`). Limite: in "da X a Y" la parte Y è tutto il resto della frase detta, quindi il comando va detto da solo.
+- Formattazione a voce: grassetto / corsivo / sottolineato / rimuovi formattazione su "questo" (ultimo testo detto), "ultima parola", "ultima frase".
+- Simboli, valuta e matematica nelle 4 lingue.
+- Aiuto: nuova sezione con esempi per ogni lingua.
+- Test: 54 sulla logica, 120 nel browser (desktop + telefono), tutti verdi. Difetto trovato e corretto: BUG-004.
+- Resta non verificato: voce vera, Word vero, spagnolo da madrelingua.

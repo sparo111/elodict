@@ -1,12 +1,12 @@
 import type { CommandDef, Segment, Step, Token } from "./types";
+import { matchEditPattern, normalizeWord, type EditSyntax } from "./syntax";
 
-const normalize = (w: string) => w.toLowerCase().replace(/[’‘]/g, "'");
 
 /**
  * Trasforma la frase riconosciuta in parole e comandi.
  * Le frasi più lunghe vincono ("punto e virgola" prima di "punto").
  */
-export function tokenize(transcript: string, commands: CommandDef[]): Token[] {
+export function tokenize(transcript: string, commands: CommandDef[], syntax?: EditSyntax): Token[] {
   const words = transcript.trim().split(/\s+/).filter(Boolean);
   const phrases = commands
     .flatMap((c) => c.phrases.map((p) => ({ words: p.split(" "), action: c.action })))
@@ -15,7 +15,13 @@ export function tokenize(transcript: string, commands: CommandDef[]): Token[] {
   const tokens: Token[] = [];
   let i = 0;
   while (i < words.length) {
-    const hit = phrases.find((p) => p.words.every((w, k) => words[i + k] !== undefined && normalize(words[i + k]) === w));
+    const pattern = syntax ? matchEditPattern(words, i, syntax) : null;
+    if (pattern) {
+      tokens.push({ kind: "cmd", action: pattern.action });
+      i += pattern.length;
+      continue;
+    }
+    const hit = phrases.find((p) => p.words.every((w, k) => words[i + k] !== undefined && normalizeWord(words[i + k]) === w));
     if (hit) {
       tokens.push({ kind: "cmd", action: hit.action });
       i += hit.words.length;
@@ -36,9 +42,9 @@ export function splitSteps(tokens: Token[]): Step[] {
     run = [];
   };
   for (const t of tokens) {
-    if (t.kind === "cmd" && t.action.type === "edit") {
+    if (t.kind === "cmd" && (t.action.type === "edit" || t.action.type === "format")) {
       flush();
-      steps.push({ kind: "edit", op: t.action.op });
+      steps.push({ kind: "act", action: t.action });
     } else run.push(t);
   }
   flush();
@@ -82,6 +88,10 @@ export function compose(tokens: Token[], before: string): Segment[] {
       needSpace = true;
       capNext = SENTENCE_END.test(a.char);
       atLineStart = false;
+    } else if (a.type === "symbol") {
+      push((needSpace ? " " : "") + a.char);
+      needSpace = true;
+      atLineStart = false;
     } else if (a.type === "open") {
       push((needSpace ? " " : "") + a.char);
       needSpace = false;
@@ -100,13 +110,13 @@ export function compose(tokens: Token[], before: string): Segment[] {
   return out;
 }
 
-export function parseTranscript(transcript: string, commands: CommandDef[]): Step[] {
-  return splitSteps(tokenize(transcript, commands));
+export function parseTranscript(transcript: string, commands: CommandDef[], syntax?: EditSyntax): Step[] {
+  return splitSteps(tokenize(transcript, commands, syntax));
 }
 
 /** Comodo per i test: una sola frase, senza modifiche. */
-export function dictationToSegments(transcript: string, before: string, commands: CommandDef[]): Segment[] {
-  const steps = parseTranscript(transcript, commands);
+export function dictationToSegments(transcript: string, before: string, commands: CommandDef[], syntax?: EditSyntax): Segment[] {
+  const steps = parseTranscript(transcript, commands, syntax);
   const run = steps.find((s) => s.kind === "run");
   return run && run.kind === "run" ? compose(run.tokens, before) : [];
 }

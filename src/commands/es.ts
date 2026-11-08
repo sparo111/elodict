@@ -1,4 +1,5 @@
 // Comandos de voz en español (tabla de Microsoft leída solo de un resumen: revisar con un hablante nativo).
+import { formatCommands } from "./format";
 import type { CommandDef } from "./types";
 
 export const esCommands: CommandDef[] = [
@@ -15,9 +16,32 @@ export const esCommands: CommandDef[] = [
   { phrases: ["cerrar paréntesis", "paréntesis de cierre"], action: { type: "close", char: ")" } },
   { phrases: ["abrir comillas", "comillas izquierdas"], action: { type: "open", char: "«" } },
   { phrases: ["cerrar comillas", "comillas derechas"], action: { type: "close", char: "»" } },
+  // símbolos
+  { phrases: ["arroba"], action: { type: "symbol", char: "@" } },
+  { phrases: ["asterisco"], action: { type: "symbol", char: "*" } },
+  { phrases: ["y comercial"], action: { type: "symbol", char: "&" } },
+  { phrases: ["hashtag", "almohadilla"], action: { type: "symbol", char: "#" } },
+  { phrases: ["signo de porcentaje", "por ciento"], action: { type: "punct", char: "%" } },
+  { phrases: ["símbolo de grado"], action: { type: "punct", char: "°" } },
+  { phrases: ["signo más"], action: { type: "symbol", char: "+" } },
+  { phrases: ["signo menos"], action: { type: "symbol", char: "-" } },
+  { phrases: ["signo de multiplicación"], action: { type: "symbol", char: "×" } },
+  { phrases: ["signo de división"], action: { type: "symbol", char: "÷" } },
+  { phrases: ["signo igual"], action: { type: "symbol", char: "=" } },
+  { phrases: ["símbolo del dólar"], action: { type: "symbol", char: "$" } },
+  { phrases: ["símbolo de la libra esterlina"], action: { type: "symbol", char: "£" } },
+  { phrases: ["símbolo del euro"], action: { type: "symbol", char: "€" } },
+  { phrases: ["símbolo del yen"], action: { type: "symbol", char: "¥" } },
+  { phrases: ["guion bajo"], action: { type: "symbol", char: "_" } },
+  { phrases: ["barra diagonal"], action: { type: "symbol", char: "/" } },
+  // líneas y edición
   { phrases: ["nuevo párrafo"], action: { type: "break", paragraph: true } },
   { phrases: ["nueva línea", "salto de línea"], action: { type: "break", paragraph: false } },
   { phrases: ["deshacer"], action: { type: "edit", op: "undo" } },
   { phrases: ["borra palabra"], action: { type: "edit", op: "deleteWord" } },
   { phrases: ["borra frase"], action: { type: "edit", op: "deleteSentence" } },
+  ...formatCommands(
+    { bold: ["negrita"], italic: ["cursiva"], underline: ["subrayado"], clear: ["quitar formato"] },
+    { that: ["eso", "esto"], word: ["última palabra"], sentence: ["última frase"] },
+  ),
 ];

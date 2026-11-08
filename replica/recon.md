@@ -126,3 +126,20 @@ Affidabilità: IT e FR letti testualmente. ES solo da riassunto (da ricontrollar
 
 Altre tabelle complete (simboli, matematica, valuta, emoji) sono nel report della ricerca; le trasferiremo in un file dati (`commands.json`) in fase di build.
 Anomalie nella fonte: IT "segno di percentuale" ha l'output sbagliato nella pagina Microsoft; FR "saut de ligne/nouveau paragraphe" non hanno un output simbolo (sono azioni). Da gestire a mano.
+
+## 11. Concorrente osservato: "dictate. — Voice to Text" (App Store)
+Fonte: https://apps.apple.com/us/app/dictate-voice-to-text/id6759285154 (pagina pubblica letta il 2026-11-08; nessuna recensione disponibile, nessun uso diretto dell'app).
+Non è Dictate di Microsoft: è un'app indipendente (sviluppatore singolo) per iPhone/iPad/Mac, nata a marzo, ex "Hyper Whisper".
+
+| aspetto | cosa dichiara |
+| --- | --- |
+| Cos'è | tastiera di sistema: detti dentro qualsiasi app, senza copia-incolla |
+| Prezzo | gratis + abbonamento Pro: 2,99 $/mese o 19,99 $/anno |
+| Funzioni | punteggiatura e paragrafi automatici; pulizia parole riempitive; dizionario personale; traduzione (parli in una lingua, scrivi in un'altra); 30+ lingue; cronologia ricercabile; sync con Mac; widget |
+| Privacy (dichiarata) | audio elaborato in modo sicuro, registrazioni non salvate |
+| Recensioni | nessuna ancora: non è possibile ricavare cosa piace o non piace |
+
+Cosa ne ricaviamo:
+- La sua forza è la **tastiera di sistema**: una web app non può esserlo. Resta aperta la domanda "dettare dentro altre app" (estensione browser o app nativa).
+- Differenziazione di Mia Dictate: **gratis**, senza account, senza installazione, export in 5 formati.
+- Idee fattibili nel browser e senza costi: eliminare le parole riempitive e un dizionario personale (aggiunte a `features.csv`).

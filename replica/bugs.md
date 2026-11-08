@@ -28,3 +28,11 @@
 
 ## Riepilogo
 S1: 1 (corretto) · S2: 0 · S3: 2 (corretti) · S4: 0 · aperti: 0
+
+## BUG-004 — S4 — Il corsivo/grassetto di "questo" includeva lo spazio davanti alla frase  (CORRETTO)
+- **Passi:** "prima frase punto", "seconda frase", "corsivo questo".
+- **Atteso:** corsivo solo su «Seconda frase». **Ottenuto:** anche lo spazio prima.
+- **Prova:** `e2e/f02-comandi.spec.ts` F02-H13. **Correzione:** gli spazi ai bordi sono esclusi dall'intervallo formattato (`src/App.tsx`).
+
+## Aggiornamento riepilogo
+S1: 1 · S2: 0 · S3: 2 · S4: 1 — tutti corretti, nessuno aperto.

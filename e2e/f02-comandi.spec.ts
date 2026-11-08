@@ -106,3 +106,74 @@ test("F02-E6 il cursore a metà testo: la dettatura si inserisce lì", async ({ 
   await say(page, "mezzo");
   await expect(editor(page)).toContainText("mezzo");
 });
+
+test("F02-H9 cancella 2 parole (con cifra e a parole)", async ({ page }) => {
+  await say(page, "uno due tre quattro cinque");
+  await say(page, "cancella 2 parole");
+  await expect(editor(page)).toHaveText("Uno due tre");
+  await say(page, "cancella due parole");
+  await expect(editor(page)).toHaveText("Uno");
+});
+
+test("F02-H10 cancella da X a Y", async ({ page }) => {
+  await say(page, "ciao bel mondo felice");
+  await say(page, "cancella da bel a mondo");
+  await expect(editor(page)).toHaveText("Ciao felice");
+});
+
+test("F02-H11 cancella da X a Y che non esistono: non succede niente", async ({ page }) => {
+  await say(page, "ciao mondo");
+  await say(page, "cancella da pippo a pluto");
+  await expect(editor(page)).toHaveText("Ciao mondo");
+});
+
+test("F02-H12 grassetto ultima parola, e la dettatura dopo NON è in grassetto", async ({ page }) => {
+  await say(page, "questo è importante");
+  await say(page, "grassetto ultima parola");
+  await expect(editor(page).locator("strong")).toHaveText("importante");
+  await say(page, "davvero");
+  await expect(editor(page)).toHaveText("Questo è importante davvero");
+  await expect(editor(page).locator("strong")).toHaveText("importante");
+});
+
+test("F02-H13 corsivo questo (ultimo testo detto) e rimuovi formattazione", async ({ page }) => {
+  await say(page, "prima frase punto");
+  await say(page, "seconda frase");
+  await say(page, "corsivo questo");
+  await expect(editor(page).locator("em")).toHaveText("Seconda frase");
+  await say(page, "rimuovi formattazione ultima frase");
+  await expect(editor(page).locator("em")).toHaveCount(0);
+});
+
+test("F02-H14 sottolineato in inglese e francese", async ({ page }) => {
+  await setLanguage(page, "dictation", "en");
+  await say(page, "see you tomorrow");
+  await say(page, "underline last word");
+  await expect(editor(page).locator("u")).toHaveText("tomorrow");
+  await setLanguage(page, "dictation", "fr");
+  await say(page, "à demain");
+  await say(page, "gras dernier mot");
+  await expect(editor(page).locator("strong")).toHaveText("demain");
+});
+
+test("F02-H15 simboli: euro, chiocciola, percentuale", async ({ page }) => {
+  await say(page, "costa 5 simbolo di euro");
+  await expect(editor(page)).toHaveText("Costa 5 €");
+  await say(page, "sconto 20 segno di percentuale");
+  await expect(editor(page)).toHaveText("Costa 5 € sconto 20%");
+});
+
+test("F02-E7 formattare con documento vuoto non rompe nulla", async ({ page }) => {
+  const check = watchErrors(page);
+  await say(page, "grassetto ultima parola");
+  await say(page, "cancella 3 parole");
+  await say(page, "cancella da a a b");
+  await expect(editor(page)).toHaveText("");
+  check();
+});
+
+test("F02-E8 aiuto: mostra anche gli esempi con numeri", async ({ page }) => {
+  await page.getByRole("button", { name: "Aiuto" }).click();
+  await expect(page.getByRole("dialog")).toContainText("cancella 3 parole");
+  await expect(page.getByRole("dialog")).toContainText("grassetto");
+});

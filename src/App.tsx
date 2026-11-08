@@ -9,7 +9,8 @@ import { strings } from "./i18n";
 import { COMMANDS, VOICE_CODE } from "./commands";
 import type { Lang } from "./commands/types";
 import { compose, parseTranscript } from "./commands/parser";
-import { charsToDelete, deriveTitle } from "./text/edit";
+import { charsToDelete, deriveTitle, rangeFromTo, rangeOfLast } from "./text/edit";
+import { SYNTAX } from "./commands/syntax";
 import {
   createRecognizer,
   isSpeechSupported,
@@ -106,29 +107,65 @@ export function App() {
   };
 
   // Applica una frase (detta o scritta nella casella di prova).
+  // Ultimo testo scritto a voce: serve per "grassetto questo".
+  const lastInsert = useRef<{ from: number; to: number } | null>(null);
+
   const applyTranscript = useCallback(
     (transcript: string) => {
       if (!editor) return;
-      for (const step of parseTranscript(transcript, COMMANDS[dictLang])) {
+      for (const step of parseTranscript(transcript, COMMANDS[dictLang], SYNTAX[dictLang])) {
         // Ogni frase detta è un passo a sé per "annulla", anche se arriva subito dopo un'altra.
         editor.view.dispatch(closeHistory(editor.state.tr));
-        if (step.kind === "edit") {
-          if (step.op === "undo") {
-            editor.chain().focus().undo().run();
+
+        if (step.kind === "act") {
+          const a = step.action;
+          const before = textBefore(editor);
+          const pos = editor.state.selection.from;
+          // Converte una posizione nella stringa `before` in una posizione nel documento.
+          const abs = (i: number) => pos - (before.length - i);
+
+          if (a.type === "edit") {
+            if (a.op === "undo") {
+              editor.chain().focus().undo().run();
+            } else if (a.op === "deleteRange") {
+              const r = rangeFromTo(before, a.from ?? "", a.to ?? "");
+              if (r) editor.chain().focus().deleteRange({ from: abs(r.start), to: abs(r.end) }).run();
+            } else {
+              const n = charsToDelete(before, a.op, a.n ?? 1);
+              if (n > 0) editor.chain().focus().deleteRange({ from: pos - n, to: pos }).run();
+            }
           } else {
-            const n = charsToDelete(textBefore(editor), step.op);
-            const pos = editor.state.selection.from;
-            if (n > 0) editor.chain().focus().deleteRange({ from: pos - n, to: pos }).run();
+            let range: { from: number; to: number } | null = null;
+            const last = lastInsert.current;
+            if (a.target === "that" && last && last.to <= editor.state.doc.content.size) range = last;
+            else {
+              const r = rangeOfLast(before, a.target === "word" ? "word" : "sentence");
+              if (r) range = { from: abs(r.start), to: abs(r.end) };
+            }
+            if (range) {
+              // Niente spazi ai bordi: la formattazione non deve "sporcare" lo spazio fra le parole.
+              const t = editor.state.doc.textBetween(range.from, range.to, "\n", "\n");
+              range = { from: range.from + (t.length - t.trimStart().length), to: range.to - (t.length - t.trimEnd().length) };
+            }
+            if (range && range.to > range.from) {
+              const c = editor.chain().focus().setTextSelection(range);
+              if (a.mark === "clear") c.unsetAllMarks().setTextSelection(pos).run();
+              else c.setMark(a.mark).setTextSelection(pos).unsetMark(a.mark).run();
+            }
           }
           continue;
         }
+
         // Un pezzo alla volta: se un comando non può essere eseguito, gli altri restano validi.
+        const startPos = editor.state.selection.from;
         for (const seg of compose(step.tokens, textBefore(editor))) {
           const c = editor.chain().focus();
           if (seg.kind === "text") c.insertContent(seg.text).run();
           else if (seg.paragraph) c.splitBlock().run();
           else c.setHardBreak().run();
         }
+        const endPos = editor.state.selection.to;
+        if (endPos > startPos) lastInsert.current = { from: startPos, to: endPos };
       }
     },
     [editor, dictLang],

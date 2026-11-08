@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { compose, dictationToSegments, parseTranscript, NBSP } from "./parser";
 import { COMMANDS } from "./index";
+import { SYNTAX } from "./syntax";
 import type { Lang } from "./types";
 
 const run = (lang: Lang, t: string, before = "") =>
@@ -84,15 +85,71 @@ describe("español", () => {
 describe("comandi di modifica", () => {
   it("separano il testo prima e dopo", () => {
     const steps = parseTranscript("ciao cancella parola mondo", COMMANDS.it);
-    expect(steps.map((s) => s.kind)).toEqual(["run", "edit", "run"]);
-    expect(steps[1]).toEqual({ kind: "edit", op: "deleteWord" });
+    expect(steps.map((s) => s.kind)).toEqual(["run", "act", "run"]);
+    expect(steps[1]).toEqual({ kind: "act", action: { type: "edit", op: "deleteWord" } });
   });
   it("annulla è un comando in tutte le lingue", () => {
     for (const [lang, word] of [["it", "annulla"], ["en", "undo"], ["fr", "annule"], ["es", "deshacer"]] as const) {
-      expect(parseTranscript(word, COMMANDS[lang])).toEqual([{ kind: "edit", op: "undo" }]);
+      expect(parseTranscript(word, COMMANDS[lang])).toEqual([{ kind: "act", action: { type: "edit", op: "undo" } }]);
     }
   });
   it("compose senza token dà lista vuota", () => {
     expect(compose([], "")).toEqual([]);
+  });
+});
+
+const act = (lang: Lang, t: string) => {
+  const steps = parseTranscript(t, COMMANDS[lang], SYNTAX[lang]);
+  return steps.length === 1 && steps[0].kind === "act" ? steps[0].action : steps;
+};
+
+describe("cancella con numeri e parole", () => {
+  it("cancella N parole o frasi, con cifre o a parole", () => {
+    expect(act("it", "cancella 3 parole")).toEqual({ type: "edit", op: "deleteWord", n: 3 });
+    expect(act("it", "cancella due frasi")).toEqual({ type: "edit", op: "deleteSentence", n: 2 });
+    expect(act("it", "cancella le ultime 4 parole")).toEqual({ type: "edit", op: "deleteWord", n: 4 });
+    expect(act("en", "delete 3 words")).toEqual({ type: "edit", op: "deleteWord", n: 3 });
+    expect(act("fr", "efface deux phrases")).toEqual({ type: "edit", op: "deleteSentence", n: 2 });
+    expect(act("es", "borra tres palabras")).toEqual({ type: "edit", op: "deleteWord", n: 3 });
+  });
+  it("cancella da X a Y", () => {
+    expect(act("it", "cancella da ciao a mondo")).toEqual({ type: "edit", op: "deleteRange", from: "ciao", to: "mondo" });
+    expect(act("en", "delete from good morning to world")).toEqual({ type: "edit", op: "deleteRange", from: "good morning", to: "world" });
+    expect(act("fr", "efface de bonjour à monde")).toEqual({ type: "edit", op: "deleteRange", from: "bonjour", to: "monde" });
+    expect(act("es", "borra de hola a mundo")).toEqual({ type: "edit", op: "deleteRange", from: "hola", to: "mundo" });
+  });
+  it("senza numero o senza 'a' resta una parola normale", () => {
+    expect(run("it", "cancella la nota")).toBe("Cancella la nota");
+    expect(act("it", "cancella da ciao")).not.toHaveProperty("op");
+  });
+});
+
+describe("formattazione a voce", () => {
+  it("riconosce grassetto/corsivo/sottolineato su questo, parola, frase", () => {
+    expect(act("it", "grassetto ultima parola")).toEqual({ type: "format", mark: "bold", target: "word" });
+    expect(act("it", "corsivo questo")).toEqual({ type: "format", mark: "italic", target: "that" });
+    expect(act("en", "underline last sentence")).toEqual({ type: "format", mark: "underline", target: "sentence" });
+    expect(act("en", "clear formatting that")).toEqual({ type: "format", mark: "clear", target: "that" });
+    expect(act("fr", "gras dernier mot")).toEqual({ type: "format", mark: "bold", target: "word" });
+    expect(act("es", "negrita última palabra")).toEqual({ type: "format", mark: "bold", target: "word" });
+  });
+  it("la parola da sola resta testo", () => {
+    expect(run("it", "il grassetto è bello")).toBe("Il grassetto è bello");
+  });
+});
+
+describe("simboli", () => {
+  it("valuta e simboli staccati come parole", () => {
+    expect(run("it", "costa 5 simbolo di euro")).toBe("Costa 5 €");
+    expect(run("en", "mail me at sign home")).toBe("Mail me @ home");
+    expect(run("es", "son 10 símbolo del euro")).toBe("Son 10 €");
+  });
+  it("percentuale e gradi si attaccano al numero", () => {
+    expect(run("it", "20 segno di percentuale")).toBe("20%");
+    expect(run("en", "20 degree symbol")).toBe("20°");
+    expect(run("fr", "20 signe pourcentage")).toBe(`20${NBSP}%`);
+  });
+  it("il simbolo non cambia le maiuscole", () => {
+    expect(run("en", "buy now dollar sign ten")).toBe("Buy now $ ten");
   });
 });
