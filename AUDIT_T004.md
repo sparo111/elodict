@@ -60,7 +60,7 @@ Precisazioni oneste:
 - `npm audit`: **41 segnalazioni** (2 basse, 33 medie, 3 alte, 3 critiche); **27 toccano il codice che arriva agli utenti** (25 medie, 2 alte: `sharp`, usato solo in Node, e pezzi di TipTap). Le altre 14 sono strumenti di sviluppo. Nessuna è nuova.
 
 **QUALITÀ — PASS ✅ (con riserve)**
-- File nuovi piccoli: il più lungo è `DocumentItem.tsx` (153 righe); `useDocumentStore.ts` 138; `db.ts` 119. Testi solo in `src/i18n.ts`, stesse 44 chiavi nelle 4 lingue; nessun colore nuovo (`contrast.py`: 0 errori su 17 coppie).
+- File nuovi piccoli: il più lungo è `DocumentItem.tsx` (153 righe); `useDocumentStore.ts` 138; `db.ts` 119. Testi solo in `src/i18n.ts`, stesse 42 chiavi nelle 4 lingue; nessun colore nuovo (`contrast.py`: 0 errori su 17 coppie).
 - Nessun `catch` vuoto; il codice vecchio (`loadLastDocument`) è stato rimosso.
 - axe: l'elenco, la ricerca, le conferme e il cestino non hanno errori di accessibilità (computer e telefono 390 px). Axe aveva trovato un errore vero (il nome accessibile del pulsante «apri» non conteneva il testo visibile): corretto.
 - **Riserva 1**: il documento nuovo entra nell'elenco solo quando ci si scrive qualcosa (scelta voluta, per non riempire l'elenco di fogli vuoti). Se si crea un foglio vuoto e si ricarica, si riapre l'ultimo documento scritto, non il foglio vuoto.
