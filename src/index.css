@@ -1,0 +1,32 @@
+@import "../replica/design/tokens.css";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body, #root { height: 100%; }
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 24px;
+}
+
+/* Testo del documento */
+.doc-editor .ProseMirror {
+  font-family: var(--font-document);
+  font-size: 18px;
+  line-height: 30px;
+  min-height: 50vh;
+  outline: none;
+  padding: 24px 0;
+}
+.doc-editor .ProseMirror p { margin: 0 0 12px; }
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: .5; transform: scale(.8); }
+}
+.pulse-dot { animation: pulse-dot 1.2s var(--motion-ease) infinite; }
+@media (prefers-reduced-motion: reduce) { .pulse-dot { animation: none; } }

@@ -1,0 +1,47 @@
+feature,area,priority,original,clone,notes
+Pulsante Dictate avvia/ferma,core,must,yes,yes,M1: tasto Detta/Ferma
+Testo dettato appare nell'editor,core,must,yes,yes,M1
+Scelta lingua di dettatura,impostazioni,must,yes,no,default = lingua documento
+Scelta microfono,impostazioni,should,yes,no,
+Punteggiatura automatica (toggle),impostazioni,should,yes,no,solo per alcune lingue nell'originale
+Filtro parolacce con ***,impostazioni,could,yes,no,
+Comandi punteggiatura (punto/virgola/punto interrogativo/a capo),comandi,must,yes,partial,"M1: solo italiano; mancano parentesi, virgolette, EN/FR/ES"
+Comandi simboli/valuta/matematica,comandi,could,yes,no,
+Comandi emoji (smiley ecc.),comandi,could,yes,no,
+Comando annulla (undo),comandi,must,yes,no,
+Comandi cancella (delete that / ultima parola / ultima frase),comandi,must,yes,no,
+Comandi seleziona (parola/frase/paragrafo/da X a Y),comandi,should,yes,no,
+Comandi navigazione (vai a fine frase/paragrafo),comandi,could,yes,no,web
+Comandi formattazione (grassetto/corsivo/sottolineato/maiuscolo),comandi,should,yes,no,
+Comandi allineamento e rientro,comandi,could,yes,no,
+Comandi elenco puntato/numerato,comandi,could,yes,no,
+Comandi tabelle,comandi,could,yes-web,no,solo web nell'originale
+Comando aggiungi commento,comandi,could,yes,no,
+Pausa/ripresa dettatura (pause/resume dictation),controllo,should,yes,no,
+Scorciatoia da tastiera per avviare,controllo,could,yes,no,Mac Option+F1; ALT+` web ripresa
+Pannello aiuto comandi (show commands),aiuto,should,yes,no,S05
+Messaggi d'errore microfono (3 tipi),errori,must,yes,yes,"M1: bloccato, non trovato, non ti sento, rete, altro"
+Stato disattivato se documento in sola lettura,errori,could,yes,no,
+Evidenziazione parole dubbie + Ignore,qualità,could,yes-web,no,S07
+Versione mobile con comandi ridotti,piattaforma,could,yes,no,
+Invio email a voce,mobile,could,yes,no,fuori scope iniziale
+Editor di testo indipendente (non serve Word),core,must,no,yes,M1: TipTap
+Copia negli appunti / scarica il testo (.txt),core,must,no,partial,scarica sì; manca copia negli appunti
+Lingue EN IT FR ES con comandi vocali,lingue,must,yes,no,decisione utente
+Cambio lingua al volo,lingue,should,partial,no,
+Funziona dal browser senza installazione,piattaforma,must,no,partial,gira in locale; manca la pubblicazione online
+Completamente gratuita senza account,business,must,no,yes,nessun account né server
+Esporta in Word (.docx),export,must,no,no,generato nel browser
+Esporta in PDF,export,must,no,no,generato nel browser
+Esporta in Markdown (.md),export,must,no,no,
+Esporta in testo (.txt),export,must,no,yes,M1
+Esporta in altri formati (.html .rtf),export,could,no,no,
+Invia il file via email (mailto/Condividi),email,must,no,no,mailto non allega file; Condividi su mobile sì
+Invia email con allegato dal server,email,could,no,no,richiede server e servizio email; costi/spam
+Salvataggio automatico locale nel browser,core,should,no,no,niente account né server
+Compatibilità browser e avviso se non supportato (Firefox),errori,should,no,yes,M1
+Dettare dentro altre app (estensione browser/desktop),piattaforma,could,no,no,da decidere con l'utente
+Integrazione dentro Word/Outlook/PowerPoint/OneNote,piattaforma,skip,yes,skip,non clonabile: prodotti Microsoft
+Motore di riconoscimento vocale Microsoft,tecnologia,skip,yes,skip,si usa Web Speech API o servizio terzo
+Account/abbonamento Microsoft 365,business,skip,yes,skip,non serve
+Supporto 50+ lingue con qualità Microsoft,tecnologia,skip,yes,skip,solo 4 lingue scelte
