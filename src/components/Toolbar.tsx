@@ -53,8 +53,8 @@ export function Toolbar({ editor, s, listening, micDisabled, onMic }: Props) {
   const run = () => editor.chain().focus();
 
   return (
-    <div role="toolbar" aria-label={s.tbToolbar} className="sticky top-0 z-10 border-b border-border bg-bg">
-      <div className="mx-auto flex max-w-editor items-center gap-1 overflow-x-auto px-4 py-1">
+    <section aria-label={s.tbToolbar} className="sticky top-0 z-10 border-b border-border bg-bg">
+      <div role="toolbar" aria-label={s.tbToolbar} className="mx-auto flex max-w-editor items-center gap-1 overflow-x-auto px-4 py-1">
         <button
           type="button"
           title={listening ? s.stop : s.dictate}
@@ -94,6 +94,6 @@ export function Toolbar({ editor, s, listening, micDisabled, onMic }: Props) {
           <ListOrdered size={18} aria-hidden="true" />
         </Tool>
       </div>
-    </div>
+    </section>
   );
 }

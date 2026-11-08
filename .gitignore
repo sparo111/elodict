@@ -2,3 +2,5 @@ node_modules
 dist
 *.log
 .replica-guida.json
+test-results
+playwright-report

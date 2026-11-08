@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { EditorContent, useEditor, type Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import UnderlineExt from "@tiptap/extension-underline";
+import { closeHistory } from "@tiptap/pm/history";
 import { Toolbar } from "./components/Toolbar";
 import { AlertTriangle, Download, HelpCircle, Mail, Mic, Settings, Square } from "lucide-react";
 import { strings } from "./i18n";
@@ -109,6 +110,8 @@ export function App() {
     (transcript: string) => {
       if (!editor) return;
       for (const step of parseTranscript(transcript, COMMANDS[dictLang])) {
+        // Ogni frase detta è un passo a sé per "annulla", anche se arriva subito dopo un'altra.
+        editor.view.dispatch(closeHistory(editor.state.tr));
         if (step.kind === "edit") {
           if (step.op === "undo") {
             editor.chain().focus().undo().run();
@@ -119,13 +122,13 @@ export function App() {
           }
           continue;
         }
-        const chain = editor.chain().focus();
+        // Un pezzo alla volta: se un comando non può essere eseguito, gli altri restano validi.
         for (const seg of compose(step.tokens, textBefore(editor))) {
-          if (seg.kind === "text") chain.insertContent(seg.text);
-          else if (seg.paragraph) chain.splitBlock();
-          else chain.setHardBreak();
+          const c = editor.chain().focus();
+          if (seg.kind === "text") c.insertContent(seg.text).run();
+          else if (seg.paragraph) c.splitBlock().run();
+          else c.setHardBreak().run();
         }
-        chain.run();
       }
     },
     [editor, dictLang],
