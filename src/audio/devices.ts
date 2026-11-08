@@ -10,8 +10,11 @@ export interface MicDevice {
 /** Voci «virtuali» che il browser aggiunge: il predefinito lo offriamo noi con una voce a parte. */
 const VIRTUAL_IDS = new Set(["default", "communications"]);
 
+/** I dispositivi multimediali del browser, se ci sono (nei test e in Node 20 non c'è nemmeno `navigator`). */
+const browserDevices = (): MediaDevices | undefined => (typeof navigator === "undefined" ? undefined : navigator.mediaDevices);
+
 /** I microfoni collegati (solo ingressi audio, senza le voci virtuali). */
-export async function listMics(md: Pick<MediaDevices, "enumerateDevices"> | undefined = navigator.mediaDevices): Promise<MicDevice[]> {
+export async function listMics(md: Pick<MediaDevices, "enumerateDevices"> | undefined = browserDevices()): Promise<MicDevice[]> {
   if (!md?.enumerateDevices) return [];
   const all = await md.enumerateDevices();
   return all
@@ -44,8 +47,9 @@ export interface OpenedMic {
 export async function openMic(
   preferredId: string,
   base: MediaTrackConstraints = {},
-  md: Pick<MediaDevices, "getUserMedia"> = navigator.mediaDevices,
+  md: Pick<MediaDevices, "getUserMedia"> | undefined = browserDevices(),
 ): Promise<OpenedMic> {
+  if (!md) throw Object.assign(new Error("microfono non disponibile"), { name: "NotFoundError" });
   if (preferredId) {
     try {
       const stream = await md.getUserMedia({ audio: { ...base, deviceId: { exact: preferredId } } });

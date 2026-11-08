@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { isMissing, listMics, openMic, type MicDevice } from "./devices";
 
 const dev = (kind: string, deviceId: string, label: string) => ({ kind, deviceId, label }) as MediaDeviceInfo;
@@ -6,6 +6,13 @@ const stream = (name: string) => ({ name }) as unknown as MediaStream;
 const err = (name: string) => Object.assign(new Error(name), { name });
 
 describe("elenco dei microfoni", () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("dove non esiste nemmeno `navigator` (Node 20, prove, server) non si rompe: elenco vuoto", async () => {
+    vi.stubGlobal("navigator", undefined);
+    expect(await listMics()).toEqual([]);
+  });
+
   it("tiene solo gli ingressi audio e toglie le voci virtuali", async () => {
     const md = {
       enumerateDevices: async () => [
