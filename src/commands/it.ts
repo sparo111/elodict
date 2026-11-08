@@ -38,6 +38,9 @@ export const itCommands: CommandDef[] = [
   { phrases: ["annulla"], action: { type: "edit", op: "undo" } },
   { phrases: ["cancella parola"], action: { type: "edit", op: "deleteWord" } },
   { phrases: ["cancella frase"], action: { type: "edit", op: "deleteSentence" } },
+  { phrases: ["pausa dettatura", "metti in pausa"], action: { type: "control", op: "pause" } },
+  { phrases: ["riprendi dettatura", "riprendi la dettatura"], action: { type: "control", op: "resume" } },
+  { phrases: ["ferma dettatura", "ferma la dettatura"], action: { type: "control", op: "stop" } },
   ...formatCommands(
     { bold: ["grassetto"], italic: ["corsivo"], underline: ["sottolineato"], clear: ["rimuovi formattazione"] },
     { that: ["questo"], word: ["ultima parola"], sentence: ["ultima frase"] },

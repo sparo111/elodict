@@ -1,6 +1,7 @@
 // Salvataggio nel browser (IndexedDB). Niente server: i dati restano sul dispositivo.
 import Dexie, { type Table } from "dexie";
 import type { Lang } from "../commands/types";
+import type { DictEntry } from "../text/clean";
 
 export interface DocumentRow {
   id: string;
@@ -15,6 +16,9 @@ export interface SettingsRow {
   id: "main";
   dictationLanguage: Lang;
   uiLanguage: Lang;
+  cleanFillers: boolean;   // toglie "ehm", "uhm"
+  cleanRepeats: boolean;   // toglie le parole ripetute di fila
+  dictionary: DictEntry[]; // dizionario personale
 }
 
 class AppDB extends Dexie {
@@ -34,9 +38,17 @@ export function defaultLang(): Lang {
 }
 
 export async function loadSettings(): Promise<SettingsRow> {
-  const fallback: SettingsRow = { id: "main", dictationLanguage: defaultLang(), uiLanguage: defaultLang() };
+  const fallback: SettingsRow = {
+    id: "main",
+    dictationLanguage: defaultLang(),
+    uiLanguage: defaultLang(),
+    cleanFillers: true,
+    cleanRepeats: false,
+    dictionary: [],
+  };
   try {
-    return (await db.settings.get("main")) ?? fallback;
+    // Le impostazioni salvate da versioni vecchie non hanno i campi nuovi: si completano.
+    return { ...fallback, ...(await db.settings.get("main")) };
   } catch {
     return fallback;
   }

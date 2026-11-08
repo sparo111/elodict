@@ -2,7 +2,7 @@ feature,area,priority,original,clone,notes
 Pulsante Dictate avvia/ferma,core,must,yes,yes,M1: tasto Detta/Ferma
 Testo dettato appare nell'editor,core,must,yes,yes,M1
 Scelta lingua di dettatura,impostazioni,must,yes,yes,"M2: impostazioni, salvata nel browser"
-Scelta microfono,impostazioni,should,yes,no,
+Scelta microfono,impostazioni,should,yes,no,non possibile con il riconoscimento del browser (usa il microfono di sistema); possibile solo con Whisper nel browser
 Punteggiatura automatica (toggle),impostazioni,should,yes,no,solo per alcune lingue nell'originale
 Filtro parolacce con ***,impostazioni,could,yes,no,
 Comandi punteggiatura (punto/virgola/punto interrogativo/a capo),comandi,must,yes,yes,M2: EN IT FR ES + parentesi e virgolette; ¿ ¡ in spagnolo; spazio prima di ? ! : ; in francese
@@ -17,8 +17,8 @@ Comandi allineamento e rientro,comandi,could,yes,no,
 Comandi elenco puntato/numerato,comandi,could,yes,no,
 Comandi tabelle,comandi,could,yes-web,no,solo web nell'originale
 Comando aggiungi commento,comandi,could,yes,no,
-Pausa/ripresa dettatura (pause/resume dictation),controllo,should,yes,no,
-Scorciatoia da tastiera per avviare,controllo,could,yes,no,Mac Option+F1; ALT+` web ripresa
+Pausa/ripresa dettatura (pause/resume dictation),controllo,should,yes,yes,a voce in 4 lingue + pulsante Riprendi; in pausa ascolta solo riprendi/ferma
+Scorciatoia da tastiera per avviare,controllo,could,yes,yes,"Alt+Maiusc+D avvia/ferma, Esc ferma"
 Pannello aiuto comandi (show commands),aiuto,should,yes,partial,M2: pulsante Aiuto con elenco; manca il comando vocale 'mostra comandi'
 Messaggi d'errore microfono (3 tipi),errori,must,yes,yes,"M1: bloccato, non trovato, non ti sento, rete, altro"
 Stato disattivato se documento in sola lettura,errori,could,yes,no,
@@ -47,8 +47,10 @@ Account/abbonamento Microsoft 365,business,skip,yes,skip,non serve
 Supporto 50+ lingue con qualità Microsoft,tecnologia,skip,yes,skip,solo 4 lingue scelte
 Barra strumenti con icone (grassetto/corsivo/sottolineato/titolo/elenchi/annulla/ripeti),core,should,no,yes,M2b: barra sopra il testo; titolo = livello 2
 Icona microfono nella barra strumenti,core,should,no,yes,M2b: avvia/ferma come il pulsante grande
-"Elimina parole riempitive (ehm, cioè, uhm)",qualità,should,no,no,"idea dal concorrente ""dictate.""; per lingua"
-Dizionario personale (nomi e termini da correggere sempre),qualità,should,no,no,"idea dal concorrente ""dictate.""; salvato nel browser"
+"Elimina parole riempitive (ehm, cioè, uhm)",qualità,should,no,yes,idea da altri programmi; ehm/uhm per lingua; ripetizioni facoltative
+Dizionario personale (nomi e termini da correggere sempre),qualità,should,no,yes,"idea da altri programmi; sostituzioni, importa/esporta JSON"
 Traduzione (parli in una lingua e scrivi in un altra),lingue,could,no,no,idea dal concorrente; servirebbe un servizio di traduzione
 Cronologia dei documenti con ricerca,core,could,no,no,idea dal concorrente; oggi si salva solo l ultimo documento
 Tastiera di sistema per dettare in ogni app,piattaforma,skip,no,skip,"non fattibile come sito web; vedi ""dettare dentro altre app"""
+"Riconoscimento offline nel browser (Whisper), anche su Firefox",tecnologia,could,no,no,idea da altri programmi; download 77-560 MB; privacy migliore; abilita scelta microfono
+Elenchi a voce (elenco puntato / numerato),comandi,could,no,no,idea da altri programmi

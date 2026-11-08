@@ -36,3 +36,10 @@ Autosalvataggio, 4 lingue (EN/FR/ES), export .docx/.pdf/.md, email, impostazioni
 - Aiuto: nuova sezione con esempi per ogni lingua.
 - Test: 54 sulla logica, 120 nel browser (desktop + telefono), tutti verdi. Difetto trovato e corretto: BUG-004.
 - Resta non verificato: voce vera, Word vero, spagnolo da madrelingua.
+
+## M2d (2026-11-08) — idee dai concorrenti GitHub (vedi competitors.md)
+- Pulizia del testo: toglie "ehm/uhm" (acceso), ripetizioni (spento); dizionario personale con importa/esporta; impostazioni salvate (`src/text/clean.ts`).
+- Pausa/ripresa/ferma a voce in 4 lingue; pulsante Riprendi; scorciatoie Alt+Maiusc+D ed Esc.
+- Test: 66 sulla logica, 164 nel browser (desktop + telefono), tutti verdi.
+- Limite scoperto: la scelta del microfono non è possibile con il riconoscimento del browser.
+- Non verificato: voce vera; quanto le liste di "ehm/uhm" corrispondano a ciò che il riconoscimento vero scrive (alcuni motori li tolgono già da soli).

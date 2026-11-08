@@ -1,5 +1,6 @@
 import type { CommandDef, Segment, Step, Token } from "./types";
 import { matchEditPattern, normalizeWord, type EditSyntax } from "./syntax";
+import { applyDictionary, type DictEntry } from "../text/clean";
 
 
 /**
@@ -42,7 +43,7 @@ export function splitSteps(tokens: Token[]): Step[] {
     run = [];
   };
   for (const t of tokens) {
-    if (t.kind === "cmd" && (t.action.type === "edit" || t.action.type === "format")) {
+    if (t.kind === "cmd" && (t.action.type === "edit" || t.action.type === "format" || t.action.type === "control")) {
       flush();
       steps.push({ kind: "act", action: t.action });
     } else run.push(t);
@@ -110,8 +111,15 @@ export function compose(tokens: Token[], before: string): Segment[] {
   return out;
 }
 
-export function parseTranscript(transcript: string, commands: CommandDef[], syntax?: EditSyntax): Step[] {
-  return splitSteps(tokenize(transcript, commands, syntax));
+export function parseTranscript(
+  transcript: string,
+  commands: CommandDef[],
+  syntax?: EditSyntax,
+  dictionary?: DictEntry[],
+): Step[] {
+  let tokens = tokenize(transcript, commands, syntax);
+  if (dictionary && dictionary.length) tokens = applyDictionary(tokens, dictionary);
+  return splitSteps(tokens);
 }
 
 /** Comodo per i test: una sola frase, senza modifiche. */

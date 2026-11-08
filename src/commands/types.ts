@@ -5,6 +5,7 @@ export type FormatTarget = "that" | "word" | "sentence";
 
 export type EditAction = { type: "edit"; op: EditOp; n?: number; from?: string; to?: string };
 export type FormatAction = { type: "format"; mark: FormatMark; target: FormatTarget };
+export type ControlAction = { type: "control"; op: "pause" | "resume" | "stop" };
 
 export type CommandAction =
   /** segno che si attacca alla parola prima (. , ? ! : ; % °) */
@@ -17,7 +18,8 @@ export type CommandAction =
   | { type: "symbol"; char: string }
   | { type: "break"; paragraph: boolean }
   | EditAction
-  | FormatAction;
+  | FormatAction
+  | ControlAction;
 
 export interface CommandDef {
   phrases: string[];
@@ -32,4 +34,4 @@ export type Segment =
   | { kind: "break"; paragraph: boolean };
 
 /** Una frase si divide in blocchi di testo e azioni sul testo già scritto. */
-export type Step = { kind: "run"; tokens: Token[] } | { kind: "act"; action: EditAction | FormatAction };
+export type Step = { kind: "run"; tokens: Token[] } | { kind: "act"; action: EditAction | FormatAction | ControlAction };

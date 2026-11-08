@@ -39,6 +39,9 @@ export const enCommands: CommandDef[] = [
   { phrases: ["undo"], action: { type: "edit", op: "undo" } },
   { phrases: ["delete word"], action: { type: "edit", op: "deleteWord" } },
   { phrases: ["delete sentence"], action: { type: "edit", op: "deleteSentence" } },
+  { phrases: ["pause dictation"], action: { type: "control", op: "pause" } },
+  { phrases: ["resume dictation"], action: { type: "control", op: "resume" } },
+  { phrases: ["stop dictation"], action: { type: "control", op: "stop" } },
   ...formatCommands(
     { bold: ["bold"], italic: ["italicize", "italics"], underline: ["underline"], clear: ["clear formatting"] },
     { that: ["that"], word: ["last word"], sentence: ["last sentence"] },

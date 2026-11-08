@@ -11,6 +11,7 @@ import type { Lang } from "./commands/types";
 import { compose, parseTranscript } from "./commands/parser";
 import { charsToDelete, deriveTitle, rangeFromTo, rangeOfLast } from "./text/edit";
 import { SYNTAX } from "./commands/syntax";
+import { dedupeRepeats, stripFillers, type DictEntry } from "./text/clean";
 import {
   createRecognizer,
   isSpeechSupported,
@@ -18,7 +19,7 @@ import {
   type RecognizerState,
 } from "./speech/recognizer";
 import { docToBlocks, toText } from "./export/blocks";
-import { defaultLang, loadLastDocument, loadSettings, saveDocument, saveSettings } from "./store/db";
+import { defaultLang, loadLastDocument, loadSettings, saveDocument, saveSettings, type SettingsRow } from "./store/db";
 import { ExportDialog, HelpDialog, SendDialog, SettingsDialog } from "./components/Dialogs";
 
 type SaveState = "saved" | "saving" | "error";
@@ -34,6 +35,15 @@ export function App() {
   const [dictLang, setDictLang] = useState<Lang>(defaultLang());
   const [uiLang, setUiLang] = useState<Lang>(defaultLang());
   const s = strings[uiLang];
+  const [cleanFillers, setCleanFillers] = useState(true);
+  const [cleanRepeats, setCleanRepeats] = useState(false);
+  const [dictionary, setDictionary] = useState<DictEntry[]>([]);
+  const [paused, setPaused] = useState(false);
+  const pausedRef = useRef(false);
+  const setPausedBoth = (v: boolean) => {
+    pausedRef.current = v;
+    setPaused(v);
+  };
 
   const [state, setState] = useState<RecognizerState>("idle");
   const [interim, setInterim] = useState("");
@@ -87,6 +97,9 @@ export function App() {
       if (cancelled) return;
       setDictLang(settings.dictationLanguage);
       setUiLang(settings.uiLanguage);
+      setCleanFillers(settings.cleanFillers);
+      setCleanRepeats(settings.cleanRepeats);
+      setDictionary(settings.dictionary);
       if (last) {
         docId.current = last.id;
         createdAt.current = last.createdAt;
@@ -100,10 +113,23 @@ export function App() {
 
   useEffect(() => { document.documentElement.lang = uiLang; }, [uiLang]);
 
-  const updateSettings = (d: Lang, u: Lang) => {
-    setDictLang(d);
-    setUiLang(u);
-    void saveSettings({ id: "main", dictationLanguage: d, uiLanguage: u });
+  // Cambia una o più impostazioni e le salva sul dispositivo.
+  const savePrefs = (over: Partial<Omit<SettingsRow, "id">>) => {
+    const next: SettingsRow = {
+      id: "main",
+      dictationLanguage: dictLang,
+      uiLanguage: uiLang,
+      cleanFillers,
+      cleanRepeats,
+      dictionary,
+      ...over,
+    };
+    setDictLang(next.dictationLanguage);
+    setUiLang(next.uiLanguage);
+    setCleanFillers(next.cleanFillers);
+    setCleanRepeats(next.cleanRepeats);
+    setDictionary(next.dictionary);
+    void saveSettings(next);
   };
 
   // Applica una frase (detta o scritta nella casella di prova).
@@ -113,12 +139,26 @@ export function App() {
   const applyTranscript = useCallback(
     (transcript: string) => {
       if (!editor) return;
-      for (const step of parseTranscript(transcript, COMMANDS[dictLang], SYNTAX[dictLang])) {
+      let text = transcript;
+      if (cleanFillers) text = stripFillers(text, dictLang);
+      if (cleanRepeats) text = dedupeRepeats(text);
+      let steps = parseTranscript(text, COMMANDS[dictLang], SYNTAX[dictLang], dictionary);
+      if (pausedRef.current) {
+        // In pausa si ascoltano solo i comandi "riprendi" e "ferma".
+        steps = steps.filter((st) => st.kind === "act" && st.action.type === "control" && st.action.op !== "pause");
+      }
+      for (const step of steps) {
         // Ogni frase detta è un passo a sé per "annulla", anche se arriva subito dopo un'altra.
         editor.view.dispatch(closeHistory(editor.state.tr));
 
         if (step.kind === "act") {
           const a = step.action;
+          if (a.type === "control") {
+            if (a.op === "pause") setPausedBoth(true);
+            else if (a.op === "resume") setPausedBoth(false);
+            else recRef.current?.stop();
+            continue;
+          }
           const before = textBefore(editor);
           const pos = editor.state.selection.from;
           // Converte una posizione nella stringa `before` in una posizione nel documento.
@@ -134,7 +174,7 @@ export function App() {
               const n = charsToDelete(before, a.op, a.n ?? 1);
               if (n > 0) editor.chain().focus().deleteRange({ from: pos - n, to: pos }).run();
             }
-          } else {
+          } else if (a.type === "format") {
             let range: { from: number; to: number } | null = null;
             const last = lastInsert.current;
             if (a.target === "that" && last && last.to <= editor.state.doc.content.size) range = last;
@@ -168,7 +208,7 @@ export function App() {
         if (endPos > startPos) lastInsert.current = { from: startPos, to: endPos };
       }
     },
-    [editor, dictLang],
+    [editor, dictLang, cleanFillers, cleanRepeats, dictionary],
   );
 
   const applyRef = useRef(applyTranscript);
@@ -179,9 +219,12 @@ export function App() {
   useEffect(() => {
     if (!supported) return;
     recRef.current = createRecognizer(VOICE_CODE[dictLang], {
-      onInterim: setInterim,
+      onInterim: (t) => setInterim(pausedRef.current ? "" : t),
       onFinal: (text) => applyRef.current(text),
-      onState: setState,
+      onState: (st) => {
+        setState(st);
+        if (st === "idle") setPausedBoth(false);
+      },
       onError: setError,
     });
     return () => {
@@ -198,6 +241,22 @@ export function App() {
       recRef.current?.stop();
     }
   };
+
+  // Scorciatoie: Alt+Maiusc+D avvia/ferma, Esc ferma.
+  const toggleRef = useRef(toggle);
+  toggleRef.current = toggle;
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.altKey && e.shiftKey && e.code === "KeyD") {
+        e.preventDefault();
+        toggleRef.current();
+      } else if (e.key === "Escape" && state !== "idle" && !document.querySelector("dialog[open]")) {
+        recRef.current?.stop();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [state]);
 
   const flash = (msg: string) => {
     setToast(msg);
@@ -304,7 +363,12 @@ export function App() {
 
       <div className="fixed inset-x-0 bottom-0 flex flex-col items-center gap-2 border-t border-border bg-bg px-4 py-3">
         <p className="text-sm text-muted" role="status" aria-live="polite">
-          {state === "listening" ? s.listening : state === "starting" ? s.starting : " "}
+          {paused ? s.paused : state === "listening" ? s.listening : state === "starting" ? s.starting : " "}
+          {paused && (
+            <button type="button" onClick={() => setPausedBoth(false)} className="ml-3 font-semibold text-accent underline">
+              {s.resume}
+            </button>
+          )}
         </p>
         <button
           type="button"
@@ -340,10 +404,8 @@ export function App() {
         open={dialog === "settings"}
         onClose={() => setDialog(null)}
         s={s}
-        dictationLang={dictLang}
-        uiLang={uiLang}
-        onDictationLang={(l) => updateSettings(l, uiLang)}
-        onUiLang={(l) => updateSettings(dictLang, l)}
+        value={{ dictationLanguage: dictLang, uiLanguage: uiLang, cleanFillers, cleanRepeats, dictionary }}
+        onChange={savePrefs}
       />
       <HelpDialog open={dialog === "help"} onClose={() => setDialog(null)} s={s} dictationLang={dictLang} />
       <ExportDialog

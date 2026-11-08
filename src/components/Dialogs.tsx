@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
-import { FileText, Mail, Share2 } from "lucide-react";
+import { FileText, Mail, Share2, Trash2 } from "lucide-react";
 import { Modal } from "./Modal";
 import { COMMANDS, LANGS, LANG_NAME } from "../commands";
 import { SYNTAX } from "../commands/syntax";
+import { parseDictionary } from "../text/clean";
+import type { SettingsRow } from "../store/db";
 import type { CommandAction, Lang } from "../commands/types";
 import type { Strings } from "../i18n";
-import { buildFile, canPickLocation, FORMATS, saveDocumentFile, type ExportFormat } from "../export/build";
+import { buildFile, canPickLocation, downloadFile, FORMATS, saveDocumentFile, type ExportFormat } from "../export/build";
 import { canShareFiles, fitsInMailto, mailtoUrl } from "../share/email";
 
 const selectCls = "h-10 w-full rounded-md border border-border-input bg-bg px-3 text-base";
@@ -15,28 +17,113 @@ interface SettingsProps {
   open: boolean;
   onClose: () => void;
   s: Strings;
-  dictationLang: Lang;
-  uiLang: Lang;
-  onDictationLang: (l: Lang) => void;
-  onUiLang: (l: Lang) => void;
+  value: Omit<SettingsRow, "id">;
+  onChange: (over: Partial<Omit<SettingsRow, "id">>) => void;
 }
 
-export function SettingsDialog({ open, onClose, s, dictationLang, uiLang, onDictationLang, onUiLang }: SettingsProps) {
+export function SettingsDialog({ open, onClose, s, value, onChange }: SettingsProps) {
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
+  const [importError, setImportError] = useState(false);
+
+  const addEntry = () => {
+    const f = from.trim();
+    const t = to.trim();
+    if (!f || !t) return;
+    const rest = value.dictionary.filter((e) => e.from.toLowerCase() !== f.toLowerCase());
+    onChange({ dictionary: [...rest, { from: f, to: t }] });
+    setFrom("");
+    setTo("");
+  };
+
+  const exportDict = () => {
+    const file = new File([JSON.stringify(value.dictionary, null, 2)], "dizionario.json", { type: "application/json" });
+    downloadFile(file);
+  };
+
+  const importDict = async (file: File | undefined) => {
+    if (!file) return;
+    setImportError(false);
+    try {
+      const entries = parseDictionary(await file.text());
+      const keep = value.dictionary.filter((e) => !entries.some((n) => n.from.toLowerCase() === e.from.toLowerCase()));
+      onChange({ dictionary: [...keep, ...entries].slice(0, 500) });
+    } catch {
+      setImportError(true);
+    }
+  };
+
+  const check = "h-5 w-5 shrink-0 accent-[var(--color-accent)]";
+
   return (
     <Modal open={open} onClose={onClose} title={s.settingsTitle} closeLabel={s.close}>
       <div className="flex flex-col gap-4">
         <label className="flex flex-col gap-1 text-sm font-semibold">
           {s.dictationLang}
-          <select className={selectCls} value={dictationLang} onChange={(e) => onDictationLang(e.target.value as Lang)}>
+          <select className={selectCls} value={value.dictationLanguage} onChange={(e) => onChange({ dictationLanguage: e.target.value as Lang })}>
             {LANGS.map((l) => <option key={l} value={l}>{LANG_NAME[l]}</option>)}
           </select>
         </label>
         <label className="flex flex-col gap-1 text-sm font-semibold">
           {s.uiLang}
-          <select className={selectCls} value={uiLang} onChange={(e) => onUiLang(e.target.value as Lang)}>
+          <select className={selectCls} value={value.uiLanguage} onChange={(e) => onChange({ uiLanguage: e.target.value as Lang })}>
             {LANGS.map((l) => <option key={l} value={l}>{LANG_NAME[l]}</option>)}
           </select>
         </label>
+
+        <fieldset className="flex flex-col gap-2 border-t border-border pt-4">
+          <legend className="mb-1 text-sm font-semibold">{s.cleanTitle}</legend>
+          <label className="flex items-center gap-3 text-sm">
+            <input type="checkbox" className={check} checked={value.cleanFillers} onChange={(e) => onChange({ cleanFillers: e.target.checked })} />
+            {s.cleanFillers}
+          </label>
+          <label className="flex items-center gap-3 text-sm">
+            <input type="checkbox" className={check} checked={value.cleanRepeats} onChange={(e) => onChange({ cleanRepeats: e.target.checked })} />
+            {s.cleanRepeats}
+          </label>
+        </fieldset>
+
+        <section className="flex flex-col gap-2 border-t border-border pt-4" aria-labelledby="dict-title">
+          <h3 id="dict-title" className="text-sm font-semibold">{s.dictTitle}</h3>
+          <p className="text-sm text-muted">{s.dictHelp}</p>
+          <div className="flex flex-wrap gap-2">
+            <input aria-label={s.dictFrom} placeholder={s.dictFrom} className={`${selectCls} min-w-0 flex-1`} value={from} onChange={(e) => setFrom(e.target.value)} />
+            <input aria-label={s.dictTo} placeholder={s.dictTo} className={`${selectCls} min-w-0 flex-1`} value={to} onChange={(e) => setTo(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") addEntry(); }} />
+            <button type="button" onClick={addEntry} className="h-10 shrink-0 rounded-md bg-accent px-4 text-sm font-semibold text-on-accent">
+              {s.dictAdd}
+            </button>
+          </div>
+          {value.dictionary.length === 0 ? (
+            <p className="text-sm text-muted">{s.dictEmpty}</p>
+          ) : (
+            <ul className="divide-y divide-border rounded-md border border-border">
+              {value.dictionary.map((e) => (
+                <li key={e.from} className="flex items-center justify-between gap-3 px-3 py-2 text-sm">
+                  <span className="min-w-0 break-words"><span className="text-muted">{e.from}</span> → <strong>{e.to}</strong></span>
+                  <button type="button" aria-label={`${s.dictRemove}: ${e.from}`}
+                    onClick={() => onChange({ dictionary: value.dictionary.filter((x) => x.from !== e.from) })}
+                    className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md hover:bg-surface">
+                    <Trash2 size={16} aria-hidden="true" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+          <div className="flex flex-wrap gap-2">
+            <button type="button" onClick={exportDict} disabled={value.dictionary.length === 0}
+              className="h-9 rounded-md border border-border-input px-3 text-sm font-semibold hover:bg-surface disabled:opacity-40">
+              {s.dictExport}
+            </button>
+            <label className="inline-flex h-9 cursor-pointer items-center rounded-md border border-border-input px-3 text-sm font-semibold hover:bg-surface focus-within:outline focus-within:outline-2 focus-within:outline-accent">
+              {s.dictImport}
+              <input type="file" accept="application/json,.json" className="sr-only"
+                onChange={(e) => { void importDict(e.target.files?.[0]); e.target.value = ""; }} />
+            </label>
+          </div>
+          {importError && <p role="alert" className="text-sm text-danger">{s.dictImportError}</p>}
+        </section>
+
         <p className="text-sm text-muted">{s.settingsNote}</p>
       </div>
     </Modal>
@@ -53,6 +140,8 @@ function describe(a: CommandAction, s: Strings): string {
       return a.char;
     case "format":
       return `${s.fmtMark[a.mark]} · ${s.fmtTarget[a.target]}`;
+    case "control":
+      return a.op === "pause" ? s.dPause : a.op === "resume" ? s.dResume : s.dStopDict;
     case "break":
       return a.paragraph ? s.dNewParagraph : s.dNewLine;
     case "edit":
@@ -72,6 +161,8 @@ export function HelpDialog({ open, onClose, s, dictationLang }: { open: boolean;
           </li>
         ))}
       </ul>
+      <h3 className="mb-1 mt-5 text-sm font-semibold">{s.shortcutsTitle}</h3>
+      <p className="mb-4 text-sm">{s.shortcuts}</p>
       <h3 className="mb-1 mt-5 text-sm font-semibold">{s.helpExamples}</h3>
       <ul className="list-disc pl-5 text-sm">
         {SYNTAX[dictationLang].examples.map((e) => <li key={e}>«{e}»</li>)}

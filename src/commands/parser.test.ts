@@ -153,3 +153,18 @@ describe("simboli", () => {
     expect(run("en", "buy now dollar sign ten")).toBe("Buy now $ ten");
   });
 });
+
+describe("comandi di controllo", () => {
+  it("pausa, riprendi e ferma in tutte le lingue", () => {
+    for (const [lang, p, r, s] of [
+      ["it", "pausa dettatura", "riprendi dettatura", "ferma dettatura"],
+      ["en", "pause dictation", "resume dictation", "stop dictation"],
+      ["fr", "pause dictée", "reprends la dictée", "arrête la dictée"],
+      ["es", "pausa dictado", "reanudar dictado", "detener dictado"],
+    ] as const) {
+      expect(parseTranscript(p, COMMANDS[lang])).toEqual([{ kind: "act", action: { type: "control", op: "pause" } }]);
+      expect(parseTranscript(r, COMMANDS[lang])).toEqual([{ kind: "act", action: { type: "control", op: "resume" } }]);
+      expect(parseTranscript(s, COMMANDS[lang])).toEqual([{ kind: "act", action: { type: "control", op: "stop" } }]);
+    }
+  });
+});

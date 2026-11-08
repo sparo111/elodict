@@ -38,6 +38,9 @@ export const frCommands: CommandDef[] = [
   { phrases: ["annule", "annuler"], action: { type: "edit", op: "undo" } },
   { phrases: ["efface mot", "supprime mot"], action: { type: "edit", op: "deleteWord" } },
   { phrases: ["efface phrase", "supprime phrase"], action: { type: "edit", op: "deleteSentence" } },
+  { phrases: ["pause dictée", "mets en pause"], action: { type: "control", op: "pause" } },
+  { phrases: ["reprends la dictée", "reprendre la dictée"], action: { type: "control", op: "resume" } },
+  { phrases: ["arrête la dictée", "arrêter la dictée"], action: { type: "control", op: "stop" } },
   ...formatCommands(
     { bold: ["gras"], italic: ["italique"], underline: ["souligné"], clear: ["efface la mise en forme"] },
     { that: ["cela", "ça"], word: ["dernier mot"], sentence: ["dernière phrase"] },

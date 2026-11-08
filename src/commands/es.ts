@@ -40,6 +40,9 @@ export const esCommands: CommandDef[] = [
   { phrases: ["deshacer"], action: { type: "edit", op: "undo" } },
   { phrases: ["borra palabra"], action: { type: "edit", op: "deleteWord" } },
   { phrases: ["borra frase"], action: { type: "edit", op: "deleteSentence" } },
+  { phrases: ["pausa dictado", "pausar dictado"], action: { type: "control", op: "pause" } },
+  { phrases: ["reanudar dictado", "reanuda dictado"], action: { type: "control", op: "resume" } },
+  { phrases: ["detener dictado", "detén dictado"], action: { type: "control", op: "stop" } },
   ...formatCommands(
     { bold: ["negrita"], italic: ["cursiva"], underline: ["subrayado"], clear: ["quitar formato"] },
     { that: ["eso", "esto"], word: ["última palabra"], sentence: ["última frase"] },
