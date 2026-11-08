@@ -114,3 +114,15 @@ Non coperto: due microfoni veri, scollegamento vero, Chrome con più dispositivi
 | U-backup | limiti in scrittura (200/201 documenti, >20 MB), nome scelto, campi interni esclusi | riuscite |
 Verifiche con errore introdotto a mano: togliendo il ripristino di «annulla», LIB-H2 fallisce.
 Non coperto: quota piena, due schede durante l'aggiornamento, altri browser, database vecchio creato da una vera app vecchia.
+
+## T-004b — Migrazione vera, due schede, agganci per le prove
+| caso | cosa si controlla | esito |
+| --- | --- | --- |
+| MIGV-1 (`npm run test:migrazione`) | l'app di prima (commit `61b7fe8`) crea documento, dizionario di 2 voci, motore offline e microfono; la versione attuale sullo stesso profilo li ritrova identici (database 10 → 20) e li usa | riuscita |
+| TAB-B1 (×4 lingue) | un'altra scheda tiene il database: avviso nella lingua dell'app, editor non scrivibile, database ancora com'era (letto con la connessione dell'altra scheda), quando la lascia si va avanti da soli e i dati sono identici | riuscite |
+| TAB-S1 (×4 lingue) | un'altra scheda chiede una versione nuova: la scheda vecchia salva ciò che stava scrivendo (senza aspettare il salvataggio automatico), chiude, avvisa; l'altra non resta bloccata; ricaricando il testo c'è | riuscite |
+| TAB-B2 | due schede della stessa versione: nessun avviso | riuscita |
+| TAB-S2 | dopo l'avviso il database non cambia più | riuscita |
+| check:dist | la build pubblicata non contiene i nomi degli agganci; la build di prova sì (così il controllo non è vuoto); il controllo fallisce se li trova | riuscito |
+Verifiche con errore introdotto a mano: senza il salvataggio prima della chiusura TAB-S1 fallisce; senza il gestore `blocked` TAB-B1 fallisce.
+Non coperto: due vere versioni dell'app aperte insieme; Firefox/Safari; quota piena.

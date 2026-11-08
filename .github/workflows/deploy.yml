@@ -32,6 +32,8 @@ jobs:
         run: npm run build
         env:
           VITE_BASE: /${{ github.event.repository.name }}/
+      - name: Controlla che nella versione pubblicata non ci siano agganci per le prove
+        run: npm run check:dist
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

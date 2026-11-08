@@ -3,6 +3,7 @@ import Dexie, { type Table } from "dexie";
 import type { Lang } from "../commands/types";
 import type { DictEntry } from "../text/clean";
 import { buildBackup, stringifyBackup, type ParsedBackup } from "./backup";
+import { emitDbEvent, runBeforeDbClose, subscribeDbEvents } from "./dbEvents";
 import { migrateToV2 } from "./migrations";
 
 export interface DocumentRow {
@@ -44,15 +45,35 @@ class AppDB extends Dexie {
 
 export const db = new AppDB();
 
+// Un'altra scheda tiene aperto il database e impedisce l'aggiornamento: lo si dice (e si aspetta).
+db.on("blocked", () => emitDbEvent("blocked"));
+// Un'altra scheda vuole aggiornare o cancellare il database: prima si salva, poi lo si chiude (altrimenti l'altra scheda
+// resta ferma per sempre) e si avvisa che questa va ricaricata. `false` = niente chiusura automatica di Dexie, la facciamo noi.
+db.on("versionchange", () => {
+  void (async () => {
+    await runBeforeDbClose();
+    db.close();
+    emitDbEvent("stale");
+  })();
+  return false;
+});
+
 export type DbStatus = { ok: true } | { ok: false; error: string };
 
 /** Il database si apre (e, se serve, si aggiorna)? Se no, non si tocca niente: i dati restano dove sono. */
 export async function checkDatabase(): Promise<DbStatus> {
+  let blocked = false;
+  const off = subscribeDbEvents((e) => {
+    if (e === "blocked") blocked = true;
+  });
   try {
     await db.open();
     return { ok: true };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : String(e) };
+  } finally {
+    off();
+    if (blocked) emitDbEvent("unblocked"); // l'attesa è finita (bene o male)
   }
 }
 

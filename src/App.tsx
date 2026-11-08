@@ -5,6 +5,7 @@ import UnderlineExt from "@tiptap/extension-underline";
 import { Toolbar } from "./components/Toolbar";
 import { Paper, type Zoom } from "./components/Paper";
 import { InstallBanner } from "./install/Install";
+import { DatabaseNotice } from "./documents/ui/DatabaseNotice";
 import { DatabaseProblem } from "./documents/ui/DatabaseProblem";
 import { UpdateBanner } from "./pwa/UpdateBanner";
 import { useAppUpdate } from "./pwa/useAppUpdate";
@@ -72,6 +73,10 @@ export function App() {
     void hydrate();
   }, [editor, hydrate]);
 
+  // mentre un'altra scheda tiene il database, qui non si scrive: niente da perdere
+  useEffect(() => {
+    editor?.setEditable(store.dbNotice === null);
+  }, [editor, store.dbNotice]);
   useEffect(() => { document.documentElement.lang = prefs.uiLanguage; }, [prefs.uiLanguage]);
   useEffect(() => {
     editor?.view.dom.setAttribute("aria-label", s.editorLabel);
@@ -126,6 +131,7 @@ export function App() {
   return (
     <div className="flex min-h-full flex-col bg-bg text-text">
       {store.problem && <DatabaseProblem s={s} />}
+      {store.dbNotice && <DatabaseNotice s={s} kind={store.dbNotice} />}
       <UpdateBanner s={s} ready={update.ready} busy={update.busy} saveFailed={update.saveFailed} onApply={() => void update.apply()} onLater={update.later} />
       <InstallBanner s={s} enabled={settings.ready && prefs.onboardingDone} />
       <Header

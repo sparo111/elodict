@@ -9,13 +9,15 @@
     "preview": "vite preview",
     "test": "vitest run",
     "coverage": "vitest run --coverage",
+    "check:dist": "node scripts/check-test-hooks.mjs dist absent",
+    "test:migrazione": "playwright test --project=migrazione-vera --no-deps",
     "test:e2e": "playwright test",
     "copy-ort": "node scripts/copy-ort.mjs",
     "predev": "node scripts/copy-ort.mjs",
     "prebuild": "node scripts/copy-ort.mjs",
     "make-icons": "node scripts/make-icons.mjs",
-    "build:pwa-test": "node scripts/copy-ort.mjs && vite build --outDir dist-pwa",
-    "build:base-test": "node scripts/copy-ort.mjs && vite build --outDir dist-base"
+    "build:pwa-test": "node scripts/copy-ort.mjs && vite build --mode test --outDir dist-pwa",
+    "build:base-test": "node scripts/copy-ort.mjs && vite build --mode test --outDir dist-base"
   },
   "dependencies": {
     "@fontsource-variable/inter": "^5.1.0",

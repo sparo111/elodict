@@ -34,7 +34,12 @@ function installaTesti(): Plugin {
   };
 }
 
-export default defineConfig({
+/**
+ * Gli «agganci per le prove» (per esempio far fallire di proposito una migrazione) esistono solo fuori dalla build pubblicata:
+ * `vite build` (modalità production) li toglie dal codice; il server di sviluppo e `--mode test` (le copie costruite per le prove) li tengono.
+ */
+export default defineConfig(({ mode }) => ({
+  define: { __ELODICT_TEST_HOOKS__: JSON.stringify(mode !== "production") },
   base,
   plugins: [
     react(),
@@ -128,4 +133,4 @@ export default defineConfig({
       ),
     },
   },
-});
+}));

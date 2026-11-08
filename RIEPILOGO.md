@@ -60,7 +60,7 @@ npm install
 npm run dev          # apre il sito (di solito http://localhost:5173); prima copia i file di Whisper in public/ort
 npm test             # 188 prove sulla logica (Vitest), pochi secondi
 npm run coverage     # le stesse prove con la copertura; FALLISCE se la logica pura scende sotto: righe 90 %, rami 80 % (cartella per cartella, vedi vite.config.ts)
-npm run test:e2e     # 454 prove nel browser (Playwright, Chromium); avvia da solo il sito di sviluppo (porta 5199) e due copie costruite (5200 radice, 5201 sotto /elodict/)
+npm run test:e2e     # 475 prove nel browser (Playwright, Chromium); avvia da solo il sito di sviluppo (porta 5199) e due copie costruite (5200 radice, 5201 sotto /elodict/)
 npm run build        # controlla i tipi e crea la cartella dist/
 ```
 
@@ -127,8 +127,8 @@ npm run build        # controlla i tipi e crea la cartella dist/
 | `editor/PageLayout.ts`, `editor/measure.ts` | `PageLayout` inserisce gli spazi fra i fogli; **`planPages`** è una funzione pura provata a parte. `measure.ts` misura le righe **un blocco alla volta e ricorda i blocchi non cambiati** (`LineCache`): dopo una modifica si rimisura solo il blocco toccato |
 | `components/` | `Paper.tsx` (fogli e zoom), `Toolbar.tsx`, `Flags.tsx` (bandierine in SVG), `dialogs/` (`SettingsDialog`, `HelpDialog`, `ExportDialog`, `SendDialog`), `OfflineSection.tsx`, `MicTest.tsx` (scelta e prova del microfono), `Modal.tsx` (usa l'elemento nativo `<dialog>`) |
 | `text/` | `clean.ts` (parole riempitive, ripetizioni, dizionario), `edit.ts` (cancella/seleziona intervalli, titolo) |
-| `store/` | `db.ts` (Dexie: tabelle `documents` e `settings`, **versione 2**), `migrations.ts` (migrazione 1→2), `documents.ts` (elenco, cestino, rinomina, duplica, elimina), `rawBackup.ts` (copia di emergenza letta «così com'è»), `backup.ts` (controllo, formato e **limiti** della copia di sicurezza) |
-| `documents/` | **logica pura dell'elenco**: `plainText.ts` (testo semplice di un documento), `search.ts` (ricerca senza maiuscole/accenti, con pezzetto evidenziato), `trash.ts` (30 giorni), `order.ts` (ordine, copie); `ui/` = schermate (`DocumentsDialog`, `DocumentItem`, `useLibrary`, `DatabaseProblem`) |
+| `store/` | `db.ts` (Dexie: tabelle `documents` e `settings`, **versione 2**), `migrations.ts` (migrazione 1→2), `documents.ts` (elenco, cestino, rinomina, duplica, elimina), `rawBackup.ts` (copia di emergenza letta «così com'è»), `dbEvents.ts` (cosa succede se un'altra scheda tiene il database), `backup.ts` (controllo, formato e **limiti** della copia di sicurezza) |
+| `documents/` | **logica pura dell'elenco**: `plainText.ts` (testo semplice di un documento), `search.ts` (ricerca senza maiuscole/accenti, con pezzetto evidenziato), `trash.ts` (30 giorni), `order.ts` (ordine, copie); `ui/` = schermate (`DocumentsDialog`, `DocumentItem`, `useLibrary`, `DatabaseProblem`, `DatabaseNotice`) |
 | `export/` | `blocks.ts` (documento → blocchi → txt/md/html), `build.ts` (docx, pdf, «Salva con nome») |
 | `share/email.ts` | `mailto:` e Web Share |
 
@@ -227,7 +227,7 @@ npm run build        # controlla i tipi e crea la cartella dist/
 **Resta da fare (nessuno di questi punti è un errore, sono scelte rimandate):**
 - **La cartella si chiama ancora `mia-dictate`** mentre il prodotto è Elodict (nome di lavoro).
 - **Scelta del microfono**: provata con dispositivi **finti** (elenco e richieste simulati, audio del microfono finto di Chrome) e con Whisper vero. Mai provata con due microfoni veri né scollegandone uno davvero. Con «Il browser» a dettare **la scelta non vale**: il riconoscimento del browser non permette di scegliere il microfono (lo dice l'app); non verificato su Chrome vero con più microfoni.
-- **Migrazione del database**: provata con un database finto «della versione 1» creato a mano con la stessa struttura (non con una vera app vecchia) e con un guasto simulato (`__ELODICT_FAIL_MIGRATION__`, punto di innesco dichiarato in `store/migrations.ts`). Non provata: quota piena, più schede aperte durante l'aggiornamento (Dexie può restare «bloccato» finché non si chiude l'altra scheda), browser diversi da Chromium.
+- **Migrazione del database**: provata (1) con un database della versione 1 costruito a mano, (2) con **la vera app di prima** (commit `61b7fe8`, in un `git worktree` a parte) su un profilo vero di Chromium: `npm run test:migrazione`, e (3) con un guasto simulato (`__ELODICT_FAIL_MIGRATION__`, che esiste **solo** nel server di sviluppo e nelle build di prova, mai nella build pubblicata: lo controlla `npm run check:dist`). Due schede aperte: provato con una scheda «ostinata» simulata e con un'altra scheda che chiede una versione più nuova; non provato con due vere versioni dell'app aperte insieme. Non provata: quota piena, browser diversi da Chromium.
 - **Cestino**: il conto dei 30 giorni usa l'orologio del dispositivo; provato con date finte nel database.
 - **Documenti molto lunghi**: l'impaginazione ora è incrementale (T002). Provata su 50 fogli; oltre non misurato. Il browser rifà comunque il disegno di tutta la pagina a ogni modifica.
 - **Nessuna pagina di presentazione né pubblicazione** (fasi `replica-launch` e `replica-deploy`).

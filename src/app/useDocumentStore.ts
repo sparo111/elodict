@@ -1,10 +1,11 @@
 // Il documento aperto: salvataggio automatico sul dispositivo, apertura di un altro documento, ripresa dell'ultimo.
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { Editor } from "@tiptap/react";
 import type { Lang } from "../commands/types";
 import { strings } from "../i18n";
 import { deriveTitle } from "../text/edit";
 import { checkDatabase, saveDocument, type DocumentRow } from "../store/db";
+import { setBeforeDbClose, subscribeDbEvents } from "../store/dbEvents";
 import { loadCurrentDocument, markOpened, purgeExpired } from "../store/documents";
 import { replaceDocument } from "./editorSwap";
 
@@ -17,6 +18,8 @@ export function useDocumentStore(dictLang: Lang, uiLang: Lang, onSwitched: (edit
   const [customTitle, setCustomTitleState] = useState<string | null>(null);
   /** perché il database non si apre (se non si apre); finché c'è, niente viene salvato */
   const [problem, setProblem] = useState<string | null>(null);
+  /** un'altra scheda di Elodict: `blocked` = questa aspetta che l'altra si chiuda; `stale` = l'altra ha aggiornato il database, questa va ricaricata */
+  const [dbNotice, setDbNotice] = useState<"blocked" | "stale" | null>(null);
 
   const docId = useRef<string>(crypto.randomUUID());
   const createdAt = useRef(Date.now());
@@ -25,6 +28,7 @@ export function useDocumentStore(dictLang: Lang, uiLang: Lang, onSwitched: (edit
   const saveTimer = useRef<number | undefined>(undefined);
   const langs = useRef({ dictLang, uiLang });
   langs.current = { dictLang, uiLang };
+  const editorRef = useRef<Editor | null>(null);
 
   const setCustom = useCallback((title: string | null) => {
     custom.current = title;
@@ -83,9 +87,28 @@ export function useDocumentStore(dictLang: Lang, uiLang: Lang, onSwitched: (edit
     [onSwitched, setCustom],
   );
 
+  // Eventi del database dovuti a un'altra scheda. L'avviso «aspetta» compare dopo mezzo secondo: se l'altra scheda si chiude
+  // subito (di solito è così) non lampeggia niente.
+  useEffect(() => {
+    let timer: number | undefined;
+    const off = subscribeDbEvents((e) => {
+      window.clearTimeout(timer);
+      if (e === "blocked") timer = window.setTimeout(() => setDbNotice((n) => n ?? "blocked"), 500);
+      else if (e === "stale") setDbNotice("stale");
+      else setDbNotice((n) => (n === "blocked" ? null : n));
+    });
+    return () => {
+      window.clearTimeout(timer);
+      off();
+    };
+  }, []);
+
   /** All'avvio: controlla che il database si apra, toglie dal cestino ciò che è scaduto, riapre l'ultimo documento. */
   const loadLast = useCallback(
     async (editor: Editor) => {
+      editorRef.current = editor;
+      // se un'altra scheda ci chiede il database, prima si salva quello che c'è
+      setBeforeDbClose(() => flush(editorRef.current));
       const status = await checkDatabase();
       if (!status.ok) {
         // Non si tocca niente e non si salva niente: i dati restano dove sono.
@@ -102,7 +125,7 @@ export function useDocumentStore(dictLang: Lang, uiLang: Lang, onSwitched: (edit
       else setCurrentId(docId.current);
       loaded.current = true;
     },
-    [show],
+    [show, flush],
   );
 
   /** Apre un documento dell'elenco. Prima salva quello aperto. */
@@ -134,5 +157,5 @@ export function useDocumentStore(dictLang: Lang, uiLang: Lang, onSwitched: (edit
     [show],
   );
 
-  return { saveState, currentId, customTitle, setCustomTitle: setCustom, problem, persist, onEdit, flush, loadLast, open, createBlank, afterRemoval };
+  return { saveState, currentId, customTitle, setCustomTitle: setCustom, problem, dbNotice, persist, onEdit, flush, loadLast, open, createBlank, afterRemoval };
 }

@@ -73,3 +73,4 @@ Scelta del microfono (con ripiego se è scollegato),impostazioni,should,no,yes,T
 Cestino di 30 giorni (ripristina / elimina per sempre con conferma),documenti,should,no,yes,T004: scadenza provata con date finte
 Migrazione del database senza perdere dati; se fallisce avvisa e offre la copia di emergenza,documenti,must,no,yes,T004: provata con un database v1 costruito a mano e con un guasto simulato
 Limiti della copia di sicurezza rispettati anche scrivendo (200 documenti / 20 MB),documenti,should,no,yes,T004
+Due schede aperte: avviso chiaro in 4 lingue senza perdere niente,documenti,should,no,yes,T004b: provato con una scheda simulata; non con due vere versioni dell'app
