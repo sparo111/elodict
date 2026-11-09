@@ -85,3 +85,8 @@ body {
 }
 .pulse-dot { animation: pulse-dot 1.2s var(--motion-ease) infinite; }
 @media (prefers-reduced-motion: reduce) { .pulse-dot { animation: none; } }
+
+/* Freccia dell'installazione su iPhone: rimbalza verso il pulsante Condividi di Safari. */
+@keyframes share-arrow-bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(10px); } }
+.share-arrow { animation: share-arrow-bounce 1.1s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .share-arrow { animation: none; } }

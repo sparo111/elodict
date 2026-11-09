@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from "react";
-import { MonitorSmartphone, Printer } from "lucide-react";
+import { ArrowDown, MonitorSmartphone, Printer, Share } from "lucide-react";
 import { Modal } from "../components/Modal";
 import type { Lang } from "../commands/types";
 import type { Strings } from "../i18n";
@@ -39,15 +39,36 @@ const DotsIcon = () => (
   </svg>
 );
 
+/** Un passo è una riga di istruzione, non un pulsante: niente bordo, niente ombra, niente sfondo. */
 function Step({ n, icon, children }: { n: number; icon: ReactNode; children: ReactNode }) {
   return (
-    <li className="flex items-center gap-4 rounded-lg border border-border p-4">
-      <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-pill bg-accent text-xl font-bold text-on-accent" aria-hidden="true">
-        {n}
-      </span>
+    <li className="flex items-center gap-3 py-1">
+      <span className="w-7 shrink-0 text-2xl font-bold text-accent" aria-hidden="true">{n}.</span>
       <span className="shrink-0 text-accent">{icon}</span>
       <span className="text-lg">{children}</span>
     </li>
+  );
+}
+
+/** Elenco dei passi, con il titolo «Come fare» sopra. */
+function Steps({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <section>
+      <h3 className="mb-1 text-xl font-bold">{title}</h3>
+      <ol className="flex flex-col">{children}</ol>
+    </section>
+  );
+}
+
+/** Freccia grande e animata verso il pulsante Condividi di Safari (in fondo allo schermo, al centro). */
+function ShareArrow({ label }: { label: string }) {
+  return (
+    <div data-testid="share-arrow" aria-hidden="true" className="pointer-events-none fixed inset-x-0 bottom-0 z-50 flex justify-center pb-4">
+      <div className="share-arrow flex flex-col items-center rounded-lg bg-accent px-4 py-1 text-on-accent">
+        <span className="text-lg font-bold">{label}</span>
+        <ArrowDown size={44} strokeWidth={3} aria-hidden="true" />
+      </div>
+    </div>
   );
 }
 
@@ -111,6 +132,16 @@ export function InstallDialog({ s, lang }: { s: Strings; lang: Lang }) {
     }
   };
 
+  // «Condividi» di sistema: solo se il programma lo sa fare. Se l'utente annulla (AbortError) non si mostra nulla.
+  const canShare = typeof navigator !== "undefined" && typeof navigator.share === "function";
+  const openShare = async () => {
+    try {
+      await navigator.share({ title: s.appName, url: new URL(import.meta.env.BASE_URL, location.href).href });
+    } catch (e) {
+      if (!(e instanceof DOMException && e.name === "AbortError")) console.warn("non riesco ad aprire il menu Condividi", e);
+    }
+  };
+
   const base = import.meta.env.BASE_URL;
   const titles: Record<string, string> = {
     ios: s.installIosTitle,
@@ -125,11 +156,27 @@ export function InstallDialog({ s, lang }: { s: Strings; lang: Lang }) {
     <Modal open={dialogOpen && known} onClose={closeInstallDialog} title={titles[installCase] ?? s.installButton} closeLabel={s.installClose}>
       <div className="flex flex-col gap-4">
         {installCase === "ios" && (
-          <ol className="flex flex-col gap-3">
-            <Step n={1} icon={<ShareIcon />}>{s.installIos1}</Step>
-            <Step n={2} icon={<AddHomeIcon />}>{s.installIos2}</Step>
-            <Step n={3} icon={<AddButtonIcon />}>{s.installIos3}</Step>
-          </ol>
+          <>
+            <Steps title={s.installHowTo}>
+              <Step n={1} icon={<ShareIcon />}>{s.installIos1}</Step>
+              <Step n={2} icon={<AddHomeIcon />}>{s.installIos2}</Step>
+              <Step n={3} icon={<AddButtonIcon />}>{s.installIos3}</Step>
+            </Steps>
+            {canShare && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => void openShare()}
+                  className="inline-flex min-h-14 items-center justify-center gap-3 rounded-md bg-accent px-4 text-lg font-bold text-on-accent"
+                >
+                  <Share size={24} aria-hidden="true" />
+                  {s.installShareButton}
+                </button>
+                <p className="text-lg">{s.installShareHint}</p>
+              </>
+            )}
+            <ShareArrow label={s.installArrowLabel} />
+          </>
         )}
         {installCase === "ios-other" && (
           <>
@@ -142,20 +189,20 @@ export function InstallDialog({ s, lang }: { s: Strings; lang: Lang }) {
               {s.installCopyLink}
             </button>
             {copied && <p role="status" className="text-lg text-success">{s.installCopied}</p>}
-            <ol className="flex flex-col gap-3">
+            <Steps title={s.installHowTo}>
               <Step n={1} icon={<ShareIcon />}>{s.installIos1}</Step>
               <Step n={2} icon={<AddHomeIcon />}>{s.installIos2}</Step>
               <Step n={3} icon={<AddButtonIcon />}>{s.installIos3}</Step>
-            </ol>
+            </Steps>
           </>
         )}
         {installCase === "safari-mac" && <p className="text-lg">{s.installSafariMac1}</p>}
         {installCase === "firefox" && <p className="text-lg">{s.installFirefoxBody}</p>}
         {installCase === "menu" && (
-          <ol className="flex flex-col gap-3">
+          <Steps title={s.installHowTo}>
             <Step n={1} icon={<DotsIcon />}>{s.installMenu1}</Step>
             <Step n={2} icon={<AddHomeIcon />}>{s.installMenu2}</Step>
-          </ol>
+          </Steps>
         )}
         <a
           href={`${base}installa.html?lang=${lang}`}

@@ -68,6 +68,6 @@ export default defineConfig({
     { name: "pwa-desktop", testMatch: /pwa-.*\.spec\.ts/, testIgnore: /pwa-iphone/, use: { ...desktop, baseURL: PWA } },
     { name: "pwa-mobile", testMatch: /pwa-.*\.spec\.ts/, testIgnore: /pwa-iphone/, use: { ...mobile, baseURL: PWA } },
     // T001e: iPhone (motore WebKit di Safari, profilo iPhone 15). Serve: npx playwright install webkit
-    { name: "pwa-iphone", testMatch: /pwa-iphone\.spec\.ts/, use: { ...devices["iPhone 15"], baseURL: PWA, locale: "it-IT" } },
+    { name: "pwa-iphone", testMatch: /pwa-iphone.*\.spec\.ts/, use: { ...devices["iPhone 15"], baseURL: PWA, locale: "it-IT" } },
   ],
 });
