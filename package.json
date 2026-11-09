@@ -13,6 +13,7 @@
     "check:dist": "node scripts/check-test-hooks.mjs dist absent",
     "test:migrazione": "playwright test --project=migrazione-vera --no-deps",
     "test:e2e": "playwright test",
+    "test:dettatura": "playwright test --project=dettatura-produzione",
     "copy-ort": "node scripts/copy-ort.mjs",
     "predev": "node scripts/copy-ort.mjs",
     "prebuild": "node scripts/copy-ort.mjs",

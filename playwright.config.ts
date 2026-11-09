@@ -3,6 +3,7 @@ import { defineConfig, devices } from "@playwright/test";
 const DEV = "http://localhost:5199"; // sviluppo (prove di sempre)
 const PWA = "http://localhost:5200"; // versione costruita, indirizzo radice
 const BASE = "http://localhost:5201"; // versione costruita, sotto /elodict/
+const PROD = "http://localhost:5230"; // build di PRODUZIONE (vite build, senza agganci per le prove), sotto /elodict/ come su GitHub Pages
 
 /** Primo avvio già fatto e avviso «installa» già chiuso: così le prove di sempre non vedono schermate nuove. */
 const done = (origin: string) => ({
@@ -55,15 +56,25 @@ export default defineConfig({
       timeout: 240_000,
       env: { VITE_BASE: "/elodict/" },
     },
+    {
+      // La build che va online (npm run build: modalità production) con la stessa base del sito pubblicato.
+      command: "npm run build -- --outDir dist-prod && npx vite preview --outDir dist-prod --port 5230 --strictPort",
+      url: `${PROD}/elodict/`,
+      reuseExistingServer: true,
+      timeout: 360_000,
+      env: { VITE_BASE: "/elodict/" },
+    },
   ],
   projects: [
-    { name: "desktop", testIgnore: /(pwa-|f16-|g1-).*\.spec\.ts/, use: { ...desktop, storageState: done(DEV) } },
-    { name: "mobile", testIgnore: /(pwa-|f16-|g1-).*\.spec\.ts/, use: { ...mobile, storageState: done(DEV) } },
+    { name: "desktop", testIgnore: /(pwa-|f16-|g[12]-).*\.spec\.ts/, use: { ...desktop, storageState: done(DEV) } },
+    { name: "mobile", testIgnore: /(pwa-|f16-|g[12]-).*\.spec\.ts/, use: { ...mobile, storageState: done(DEV) } },
     // Migrazione con la versione di prima e un profilo vero (apre i suoi server e il suo browser): npm run test:migrazione
     // Parte per ultima e da sola (avvia altri server e un altro browser): se girasse insieme alle altre le rallenterebbe.
     { name: "migrazione-vera", testMatch: /f16-.*\.spec\.ts/, dependencies: ["desktop", "mobile", "pwa-desktop", "pwa-mobile"], use: { ...desktop } },
     // Prove sul sito pubblicato (o sulla sua anteprima): si lanciano a mano con SITE_URL=... npx playwright test --project=sito-pubblicato
-    { name: "sito-pubblicato", testMatch: /g1-.*\.spec\.ts/, use: { ...desktop } },
+    { name: "sito-pubblicato", testMatch: /g[12]-.*\.spec\.ts/, use: { ...desktop } },
+    // T013z: la dettatura deve scrivere testo sulla build di produzione sotto /elodict/ (microfono finto, Edge/Chromium): npm run test:dettatura
+    { name: "dettatura-produzione", testMatch: /g2-.*\.spec\.ts/, use: { ...desktop, baseURL: `${PROD}/elodict/` } },
     // Prove della versione installabile: partono "da zero" (nessun primo avvio fatto) salvo dove il test lo imposta.
     { name: "pwa-desktop", testMatch: /pwa-.*\.spec\.ts/, testIgnore: /pwa-iphone/, use: { ...desktop, baseURL: PWA } },
     { name: "pwa-mobile", testMatch: /pwa-.*\.spec\.ts/, testIgnore: /pwa-iphone/, use: { ...mobile, baseURL: PWA } },

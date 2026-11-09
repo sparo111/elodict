@@ -8,6 +8,7 @@ public/ort
 e2e/fixtures
 dist-pwa
 dist-base
+dist-prod
 
 public/installa-testi.js
 coverage/

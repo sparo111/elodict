@@ -18,6 +18,10 @@ export interface Utterance {
   peak: number;              // livello massimo: serve a scartare i falsi allarmi
 }
 
+/** Quanti frame (da 30 ms) si guardano per stimare il fondo: circa 3 secondi. */
+const FLOOR_WINDOW = 100;
+const FLOOR_MIN_FRAMES = 30;
+
 const rms = (a: Float32Array, from: number, to: number) => {
   let sum = 0;
   for (let i = from; i < to; i++) sum += a[i] * a[i];
@@ -40,6 +44,7 @@ export class Segmenter {
   private peak = 0;
   private inSpeech = false;
   private floor = 0.004;                   // rumore di fondo stimato
+  private recent: number[] = [];           // livelli degli ultimi frame (anche durante la voce): servono a vedere se il «fondo» è salito
 
   constructor(o: SegmenterOptions = {}) {
     const sr = o.sampleRate ?? 16000;
@@ -53,6 +58,22 @@ export class Segmenter {
     this.sr = sr;
   }
   private readonly sr: number;
+
+  /**
+   * Il rumore di fondo si adatta anche mentre il programma crede di sentire una voce.
+   * Senza questo, un microfono con un fondo costante sopra la soglia minima (molti microfoni di computer e telefoni, con il
+   * controllo automatico del volume) faceva «iniziare la frase» subito e mai finire: la pausa non arrivava mai, e il testo
+   * compariva solo ogni 20 secondi, o mai. Il fondo è il 20° percentile degli ultimi ~3 secondi e sale con cautela (3% a frame),
+   * così una frase detta senza pause non lo trascina in alto.
+   */
+  private trackFloorWhileSpeaking(level: number) {
+    this.recent.push(level);
+    if (this.recent.length > FLOOR_WINDOW) this.recent.shift();
+    if (this.recent.length < FLOOR_MIN_FRAMES) return;
+    const sorted = [...this.recent].sort((a, b) => a - b);
+    const est = sorted[Math.floor(sorted.length * 0.2)];
+    if (est > this.floor) this.floor = Math.min(est, this.floor * 1.03);
+  }
 
   /** Soglia attuale: il rumore di fondo moltiplicato, ma mai sotto il minimo. */
   get threshold() {
@@ -100,12 +121,15 @@ export class Segmenter {
       } else {
         // il rumore di fondo si adatta solo quando nessuno parla
         this.floor = this.floor * 0.95 + level * 0.05;
+        this.recent.push(level);
+        if (this.recent.length > FLOOR_WINDOW) this.recent.shift();
         this.preBuf.push(frame);
         if (this.preBuf.length > this.preRoll) this.preBuf.shift();
       }
       return null;
     }
 
+    this.trackFloorWhileSpeaking(level);
     this.cur.push(frame);
     this.peak = Math.max(this.peak, level);
     if (speaking) {

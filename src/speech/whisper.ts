@@ -177,7 +177,10 @@ export function createWhisperEngine(lang: Lang, model: WhisperModelId, h: Handle
       teardown();
       return;
     }
-    ctx = new AudioContext();
+    // Il contesto audio è già stato creato al tocco di «Detta» (vedi start): su iPhone (Safari) si può avviare solo da un gesto
+    // dell'utente, e qui si arriva dopo il caricamento del modello, quando il gesto non c'è più. Se manca (microfono ripreso
+    // dopo uno scollegamento) se ne crea uno nuovo.
+    ctx ??= new AudioContext();
     await ctx.resume();
     const url = URL.createObjectURL(new Blob([WORKLET], { type: "text/javascript" }));
     await ctx.audioWorklet.addModule(url);
@@ -219,16 +222,25 @@ export function createWhisperEngine(lang: Lang, model: WhisperModelId, h: Handle
       if (running) return;
       running = true;
       h.onState("starting");
+      // Ipotesi non verificata su un iPhone vero: creare e avviare il contesto audio ORA, dentro il gesto dell'utente.
+      try {
+        ctx = new AudioContext();
+        void ctx.resume().catch(() => undefined);
+      } catch { /* senza contesto audio l'errore esce più avanti, con il suo messaggio */ }
       void (async () => {
         try {
           await prepareModel(model, (pct) => h.onProgress?.(pct));
         } catch {
           running = false;
+          teardown();
           h.onError("model");
           h.onState("idle");
           return;
         }
-        if (!running) return void h.onState("idle");
+        if (!running) {
+          teardown();
+          return void h.onState("idle");
+        }
         try {
           await connect(micId);
           if (!running) return void h.onState("idle");

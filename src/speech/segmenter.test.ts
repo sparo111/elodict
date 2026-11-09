@@ -74,6 +74,57 @@ describe("Segmenter: taglia le frasi dalle pause", () => {
   });
 });
 
+/** Rumore bianco con RMS dato, sempre uguale (generatore deterministico) così la prova non è mai instabile. */
+const noise = (ms: number, rms: number, seed = 7) => {
+  let x = seed;
+  const rnd = () => ((x = (x * 1664525 + 1013904223) >>> 0) / 4294967296);
+  const a = new Float32Array((SR * ms) / 1000);
+  for (let i = 0; i < a.length; i++) a[i] = rms * Math.sqrt(-2 * Math.log(rnd() || 1e-9)) * Math.cos(2 * Math.PI * rnd());
+  return a;
+};
+const mix = (a: Float32Array, b: Float32Array) => a.map((v, i) => v + b[i]);
+/** Una frase di voce (tono) sopra un fondo rumoroso, poi una pausa con il solo fondo. */
+const phrase = (speechMs: number, pauseMs: number, bg: number) => cat(mix(tone(speechMs), noise(speechMs, bg)), noise(pauseMs, bg));
+const loud = <T extends { peak: number }>(us: T[]) => us.filter((u) => u.peak > 0.1);
+
+describe("Segmenter: microfoni con un fondo rumoroso (guasto T013z)", () => {
+  // Molti microfoni (computer, telefoni, con il volume automatico) hanno un fondo sopra la soglia minima: prima, la frase
+  // «iniziava» subito e non finiva più (la pausa non arrivava mai), e il testo compariva solo ogni 20 secondi, o mai.
+  for (const bg of [0.02, 0.03]) {
+    it(`fondo costante di ${bg} (RMS): 3 frasi dette con pause sono 3 frasi, non una lunghissima`, () => {
+      const s = new Segmenter();
+      const out = s.push(cat(noise(3000, bg), phrase(1500, 1500, bg), phrase(1500, 1500, bg), phrase(1500, 1500, bg)));
+      const last = s.flush();
+      const all = last ? [...out, last] : out;
+      const voice = loud(all);
+      expect(voice).toHaveLength(3);
+      for (const u of voice) expect(u.durationMs).toBeLessThan(4000);
+    });
+    it(`fondo di ${bg} e voce che parte subito: dopo l'adattamento le frasi si separano`, () => {
+      const s = new Segmenter();
+      const out = s.push(cat(phrase(1500, 1500, bg), phrase(1500, 1500, bg), phrase(1500, 1500, bg), phrase(1500, 1500, bg), phrase(1500, 1500, bg)));
+      const last = s.flush();
+      const voice = loud(last ? [...out, last] : out);
+      expect(voice.length).toBeGreaterThanOrEqual(3);
+      for (const u of voice.slice(-3)) expect(u.durationMs).toBeLessThan(4000);
+    });
+  }
+  it("una frase lunga senza pause (voce che sale e scende) non viene spezzata dall'adattamento", () => {
+    const s = new Segmenter();
+    const n = SR * 8;
+    const a = new Float32Array(n);
+    for (let i = 0; i < n; i++) a[i] = (0.1 + 0.1 * Math.sin((2 * Math.PI * 4 * i) / SR)) * Math.sin((2 * Math.PI * 200 * i) / SR);
+    const out = s.push(cat(noise(1000, 0.003), mix(a, noise(8000, 0.003)), noise(1200, 0.003)));
+    expect(loud(out)).toHaveLength(1);
+    expect(out[0].durationMs).toBeGreaterThan(7500);
+  });
+  it("il solo fondo rumoroso, senza nessuno che parli, non manda frasi a Whisper dopo l'adattamento", () => {
+    const s = new Segmenter();
+    s.push(noise(4000, 0.02)); // l'adattamento
+    expect(s.push(noise(10000, 0.02, 11))).toHaveLength(0);
+  });
+});
+
 describe("resampleTo16k", () => {
   it("da 48.000 a 16.000: un terzo dei campioni", () => {
     const r = resampleTo16k(new Float32Array(4800).fill(0.5), 48000);
