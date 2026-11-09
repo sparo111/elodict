@@ -34,6 +34,12 @@ jobs:
           VITE_BASE: /${{ github.event.repository.name }}/
       - name: Controlla che nella versione pubblicata non ci siano agganci per le prove
         run: npm run check:dist
+      # Pagina di prova T013b (prova-parakeet/): si costruisce a parte e va in dist/prova-parakeet/, DOPO la costruzione e il controllo
+      # dell'app, che restano identici. Non ha collegamenti dall'app.
+      - name: Costruisce la pagina di prova a parte (prova-parakeet/)
+        run: npm run build:prova
+        env:
+          VITE_BASE: /${{ github.event.repository.name }}/
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

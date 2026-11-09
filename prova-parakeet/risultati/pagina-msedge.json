@@ -1,0 +1,1513 @@
+{
+ "browser": "msedge",
+ "version": "153.0.4234.48",
+ "url": "http://localhost:5240/elodict/prova-parakeet/",
+ "startedAt": "2026-11-09T18:05:19.402Z",
+ "device": {
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36 Edg/153.0.0.0",
+  "platform": "Windows",
+  "cores": 22,
+  "deviceMemoryGB": 16,
+  "crossOriginIsolated": true,
+  "sharedArrayBuffer": true,
+  "webgpu": true,
+  "platformVersion": "19.0.0",
+  "architecture": "x86",
+  "webgpuAdapter": "intel / xe-lpg"
+ },
+ "sweeps": [
+  {
+   "silenceMs": 400,
+   "emitted": 12,
+   "expected": 6,
+   "splits": 6,
+   "delaysMs": [
+    425.62499999999994,
+    403.12500000000017,
+    457.50000000000045,
+    436.87500000000057,
+    405.9375000000003,
+    446.24999999999915,
+    407.8124999999986,
+    422.81249999999915,
+    469.68749999999915,
+    401.24999999999744,
+    441.5624999999963,
+    391.87499999999886
+   ],
+   "meanDelayMs": 425.85937499999915
+  },
+  {
+   "silenceMs": 550,
+   "emitted": 9,
+   "expected": 6,
+   "splits": 3,
+   "delaysMs": [
+    573.7500000000005,
+    607.5000000000017,
+    616.8750000000002,
+    578.4374999999961,
+    593.4375000000002,
+    554.9999999999961,
+    571.8749999999986,
+    612.1874999999975,
+    562.5
+   ],
+   "meanDelayMs": 585.7291666666657
+  },
+  {
+   "silenceMs": 700,
+   "emitted": 7,
+   "expected": 6,
+   "splits": 1,
+   "delaysMs": [
+    744.3750000000002,
+    692.8125000000005,
+    702.1874999999991,
+    764.0625000000014,
+    742.4999999999998,
+    697.499999999998,
+    733.1249999999941
+   ],
+   "meanDelayMs": 725.2232142857132
+  }
+ ],
+ "rows": [
+  {
+   "engine": "whisper-base",
+   "threads": 1,
+   "backend": "wasm",
+   "label": "whisper-base · 1 thread · wasm",
+   "ok": true,
+   "loadMs": 6262.280000001192,
+   "networkMB": 99.21748065948486,
+   "cachedMB": 0,
+   "peakMemMB": 1330.98037815094,
+   "memSource": "measureUserAgentSpecificMemory (pagina e lavoratori)",
+   "coldMs": 2708.520000010729,
+   "clips": [
+    {
+     "id": 1,
+     "seconds": 4.105,
+     "timings": {
+      "preMs": 118.0450000166893,
+      "encMs": 1838.0999999940395,
+      "decMs": 547.005000025034,
+      "totalMs": 2517.9900000095367,
+      "decSteps": 15
+     },
+     "text": "Buongiorno, vorrei prenotare un tavolo.",
+     "score": {
+      "wer": 0,
+      "words": 5,
+      "errors": 0,
+      "punctExpected": 2,
+      "punctCorrect": 2,
+      "punctExtra": 0
+     }
+    },
+    {
+     "id": 2,
+     "seconds": 3.59,
+     "timings": {
+      "preMs": 105.875,
+      "encMs": 1881.875,
+      "decMs": 536.8449999988079,
+      "totalMs": 2531.419999986887,
+      "decSteps": 14
+     },
+     "text": "Domani piuve, porta l'ombrello.",
+     "score": {
+      "wer": 0.25,
+      "words": 4,
+      "errors": 1,
+      "punctExpected": 2,
+      "punctCorrect": 2,
+      "punctExtra": 0
+     }
+    },
+    {
+     "id": 3,
+     "seconds": 8.4,
+     "timings": {
+      "preMs": 107.53499999642372,
+      "encMs": 1849.655000001192,
+      "decMs": 1077.8499999642372,
+      "totalMs": 3053.2049999833107,
+      "decSteps": 35
+     },
+     "text": "Ieri sera abbiamo cenato in un ristorante vicino al mare, e il camerai regentile ci ha consigliato il pesce fresco.",
+     "score": {
+      "wer": 0.1,
+      "words": 20,
+      "errors": 2,
+      "punctExpected": 2,
+      "punctCorrect": 2,
+      "punctExtra": 0
+     }
+    },
+    {
+     "id": 4,
+     "seconds": 7.91,
+     "timings": {
+      "preMs": 105.625,
+      "encMs": 1811.5400000214577,
+      "decMs": 1067.2399999797344,
+      "totalMs": 2999.690000027418,
+      "decSteps": 34
+     },
+     "text": "Il treno per Roma parte alle nove e quarenta dal binario sette, non dimenticare i billeti e il passaporto.",
+     "score": {
+      "wer": 0.10526315789473684,
+      "words": 19,
+      "errors": 2,
+      "punctExpected": 2,
+      "punctCorrect": 2,
+      "punctExtra": 0
+     }
+    },
+    {
+     "id": 5,
+     "seconds": 14.19,
+     "timings": {
+      "preMs": 102.61500000953674,
+      "encMs": 1834.0099999904633,
+      "decMs": 1843.469999909401,
+      "totalMs": 3803.939999997616,
+      "decSteps": 61
+     },
+     "text": "Gentile cliente, la informiamo che il suo ordine è stato spedito questa mattina e arriverà entre tre giorni lavorativi, se desiderà cambiare l'indirizzo di consegna, ci contatti al più presto, grazie.",
+     "score": {
+      "wer": 0.06451612903225806,
+      "words": 31,
+      "errors": 2,
+      "punctExpected": 5,
+      "punctCorrect": 4,
+      "punctExtra": 0
+     }
+    }
+   ],
+   "osPeakMB": 2188.4921875,
+   "osBaselineMB": 601.765625,
+   "wallS": 34.831
+  },
+  {
+   "engine": "whisper-base",
+   "threads": 2,
+   "backend": "wasm",
+   "label": "whisper-base · 2 thread · wasm",
+   "ok": true,
+   "loadMs": 1006.6100000143051,
+   "networkMB": 20.595568656921387,
+   "cachedMB": 0,
+   "peakMemMB": 1331.051012992859,
+   "memSource": "measureUserAgentSpecificMemory (pagina e lavoratori)",
+   "coldMs": 1858.2200000286102,
+   "clips": [
+    {
+     "id": 1,
+     "seconds": 4.105,
+     "timings": {
+      "preMs": 127.62999999523163,
+      "encMs": 1097.535000026226,
+      "decMs": 432.0999999642372,
+      "totalMs": 1670.4650000035763,
+      "decSteps": 15
+     },
+     "text": "Buongiorno, vorrei prenotare un tavolo.",
+     "score": {
+      "wer": 0,
+      "words": 5,
+      "errors": 0,
+      "punctExpected": 2,
+      "punctCorrect": 2,
+      "punctExtra": 0
+     }
+    },
+    {
+     "id": 2,
+     "seconds": 3.59,
+     "timings": {
+      "preMs": 107.25,
+      "encMs": 1076.5149999856949,
+      "decMs": 422.3250000476837,
+      "totalMs": 1613.0199999809265,
+      "decSteps": 14
+     },
+     "text": "Domani piuve, porta l'ombrello.",
+     "score": {
+      "wer": 0.25,
+      "words": 4,
+      "errors": 1,
+      "punctExpected": 2,
+      "punctCorrect": 2,
+      "punctExtra": 0
+     }
+    },
+    {
+     "id": 3,
+     "seconds": 8.4,
+     "timings": {
+      "preMs": 102.25499999523163,
+      "encMs": 1099.1400000154972,
+      "decMs": 901.4950000047684,
+      "totalMs": 2121.5349999964237,
+      "decSteps": 35
+     },
+     "text": "Ieri sera abbiamo cenato in un ristorante vicino al mare, e il camerai regentile ci ha consigliato il pesce fresco.",
+     "score": {
+      "wer": 0.1,
+      "words": 20,
+      "errors": 2,
+      "punctExpected": 2,
+      "punctCorrect": 2,
+      "punctExtra": 0
+     }
+    },
+    {
+     "id": 4,
+     "seconds": 7.91,
+     "timings": {
+      "preMs": 102.49500000476837,
+      "encMs": 1088.0850000083447,
+      "decMs": 877.674999922514,
+      "totalMs": 2081.6200000047684,
+      "decSteps": 34
+     },
+     "text": "Il treno per Roma parte alle nove e quarenta dal binario sette, non dimenticare i billeti e il passaporto.",
+     "score": {
+      "wer": 0.10526315789473684,
+      "words": 19,
+      "errors": 2,
+      "punctExpected": 2,
+      "punctCorrect": 2,
+      "punctExtra": 0
+     }
+    },
+    {
+     "id": 5,
+     "seconds": 14.19,
+     "timings": {
+      "preMs": 103.9249999821186,
+      "encMs": 1088.1150000095367,
+      "decMs": 1520.5450000166893,
+      "totalMs": 2738.0250000059605,
+      "decSteps": 61
+     },
+     "text": "Gentile cliente, la informiamo che il suo ordine è stato spedito questa mattina e arriverà entre tre giorni lavorativi, se desiderà cambiare l'indirizzo di consegna, ci contatti al più presto, grazie.",
+     "score": {
+      "wer": 0.06451612903225806,
+      "words": 31,
+      "errors": 2,
+      "punctExpected": 5,
+      "punctCorrect": 4,
+      "punctExtra": 0
+     }
+    }
+   ],
+   "osPeakMB": 2132.609375,
+   "osBaselineMB": 698.3203125,
+   "wallS": 126.55
+  },
+  {
+   "engine": "whisper-base",
+   "threads": 4,
+   "backend": "wasm",
+   "label": "whisper-base · 4 thread · wasm",
+   "ok": true,
+   "loadMs": 992.0100000202656,
+   "networkMB": 20.595568656921387,
+   "cachedMB": 0,
+   "peakMemMB": 830.2937850952148,
+   "memSource": "measureUserAgentSpecificMemory (pagina e lavoratori)",
+   "coldMs": 1382.7849999964237,
+   "clips": [
+    {
+     "id": 1,
+     "seconds": 4.105,
+     "timings": {
+      "preMs": 121.98500001430511,
+      "encMs": 614.9549999833107,
+      "decMs": 365.75999996066093,
+      "totalMs": 1114.655000001192,
+      "decSteps": 15
+     },
+     "text": "Buongiorno, vorrei prenotare un tavolo.",
+     "score": {
+      "wer": 0,
+      "words": 5,
+      "errors": 0,
+      "punctExpected": 2,
+      "punctCorrect": 2,
+      "punctExtra": 0
+     }
+    },
+    {
+     "id": 2,
+     "seconds": 3.59,
+     "timings": {
+      "preMs": 114.06499999761581,
+      "encMs": 642.8650000095367,
+      "decMs": 352.54999989271164,
+      "totalMs": 1116.6949999928474,
+      "decSteps": 14
+     },
+     "text": "Domani piuve, porta l'ombrello.",
+     "score": {
+      "wer": 0.25,
+      "words": 4,
+      "errors": 1,
+      "punctExpected": 2,
+      "punctCorrect": 2,
+      "punctExtra": 0
+     }
+    },
+    {
+     "id": 3,
+     "seconds": 8.4,
+     "timings": {
+      "preMs": 104.4249999821186,
+      "encMs": 777.1100000143051,
+      "decMs": 804.3199999630451,
+      "totalMs": 1702.8849999904633,
+      "decSteps": 35
+     },
+     "text": "Ieri sera abbiamo cenato in un ristorante vicino al mare, e il camerai regentile ci ha consigliato il pesce fresco.",
+     "score": {
+      "wer": 0.1,
+      "words": 20,
+      "errors": 2,
+      "punctExpected": 2,
+      "punctCorrect": 2,
+      "punctExtra": 0
+     }
+    },
+    {
+     "id": 4,
+     "seconds": 7.91,
+     "timings": {
+      "preMs": 116.56000000238419,
+      "encMs": 806.25,
+      "decMs": 768.3000001609325,
+      "totalMs": 1703.344999998808,
+      "decSteps": 34
+     },
+     "text": "Il treno per Roma parte alle nove e quarenta dal binario sette, non dimenticare i billeti e il passaporto.",
+     "score": {
+      "wer": 0.10526315789473684,
+      "words": 19,
+      "errors": 2,
+      "punctExpected": 2,
+      "punctCorrect": 2,
+      "punctExtra": 0
+     }
+    },
+    {
+     "id": 5,
+     "seconds": 14.19,
+     "timings": {
+      "preMs": 107.16499999165535,
+      "encMs": 810.8000000119209,
+      "decMs": 1355.9749999642372,
+      "totalMs": 2297.014999985695,
+      "decSteps": 61
+     },
+     "text": "Gentile cliente, la informiamo che il suo ordine è stato spedito questa mattina e arriverà entre tre giorni lavorativi, se desiderà cambiare l'indirizzo di consegna, ci contatti al più presto, grazie.",
+     "score": {
+      "wer": 0.06451612903225806,
+      "words": 31,
+      "errors": 2,
+      "punctExpected": 5,
+      "punctCorrect": 4,
+      "punctExtra": 0
+     }
+    }
+   ],
+   "osPeakMB": 2503.41015625,
+   "osBaselineMB": 1527.5859375,
+   "wallS": 122.514
+  },
+  {
+   "engine": "parakeet-olicorne-w2a8",
+   "threads": 1,
+   "backend": "wasm",
+   "label": "parakeet-olicorne-w2a8 · 1 thread · wasm",
+   "ok": true,
+   "loadMs": 15955.830000013113,
+   "networkMB": 198.67925357818604,
+   "cachedMB": 0,
+   "peakMemMB": 482.572678565979,
+   "memSource": "measureUserAgentSpecificMemory (pagina e lavoratori)",
+   "coldMs": 2281.094999998808,
+   "clips": [
+    {
+     "id": 1,
+     "seconds": 4.105,
+     "timings": {
+      "preMs": 5.905000001192093,
+      "encMs": 2268.2099999785423,
+      "decMs": 45.41499999165535,
+      "totalMs": 2319.794999986887,
+      "decSteps": 0
+     },
+     "text": "Buongiorno, vorrei prenotare un tavolo",
+     "score": {
+      "wer": 0,
+      "words": 5,
+      "errors": 0,
+      "punctExpected": 2,
+      "punctCorrect": 1,
+      "punctExtra": 0
+     }
+    },
+    {
+     "id": 2,
+     "seconds": 3.59,
+     "timings": {
+      "preMs": 8.449999988079071,
+      "encMs": 2092.244999974966,
+      "decMs": 41.764999985694885,
+      "totalMs": 2142.905000001192,
+      "decSteps": 0
+     },
+     "text": "Domani piove, porta l'ombrello",
+     "score": {
+      "wer": 0,
+      "words": 4,
+      "errors": 0,
+      "punctExpected": 2,
+      "punctCorrect": 1,
+      "punctExtra": 0
+     }
+    },
+    {
+     "id": 3,
+     "seconds": 8.4,
+     "timings": {
+      "preMs": 12.430000007152557,
+      "encMs": 3744.234999984503,
+      "decMs": 101.19000002741814,
+      "totalMs": 3858.2549999952316,
+      "decSteps": 0
+     },
+     "text": "Ieri sera abbiamo cenato in un ristorante vicino al mare, e il cameriere gentile ci ha consigliato il pesce fresco.",
+     "score": {
+      "wer": 0,
+      "words": 20,
+      "errors": 0,
+      "punctExpected": 2,
+      "punctCorrect": 2,
+      "punctExtra": 0
+     }
+    },
+    {
+     "id": 4,
+     "seconds": 7.91,
+     "timings": {
+      "preMs": 14.399999976158142,
+      "encMs": 3518,
+      "decMs": 81.41499999165535,
+      "totalMs": 3614.2300000190735,
+      "decSteps": 0
+     },
+     "text": "Il treno per Roma parte alle 9.40 dal binario 7, non dimenticare i biglietti e il passaporto.",
+     "score": {
+      "wer": 0.21052631578947367,
+      "words": 19,
+      "errors": 4,
+      "punctExpected": 2,
+      "punctCorrect": 2,
+      "punctExtra": 0
+     }
+    },
+    {
+     "id": 5,
+     "seconds": 14.19,
+     "timings": {
+      "preMs": 17.689999997615814,
+      "encMs": 5906.004999995232,
+      "decMs": 150.46000000834465,
+      "totalMs": 6075.3949999809265,
+      "decSteps": 0
+     },
+     "text": "Gentile cliente, la informiamo che il suo ordine è stato spedito questa mattina e arriverà entro tre giorni lavorativi, se desidera cambiare l'indirizzo di consegna, ci contatti al più presto, grazie.",
+     "score": {
+      "wer": 0,
+      "words": 31,
+      "errors": 0,
+      "punctExpected": 5,
+      "punctCorrect": 4,
+      "punctExtra": 0
+     }
+    }
+   ],
+   "osPeakMB": 1599.20703125,
+   "osBaselineMB": 1494.49609375,
+   "wallS": 80.704
+  },
+  {
+   "engine": "parakeet-olicorne-w2a8",
+   "threads": 2,
+   "backend": "wasm",
+   "label": "parakeet-olicorne-w2a8 · 2 thread · wasm",
+   "ok": true,
+   "loadMs": 1572.3050000071526,
+   "networkMB": 0,
+   "cachedMB": 198.67925357818604,
+   "peakMemMB": 483.00213623046875,
+   "memSource": "measureUserAgentSpecificMemory (pagina e lavoratori)",
+   "coldMs": 1314.9350000023842,
+   "clips": [
+    {
+     "id": 1,
+     "seconds": 4.105,
+     "timings": {
+      "preMs": 6.230000019073486,
+      "encMs": 1245.7849999964237,
+      "decMs": 31.67500001192093,
+      "totalMs": 1283.9749999940395,
+      "decSteps": 0
+     },
+     "text": "Buongiorno, vorrei prenotare un tavolo",
+     "score": {
+      "wer": 0,
+      "words": 5,
+      "errors": 0,
+      "punctExpected": 2,
+      "punctCorrect": 1,
+      "punctExtra": 0
+     }
+    },
+    {
+     "id": 2,
+     "seconds": 3.59,
+     "timings": {
+      "preMs": 4.9549999833106995,
+      "encMs": 1151.0250000059605,
+      "decMs": 29.490000009536743,
+      "totalMs": 1185.7450000047684,
+      "decSteps": 0
+     },
+     "text": "Domani piove, porta l'ombrello",
+     "score": {
+      "wer": 0,
+      "words": 4,
+      "errors": 0,
+      "punctExpected": 2,
+      "punctCorrect": 1,
+      "punctExtra": 0
+     }
+    },
+    {
+     "id": 3,
+     "seconds": 8.4,
+     "timings": {
+      "preMs": 13.100000023841858,
+      "encMs": 2101.1599999964237,
+      "decMs": 64.77000001072884,
+      "totalMs": 2179.435000002384,
+      "decSteps": 0
+     },
+     "text": "Ieri sera abbiamo cenato in un ristorante vicino al mare, e il cameriere gentile ci ha consigliato il pesce fresco.",
+     "score": {
+      "wer": 0,
+      "words": 20,
+      "errors": 0,
+      "punctExpected": 2,
+      "punctCorrect": 2,
+      "punctExtra": 0
+     }
+    },
+    {
+     "id": 4,
+     "seconds": 7.91,
+     "timings": {
+      "preMs": 11.730000019073486,
+      "encMs": 1958.9399999976158,
+      "decMs": 59.45000001788139,
+      "totalMs": 2030.9099999964237,
+      "decSteps": 0
+     },
+     "text": "Il treno per Roma parte alle 9.40 dal binario 7, non dimenticare i biglietti e il passaporto.",
+     "score": {
+      "wer": 0.21052631578947367,
+      "words": 19,
+      "errors": 4,
+      "punctExpected": 2,
+      "punctCorrect": 2,
+      "punctExtra": 0
+     }
+    },
+    {
+     "id": 5,
+     "seconds": 14.19,
+     "timings": {
+      "preMs": 21.435000002384186,
+      "encMs": 3216.2549999952316,
+      "decMs": 93.31999999284744,
+      "totalMs": 3331.734999984503,
+      "decSteps": 0
+     },
+     "text": "Gentile cliente, la informiamo che il suo ordine è stato spedito questa mattina e arriverà entro tre giorni lavorativi, se desidera cambiare l'indirizzo di consegna, ci contatti al più presto, grazie.",
+     "score": {
+      "wer": 0,
+      "words": 31,
+      "errors": 0,
+      "punctExpected": 5,
+      "punctCorrect": 4,
+      "punctExtra": 0
+     }
+    }
+   ],
+   "osPeakMB": 1635.125,
+   "osBaselineMB": 714.0078125,
+   "wallS": 133.745
+  },
+  {
+   "engine": "parakeet-olicorne-w2a8",
+   "threads": 4,
+   "backend": "wasm",
+   "label": "parakeet-olicorne-w2a8 · 4 thread · wasm",
+   "ok": true,
+   "loadMs": 1150.9800000190735,
+   "networkMB": 0,
+   "cachedMB": 198.67925357818604,
+   "peakMemMB": 498.87512588500977,
+   "memSource": "measureUserAgentSpecificMemory (pagina e lavoratori)",
+   "coldMs": 624.3649999797344,
+   "clips": [
+    {
+     "id": 1,
+     "seconds": 4.105,
+     "timings": {
+      "preMs": 5.58500000834465,
+      "encMs": 769.0300000011921,
+      "decMs": 23.695000022649765,
+      "totalMs": 799.0550000071526,
+      "decSteps": 0
+     },
+     "text": "Buongiorno, vorrei prenotare un tavolo",
+     "score": {
+      "wer": 0,
+      "words": 5,
+      "errors": 0,
+      "punctExpected": 2,
+      "punctCorrect": 1,
+      "punctExtra": 0
+     }
+    },
+    {
+     "id": 2,
+     "seconds": 3.59,
+     "timings": {
+      "preMs": 5.185000002384186,
+      "encMs": 612.1200000047684,
+      "decMs": 21.12999999523163,
+      "totalMs": 639.1649999916553,
+      "decSteps": 0
+     },
+     "text": "Domani piove, porta l'ombrello",
+     "score": {
+      "wer": 0,
+      "words": 4,
+      "errors": 0,
+      "punctExpected": 2,
+      "punctCorrect": 1,
+      "punctExtra": 0
+     }
+    },
+    {
+     "id": 3,
+     "seconds": 8.4,
+     "timings": {
+      "preMs": 10.144999980926514,
+      "encMs": 1154.4799999892712,
+      "decMs": 50.900000005960464,
+      "totalMs": 1216.580000013113,
+      "decSteps": 0
+     },
+     "text": "Ieri sera abbiamo cenato in un ristorante vicino al mare, e il cameriere gentile ci ha consigliato il pesce fresco.",
+     "score": {
+      "wer": 0,
+      "words": 20,
+      "errors": 0,
+      "punctExpected": 2,
+      "punctCorrect": 2,
+      "punctExtra": 0
+     }
+    },
+    {
+     "id": 4,
+     "seconds": 7.91,
+     "timings": {
+      "preMs": 11.245000004768372,
+      "encMs": 1059.7450000047684,
+      "decMs": 43.73499998450279,
+      "totalMs": 1115.1700000166893,
+      "decSteps": 0
+     },
+     "text": "Il treno per Roma parte alle 9.40 dal binario 7, non dimenticare i biglietti e il passaporto.",
+     "score": {
+      "wer": 0.21052631578947367,
+      "words": 19,
+      "errors": 4,
+      "punctExpected": 2,
+      "punctCorrect": 2,
+      "punctExtra": 0
+     }
+    },
+    {
+     "id": 5,
+     "seconds": 14.19,
+     "timings": {
+      "preMs": 18.974999994039536,
+      "encMs": 1837.2350000143051,
+      "decMs": 87.7999999821186,
+      "totalMs": 1944.7100000083447,
+      "decSteps": 0
+     },
+     "text": "Gentile cliente, la informiamo che il suo ordine è stato spedito questa mattina e arriverà entro tre giorni lavorativi, se desidera cambiare l'indirizzo di consegna, ci contatti al più presto, grazie.",
+     "score": {
+      "wer": 0,
+      "words": 31,
+      "errors": 0,
+      "punctExpected": 5,
+      "punctCorrect": 4,
+      "punctExtra": 0
+     }
+    }
+   ],
+   "osPeakMB": 2099.96875,
+   "osBaselineMB": 1209.8359375,
+   "wallS": 124.054
+  },
+  {
+   "engine": "parakeet-istupakov-int8",
+   "threads": 1,
+   "backend": "wasm",
+   "label": "parakeet-istupakov-int8 · 1 thread · wasm",
+   "ok": true,
+   "loadMs": 43770.92500001192,
+   "networkMB": 639.552882194519,
+   "cachedMB": 0,
+   "peakMemMB": 1418.7489233016968,
+   "memSource": "measureUserAgentSpecificMemory (pagina e lavoratori)",
+   "coldMs": 981.169999986887,
+   "clips": [
+    {
+     "id": 1,
+     "seconds": 4.105,
+     "timings": {
+      "preMs": 7.375,
+      "encMs": 992.1349999904633,
+      "decMs": 38.31999999284744,
+      "totalMs": 1038.1299999952316,
+      "decSteps": 0
+     },
+     "text": "Buongiorno, vorrei prenotare un tavolo.",
+     "score": {
+      "wer": 0,
+      "words": 5,
+      "errors": 0,
+      "punctExpected": 2,
+      "punctCorrect": 2,
+      "punctExtra": 0
+     }
+    },
+    {
+     "id": 2,
+     "seconds": 3.59,
+     "timings": {
+      "preMs": 7.799999982118607,
+      "encMs": 797.9299999773502,
+      "decMs": 28.764999985694885,
+      "totalMs": 834.7350000143051,
+      "decSteps": 0
+     },
+     "text": "Domani piove, porta l'ombrello.",
+     "score": {
+      "wer": 0,
+      "words": 4,
+      "errors": 0,
+      "punctExpected": 2,
+      "punctCorrect": 2,
+      "punctExtra": 0
+     }
+    },
+    {
+     "id": 3,
+     "seconds": 8.4,
+     "timings": {
+      "preMs": 13.020000010728836,
+      "encMs": 1817.8149999976158,
+      "decMs": 76.84000000357628,
+      "totalMs": 1908.0750000178814,
+      "decSteps": 0
+     },
+     "text": "Ieri sera abbiamo cenato in un ristorante vicino al mare, e il cameriere Gentile ci ha consigliato il pesce fresco.",
+     "score": {
+      "wer": 0,
+      "words": 20,
+      "errors": 0,
+      "punctExpected": 2,
+      "punctCorrect": 2,
+      "punctExtra": 0
+     }
+    },
+    {
+     "id": 4,
+     "seconds": 7.91,
+     "timings": {
+      "preMs": 12.7950000166893,
+      "encMs": 1756.094999998808,
+      "decMs": 78.25999999046326,
+      "totalMs": 1847.5799999833107,
+      "decSteps": 0
+     },
+     "text": "Il treno per Roma parte alle 9 e 40 dal binario 7. Non dimenticare i biglietti e il passaporto.",
+     "score": {
+      "wer": 0.15789473684210525,
+      "words": 19,
+      "errors": 3,
+      "punctExpected": 2,
+      "punctCorrect": 1,
+      "punctExtra": 0
+     }
+    },
+    {
+     "id": 5,
+     "seconds": 14.19,
+     "timings": {
+      "preMs": 21.37999999523163,
+      "encMs": 3045.514999985695,
+      "decMs": 145.5750000178814,
+      "totalMs": 3213.0699999928474,
+      "decSteps": 0
+     },
+     "text": "Gentile cliente, la informiamo che il suo ordine è stato spedito questa mattina e arriverà entro tre giorni lavorativi. Se desidera cambiare l'indirizzo di consegna, ci contatti al più presto, grazie.",
+     "score": {
+      "wer": 0,
+      "words": 31,
+      "errors": 0,
+      "punctExpected": 5,
+      "punctCorrect": 4,
+      "punctExtra": 0
+     }
+    }
+   ],
+   "osPeakMB": 2893.03515625,
+   "osBaselineMB": 1253.24609375,
+   "wallS": 80.938
+  },
+  {
+   "engine": "parakeet-istupakov-int8",
+   "threads": 2,
+   "backend": "wasm",
+   "label": "parakeet-istupakov-int8 · 2 thread · wasm",
+   "ok": true,
+   "loadMs": 3157.479999989271,
+   "networkMB": 0,
+   "cachedMB": 639.552882194519,
+   "peakMemMB": 1344.7832374572754,
+   "memSource": "measureUserAgentSpecificMemory (pagina e lavoratori)",
+   "coldMs": 599.2700000107288,
+   "clips": [
+    {
+     "id": 1,
+     "seconds": 4.105,
+     "timings": {
+      "preMs": 7.094999998807907,
+      "encMs": 590.869999974966,
+      "decMs": 38.150000005960464,
+      "totalMs": 636.4099999964237,
+      "decSteps": 0
+     },
+     "text": "Buongiorno, vorrei prenotare un tavolo.",
+     "score": {
+      "wer": 0,
+      "words": 5,
+      "errors": 0,
+      "punctExpected": 2,
+      "punctCorrect": 2,
+      "punctExtra": 0
+     }
+    },
+    {
+     "id": 2,
+     "seconds": 3.59,
+     "timings": {
+      "preMs": 5.080000013113022,
+      "encMs": 480.955000013113,
+      "decMs": 21.75,
+      "totalMs": 508.06999999284744,
+      "decSteps": 0
+     },
+     "text": "Domani piove, porta l'ombrello.",
+     "score": {
+      "wer": 0,
+      "words": 4,
+      "errors": 0,
+      "punctExpected": 2,
+      "punctCorrect": 2,
+      "punctExtra": 0
+     }
+    },
+    {
+     "id": 3,
+     "seconds": 8.4,
+     "timings": {
+      "preMs": 10.839999973773956,
+      "encMs": 1058.380000025034,
+      "decMs": 52.814999997615814,
+      "totalMs": 1122.4449999928474,
+      "decSteps": 0
+     },
+     "text": "Ieri sera abbiamo cenato in un ristorante vicino al mare, e il cameriere Gentile ci ha consigliato il pesce fresco.",
+     "score": {
+      "wer": 0,
+      "words": 20,
+      "errors": 0,
+      "punctExpected": 2,
+      "punctCorrect": 2,
+      "punctExtra": 0
+     }
+    },
+    {
+     "id": 4,
+     "seconds": 7.91,
+     "timings": {
+      "preMs": 11.609999984502792,
+      "encMs": 989.1149999797344,
+      "decMs": 54.59000000357628,
+      "totalMs": 1055.7349999845028,
+      "decSteps": 0
+     },
+     "text": "Il treno per Roma parte alle 9 e 40 dal binario 7. Non dimenticare i biglietti e il passaporto.",
+     "score": {
+      "wer": 0.15789473684210525,
+      "words": 19,
+      "errors": 3,
+      "punctExpected": 2,
+      "punctCorrect": 1,
+      "punctExtra": 0
+     }
+    },
+    {
+     "id": 5,
+     "seconds": 14.19,
+     "timings": {
+      "preMs": 16.50499999523163,
+      "encMs": 1740.994999974966,
+      "decMs": 89.39999997615814,
+      "totalMs": 1847.5150000154972,
+      "decSteps": 0
+     },
+     "text": "Gentile cliente, la informiamo che il suo ordine è stato spedito questa mattina e arriverà entro tre giorni lavorativi. Se desidera cambiare l'indirizzo di consegna, ci contatti al più presto, grazie.",
+     "score": {
+      "wer": 0,
+      "words": 31,
+      "errors": 0,
+      "punctExpected": 5,
+      "punctCorrect": 4,
+      "punctExtra": 0
+     }
+    }
+   ],
+   "osPeakMB": 3128.73046875,
+   "osBaselineMB": 733.1796875,
+   "wallS": 82.24
+  },
+  {
+   "engine": "parakeet-istupakov-int8",
+   "threads": 4,
+   "backend": "wasm",
+   "label": "parakeet-istupakov-int8 · 4 thread · wasm",
+   "ok": true,
+   "loadMs": 3117.3650000095367,
+   "networkMB": 0,
+   "cachedMB": 639.552882194519,
+   "peakMemMB": 1345.1151885986328,
+   "memSource": "measureUserAgentSpecificMemory (pagina e lavoratori)",
+   "coldMs": 476.66499999165535,
+   "clips": [
+    {
+     "id": 1,
+     "seconds": 4.105,
+     "timings": {
+      "preMs": 6.71000000834465,
+      "encMs": 365.3449999988079,
+      "decMs": 23.58500000834465,
+      "totalMs": 396.03999999165535,
+      "decSteps": 0
+     },
+     "text": "Buongiorno, vorrei prenotare un tavolo.",
+     "score": {
+      "wer": 0,
+      "words": 5,
+      "errors": 0,
+      "punctExpected": 2,
+      "punctCorrect": 2,
+      "punctExtra": 0
+     }
+    },
+    {
+     "id": 2,
+     "seconds": 3.59,
+     "timings": {
+      "preMs": 8.995000004768372,
+      "encMs": 422.0900000035763,
+      "decMs": 14.775000005960464,
+      "totalMs": 446.36500000953674,
+      "decSteps": 0
+     },
+     "text": "Domani piove, porta l'ombrello.",
+     "score": {
+      "wer": 0,
+      "words": 4,
+      "errors": 0,
+      "punctExpected": 2,
+      "punctCorrect": 2,
+      "punctExtra": 0
+     }
+    },
+    {
+     "id": 3,
+     "seconds": 8.4,
+     "timings": {
+      "preMs": 11.840000003576279,
+      "encMs": 576.2699999809265,
+      "decMs": 35.06999999284744,
+      "totalMs": 623.5949999988079,
+      "decSteps": 0
+     },
+     "text": "Ieri sera abbiamo cenato in un ristorante vicino al mare, e il cameriere Gentile ci ha consigliato il pesce fresco.",
+     "score": {
+      "wer": 0,
+      "words": 20,
+      "errors": 0,
+      "punctExpected": 2,
+      "punctCorrect": 2,
+      "punctExtra": 0
+     }
+    },
+    {
+     "id": 4,
+     "seconds": 7.91,
+     "timings": {
+      "preMs": 11.469999998807907,
+      "encMs": 541.5,
+      "decMs": 34.40500000119209,
+      "totalMs": 587.7650000154972,
+      "decSteps": 0
+     },
+     "text": "Il treno per Roma parte alle 9 e 40 dal binario 7. Non dimenticare i biglietti e il passaporto.",
+     "score": {
+      "wer": 0.15789473684210525,
+      "words": 19,
+      "errors": 3,
+      "punctExpected": 2,
+      "punctCorrect": 1,
+      "punctExtra": 0
+     }
+    },
+    {
+     "id": 5,
+     "seconds": 14.19,
+     "timings": {
+      "preMs": 16.884999990463257,
+      "encMs": 959.6200000047684,
+      "decMs": 53.860000014305115,
+      "totalMs": 1031,
+      "decSteps": 0
+     },
+     "text": "Gentile cliente, la informiamo che il suo ordine è stato spedito questa mattina e arriverà entro tre giorni lavorativi. Se desidera cambiare l'indirizzo di consegna, ci contatti al più presto, grazie.",
+     "score": {
+      "wer": 0,
+      "words": 31,
+      "errors": 0,
+      "punctExpected": 5,
+      "punctCorrect": 4,
+      "punctExtra": 0
+     }
+    }
+   ],
+   "osPeakMB": 3013.296875,
+   "osBaselineMB": 2098.19140625,
+   "wallS": 82.257
+  },
+  {
+   "engine": "whisper-base",
+   "threads": 1,
+   "backend": "webgpu",
+   "label": "whisper-base · 1 thread · webgpu",
+   "ok": true,
+   "loadMs": 13744.830000013113,
+   "networkMB": 217.1638069152832,
+   "cachedMB": 0,
+   "peakMemMB": 1437.780068397522,
+   "memSource": "measureUserAgentSpecificMemory (pagina e lavoratori)",
+   "coldMs": 3647.390000015497,
+   "clips": [
+    {
+     "id": 1,
+     "seconds": 4.105,
+     "timings": {
+      "preMs": 141.0300000011921,
+      "encMs": 584.2849999964237,
+      "decMs": 879.7049999833107,
+      "totalMs": 1617.5550000071526,
+      "decSteps": 15
+     },
+     "text": "Buongiorno, vorrei prenotare un tavolo.",
+     "score": {
+      "wer": 0,
+      "words": 5,
+      "errors": 0,
+      "punctExpected": 2,
+      "punctCorrect": 2,
+      "punctExtra": 0
+     }
+    },
+    {
+     "id": 2,
+     "seconds": 3.59,
+     "timings": {
+      "preMs": 131.22999998927116,
+      "encMs": 535.6900000274181,
+      "decMs": 799.495000064373,
+      "totalMs": 1477.4850000143051,
+      "decSteps": 14
+     },
+     "text": "Domani Piove, porta l'ombrello.",
+     "score": {
+      "wer": 0,
+      "words": 4,
+      "errors": 0,
+      "punctExpected": 2,
+      "punctCorrect": 2,
+      "punctExtra": 0
+     }
+    },
+    {
+     "id": 3,
+     "seconds": 8.4,
+     "timings": {
+      "preMs": 120.19500002264977,
+      "encMs": 534.8100000023842,
+      "decMs": 1853.0250000357628,
+      "totalMs": 2527.1950000226498,
+      "decSteps": 35
+     },
+     "text": "Ieri sera abbiamo cenato in un ristorante vicino al mare, e il camera iere gentile ci ha consigliato il pesce fresco.",
+     "score": {
+      "wer": 0.1,
+      "words": 20,
+      "errors": 2,
+      "punctExpected": 2,
+      "punctCorrect": 2,
+      "punctExtra": 0
+     }
+    },
+    {
+     "id": 4,
+     "seconds": 7.91,
+     "timings": {
+      "preMs": 116.81999999284744,
+      "encMs": 562.6150000095367,
+      "decMs": 1701.3499998748302,
+      "totalMs": 2396.594999998808,
+      "decSteps": 32
+     },
+     "text": "Il treno per Roma parte alle nove e quaranta dal binario 7, non dimenticare i billetti e il passaporto.",
+     "score": {
+      "wer": 0.10526315789473684,
+      "words": 19,
+      "errors": 2,
+      "punctExpected": 2,
+      "punctCorrect": 2,
+      "punctExtra": 0
+     }
+    },
+    {
+     "id": 5,
+     "seconds": 14.19,
+     "timings": {
+      "preMs": 128.28499999642372,
+      "encMs": 557.0850000083447,
+      "decMs": 3117.324999988079,
+      "totalMs": 3831.145000010729,
+      "decSteps": 61
+     },
+     "text": "Gentile cliente, la informiamo che il suo ordine è stato spedito questa mattina e arriverà entre tre giorni lavorativi, se desidera cambiare l'indirizzo di consegna, ci contatti al più presto, grazie.",
+     "score": {
+      "wer": 0.03225806451612903,
+      "words": 31,
+      "errors": 1,
+      "punctExpected": 5,
+      "punctCorrect": 4,
+      "punctExtra": 0
+     }
+    }
+   ],
+   "osPeakMB": 4815.84375,
+   "osBaselineMB": 1788.1640625,
+   "wallS": 55.974
+  },
+  {
+   "engine": "parakeet-olicorne-w2a8",
+   "threads": 1,
+   "backend": "webgpu",
+   "label": "parakeet-olicorne-w2a8 · 1 thread · webgpu",
+   "ok": true,
+   "loadMs": 1670.419999986887,
+   "networkMB": 0,
+   "cachedMB": 198.67925357818604,
+   "peakMemMB": 405.4738426208496,
+   "memSource": "measureUserAgentSpecificMemory (pagina e lavoratori)",
+   "coldMs": 3053.9899999797344,
+   "clips": [
+    {
+     "id": 1,
+     "seconds": 4.105,
+     "timings": {
+      "preMs": 173.3299999833107,
+      "encMs": 725.4349999725819,
+      "decMs": 623.3649999797344,
+      "totalMs": 1523.9300000071526,
+      "decSteps": 0
+     },
+     "text": "",
+     "score": {
+      "wer": 1,
+      "words": 5,
+      "errors": 5,
+      "punctExpected": 2,
+      "punctCorrect": 0,
+      "punctExtra": 0
+     }
+    },
+    {
+     "id": 2,
+     "seconds": 3.59,
+     "timings": {
+      "preMs": 11.34500002861023,
+      "encMs": 466.75999999046326,
+      "decMs": 604.3850000202656,
+      "totalMs": 1082.705000013113,
+      "decSteps": 0
+     },
+     "text": "",
+     "score": {
+      "wer": 1,
+      "words": 4,
+      "errors": 4,
+      "punctExpected": 2,
+      "punctCorrect": 0,
+      "punctExtra": 0
+     }
+    },
+    {
+     "id": 3,
+     "seconds": 8.4,
+     "timings": {
+      "preMs": 19.13000002503395,
+      "encMs": 1082.75,
+      "decMs": 1362.2599999904633,
+      "totalMs": 2465.074999988079,
+      "decSteps": 0
+     },
+     "text": "",
+     "score": {
+      "wer": 1,
+      "words": 20,
+      "errors": 20,
+      "punctExpected": 2,
+      "punctCorrect": 0,
+      "punctExtra": 0
+     }
+    },
+    {
+     "id": 4,
+     "seconds": 7.91,
+     "timings": {
+      "preMs": 19.395000010728836,
+      "encMs": 923.6150000095367,
+      "decMs": 1228.2849999964237,
+      "totalMs": 2171.729999989271,
+      "decSteps": 0
+     },
+     "text": "",
+     "score": {
+      "wer": 1,
+      "words": 19,
+      "errors": 19,
+      "punctExpected": 2,
+      "punctCorrect": 0,
+      "punctExtra": 0
+     }
+    },
+    {
+     "id": 5,
+     "seconds": 14.19,
+     "timings": {
+      "preMs": 47.38499999046326,
+      "encMs": 2267.405000001192,
+      "decMs": 2279.780000001192,
+      "totalMs": 4595.225000023842,
+      "decSteps": 0
+     },
+     "text": "",
+     "score": {
+      "wer": 1,
+      "words": 31,
+      "errors": 31,
+      "punctExpected": 5,
+      "punctCorrect": 0,
+      "punctExtra": 0
+     }
+    }
+   ],
+   "osPeakMB": 2979.37109375,
+   "osBaselineMB": 1149.47265625,
+   "wallS": 30.74
+  },
+  {
+   "engine": "parakeet-istupakov-int8",
+   "threads": 1,
+   "backend": "webgpu",
+   "label": "parakeet-istupakov-int8 · 1 thread · webgpu",
+   "ok": true,
+   "loadMs": 3566.1649999916553,
+   "networkMB": 0,
+   "cachedMB": 639.552882194519,
+   "peakMemMB": 1444.3161268234253,
+   "memSource": "measureUserAgentSpecificMemory (pagina e lavoratori)",
+   "coldMs": 3287.344999998808,
+   "clips": [
+    {
+     "id": 1,
+     "seconds": 4.105,
+     "timings": {
+      "preMs": 16.169999986886978,
+      "encMs": 1618.2150000035763,
+      "decMs": 1526.7950000166893,
+      "totalMs": 3165.104999989271,
+      "decSteps": 0
+     },
+     "text": "",
+     "score": {
+      "wer": 1,
+      "words": 5,
+      "errors": 5,
+      "punctExpected": 2,
+      "punctCorrect": 0,
+      "punctExtra": 0
+     }
+    },
+    {
+     "id": 2,
+     "seconds": 3.59,
+     "timings": {
+      "preMs": 12.319999992847443,
+      "encMs": 1470.5200000107288,
+      "decMs": 1261.9899999797344,
+      "totalMs": 2745.594999998808,
+      "decSteps": 0
+     },
+     "text": "",
+     "score": {
+      "wer": 1,
+      "words": 4,
+      "errors": 4,
+      "punctExpected": 2,
+      "punctCorrect": 0,
+      "punctExtra": 0
+     }
+    },
+    {
+     "id": 3,
+     "seconds": 8.4,
+     "timings": {
+      "preMs": 20.294999986886978,
+      "encMs": 2537.4099999964237,
+      "decMs": 3145.074999988079,
+      "totalMs": 5704.735000014305,
+      "decSteps": 0
+     },
+     "text": "",
+     "score": {
+      "wer": 1,
+      "words": 20,
+      "errors": 20,
+      "punctExpected": 2,
+      "punctCorrect": 0,
+      "punctExtra": 0
+     }
+    },
+    {
+     "id": 4,
+     "seconds": 7.91,
+     "timings": {
+      "preMs": 18.49500000476837,
+      "encMs": 2440.7600000202656,
+      "decMs": 2720.419999986887,
+      "totalMs": 5180.430000007153,
+      "decSteps": 0
+     },
+     "text": "",
+     "score": {
+      "wer": 1,
+      "words": 19,
+      "errors": 19,
+      "punctExpected": 2,
+      "punctCorrect": 0,
+      "punctExtra": 0
+     }
+    },
+    {
+     "id": 5,
+     "seconds": 14.19,
+     "timings": {
+      "preMs": 24.41499999165535,
+      "encMs": 3690.4650000035763,
+      "decMs": 4638.745000004768,
+      "totalMs": 8354.600000023842,
+      "decSteps": 0
+     },
+     "text": "",
+     "score": {
+      "wer": 1,
+      "words": 31,
+      "errors": 31,
+      "punctExpected": 5,
+      "punctCorrect": 0,
+      "punctExtra": 0
+     }
+    }
+   ],
+   "osPeakMB": 3714.10546875,
+   "osBaselineMB": 1182.74609375,
+   "wallS": 57.644
+  }
+ ],
+ "log": [
+  "console.error: Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "console.error: \u001b[0;93m2026-11-09 19:20:03.531760 [W:onnxruntime:, session_state.cc:1280 VerifyEachNodeIsAssignedToAnEp] Some nodes were not assigned to the preferred execution providers which may or may not have an negative impact on performance. e.g. ORT explicitly assigns shape related ops to CPU to improve perf",
+  "console.error: \u001b[0;93m2026-11-09 19:20:03.533875 [W:onnxruntime:, session_state.cc:1282 VerifyEachNodeIsAssignedToAnEp] Rerunning with verbose output on a non-minimal build will show node assignments.\u001b[m",
+  "console.error: \u001b[0;93m2026-11-09 19:20:05.950500 [W:onnxruntime:, session_state.cc:1280 VerifyEachNodeIsAssignedToAnEp] Some nodes were not assigned to the preferred execution providers which may or may not have an negative impact on performance. e.g. ORT explicitly assigns shape related ops to CPU to improve perf",
+  "console.error: \u001b[0;93m2026-11-09 19:20:05.950790 [W:onnxruntime:, session_state.cc:1282 VerifyEachNodeIsAssignedToAnEp] Rerunning with verbose output on a non-minimal build will show node assignments.\u001b[m",
+  "console.error: \u001b[0;93m2026-11-09 19:20:49.859280 [W:onnxruntime:, session_state.cc:1598 VerifyEachNodeIsAssignedToAnEp] Some nodes were not assigned to the preferred execution providers which may or may not have an negative impact on performance. e.g. ORT explicitly assigns shape related ops to CPU to improve perf",
+  "console.error: \u001b[0;93m2026-11-09 19:20:49.860679 [W:onnxruntime:, session_state.cc:1600 VerifyEachNodeIsAssignedToAnEp] Rerunning with verbose output on a non-minimal build will show node assignments.\u001b[m",
+  "console.error: \u001b[0;93m2026-11-09 19:20:50.411244 [W:onnxruntime:, session_state.cc:1598 VerifyEachNodeIsAssignedToAnEp] Some nodes were not assigned to the preferred execution providers which may or may not have an negative impact on performance. e.g. ORT explicitly assigns shape related ops to CPU to improve perf",
+  "console.error: \u001b[0;93m2026-11-09 19:20:50.411589 [W:onnxruntime:, session_state.cc:1600 VerifyEachNodeIsAssignedToAnEp] Rerunning with verbose output on a non-minimal build will show node assignments.\u001b[m",
+  "console.error: \u001b[0;93m2026-11-09 19:20:50.449415 [W:onnxruntime:, session_state.cc:1598 VerifyEachNodeIsAssignedToAnEp] Some nodes were not assigned to the preferred execution providers which may or may not have an negative impact on performance. e.g. ORT explicitly assigns shape related ops to CPU to improve perf",
+  "console.error: \u001b[0;93m2026-11-09 19:20:50.449780 [W:onnxruntime:, session_state.cc:1600 VerifyEachNodeIsAssignedToAnEp] Rerunning with verbose output on a non-minimal build will show node assignments.\u001b[m",
+  "console.error: \u001b[0;93m2026-11-09 19:21:20.944265 [W:onnxruntime:, session_state.cc:1598 VerifyEachNodeIsAssignedToAnEp] Some nodes were not assigned to the preferred execution providers which may or may not have an negative impact on performance. e.g. ORT explicitly assigns shape related ops to CPU to improve perf",
+  "console.error: \u001b[0;93m2026-11-09 19:21:20.945590 [W:onnxruntime:, session_state.cc:1600 VerifyEachNodeIsAssignedToAnEp] Rerunning with verbose output on a non-minimal build will show node assignments.\u001b[m",
+  "console.error: \u001b[0;93m2026-11-09 19:21:21.977465 [W:onnxruntime:, session_state.cc:1598 VerifyEachNodeIsAssignedToAnEp] Some nodes were not assigned to the preferred execution providers which may or may not have an negative impact on performance. e.g. ORT explicitly assigns shape related ops to CPU to improve perf",
+  "console.error: \u001b[0;93m2026-11-09 19:21:21.977855 [W:onnxruntime:, session_state.cc:1600 VerifyEachNodeIsAssignedToAnEp] Rerunning with verbose output on a non-minimal build will show node assignments.\u001b[m",
+  "console.error: \u001b[0;93m2026-11-09 19:21:23.477364 [W:onnxruntime:, session_state.cc:1598 VerifyEachNodeIsAssignedToAnEp] Some nodes were not assigned to the preferred execution providers which may or may not have an negative impact on performance. e.g. ORT explicitly assigns shape related ops to CPU to improve perf",
+  "console.error: \u001b[0;93m2026-11-09 19:21:23.477770 [W:onnxruntime:, session_state.cc:1600 VerifyEachNodeIsAssignedToAnEp] Rerunning with verbose output on a non-minimal build will show node assignments.\u001b[m"
+ ],
+ "finishedAt": "2026-11-09T18:22:17.538Z"
+}

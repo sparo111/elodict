@@ -1,0 +1,14 @@
+{
+ "url": "http://localhost:5241/",
+ "browser": "chromium",
+ "silenceMs": 700,
+ "threads": 1,
+ "device": "webgpu",
+ "expect": 5,
+ "startedAt": "2026-11-09T17:44:54.108Z",
+ "rows": [],
+ "log": [],
+ "isolated": true,
+ "controlled": true,
+ "fatal": "TimeoutError: locator.waitFor: Timeout 240000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByText('Ti ascolto…') to be visible\u001b[22m\n"
+}

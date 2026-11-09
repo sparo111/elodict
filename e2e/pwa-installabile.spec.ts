@@ -271,7 +271,7 @@ test.describe("nuova versione", () => {
 
     // Simula una nuova versione: cambia il file del service worker sul disco della versione costruita.
     const fs = await import("node:fs");
-    const file = "dist-pwa/sw.js";
+    const file = `${process.env.PWA_DIST ?? "dist-pwa"}/sw.js`; // PWA_DIST=dist-coi per provare la copia con isolamento (T013b)
     const original = fs.readFileSync(file, "utf8");
     try {
       fs.writeFileSync(file, `${original}\n/* nuova versione ${Date.now()} */\n`);

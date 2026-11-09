@@ -5,6 +5,7 @@ import { openMic } from "../audio/devices";
 import { WORKLET } from "./worklet";
 import type { Handlers } from "./recognizer";
 import { cleanWhisperText, resampleTo16k, Segmenter, type Utterance } from "./segmenter";
+import { addPerfRow, epochNow, perfConfig, perfEnabled, rmsOf, type WorkerPerf } from "../perf/perf";
 
 export type WhisperModelId = "tiny" | "base";
 export const WHISPER_MODELS: Record<WhisperModelId, { repo: string; approxMB: number }> = {
@@ -28,7 +29,7 @@ export function isOfflineSupported(): boolean {
 /* ---------- il lavoratore e i suoi messaggi ---------- */
 let worker: Worker | null = null;
 let nextId = 1;
-const jobs = new Map<number, { resolve: (t: string) => void; reject: (e: Error) => void }>();
+const jobs = new Map<number, { resolve: (t: string, perf?: WorkerPerf) => void; reject: (e: Error) => void }>();
 let loadWaiter: { resolve: () => void; reject: (e: Error) => void } | null = null;
 let loadState: { repo: string; promise: Promise<void>; listeners: Set<(pct: number) => void> } | null = null;
 
@@ -44,14 +45,14 @@ function getWorker(): Worker {
   if (worker) return worker;
   worker = new Worker(new URL("./whisper.worker.ts", import.meta.url), { type: "module" });
   worker.onmessage = (e: MessageEvent) => {
-    const m = e.data as { type: string; id?: number; pct?: number; text?: string; message?: string; scope?: string };
+    const m = e.data as { type: string; id?: number; pct?: number; text?: string; message?: string; scope?: string; perf?: WorkerPerf };
     if (m.type === "progress") {
       loadState?.listeners.forEach((fn) => fn(m.pct ?? 0));
     } else if (m.type === "ready") {
       loadWaiter?.resolve();
       loadWaiter = null;
     } else if (m.type === "result" && m.id !== undefined) {
-      jobs.get(m.id)?.resolve(m.text ?? "");
+      jobs.get(m.id)?.resolve(m.text ?? "", m.perf);
       jobs.delete(m.id);
     } else if (m.type === "error") {
       const err = new Error(m.message ?? "errore del modello");
@@ -80,7 +81,8 @@ export function prepareModel(model: WhisperModelId, onProgress?: (pct: number) =
   if (onProgress) listeners.add(onProgress);
   const promise = new Promise<void>((resolve, reject) => {
     loadWaiter = { resolve, reject };
-    getWorker().postMessage({ type: "load", repo });
+    // nelle build di prova (?perf=1) si possono scegliere i thread e WebGPU; nella build pubblicata il messaggio è quello di sempre
+    getWorker().postMessage(__ELODICT_TEST_HOOKS__ && perfEnabled() ? { type: "load", repo, ...perfConfig(), measure: true } : { type: "load", repo });
   }).then(() => {
     try {
       localStorage.setItem(flagKey(model), "1");
@@ -116,10 +118,11 @@ export async function deleteModels(): Promise<void> {
   }
 }
 
-function transcribeAudio(audio: Float32Array, lang: Lang): Promise<string> {
+function transcribeAudio(audio: Float32Array, lang: Lang): Promise<{ text: string; perf?: WorkerPerf; tPost: number }> {
   const id = nextId++;
-  return new Promise<string>((resolve, reject) => {
-    jobs.set(id, { resolve, reject });
+  return new Promise((resolve, reject) => {
+    const tPost = __ELODICT_TEST_HOOKS__ ? epochNow() : 0;
+    jobs.set(id, { resolve: (text, perf) => resolve({ text, perf, tPost }), reject });
     getWorker().postMessage({ type: "transcribe", id, audio, language: LANG_NAME[lang] }, [audio.buffer]);
   });
 }
@@ -139,13 +142,48 @@ export function createWhisperEngine(lang: Lang, model: WhisperModelId, h: Handle
   let queue: Promise<void> = Promise.resolve();
   let busy = 0;
 
+  // Misura dei tempi (solo build di prova, con ?perf=1): vedi src/perf/perf.ts
+  const measuring = __ELODICT_TEST_HOOKS__ && perfEnabled();
+  let lastVoicedAt = 0; // quando è arrivato l'ultimo pezzetto con voce
+  let prepAcc = 0; // tempo speso a ricampionare i pezzetti di questa frase
+  let phraseN = 0;
+
   const enqueue = (u: Utterance) => {
     busy++;
     h.onInterim("…");
+    const emitAt = measuring ? epochNow() : 0;
+    const voicedAt = lastVoicedAt;
+    const prepBefore = prepAcc;
+    prepAcc = 0;
+    const n = ++phraseN;
     queue = queue.then(async () => {
       try {
-        const text = cleanWhisperText(await transcribeAudio(u.samples, lang));
+        const r = await transcribeAudio(u.samples, lang);
+        const tBack = measuring ? epochNow() : 0;
+        const text = cleanWhisperText(r.text);
         if (text) h.onFinal(text);
+        if (measuring && text) {
+          const tClean = epochNow();
+          requestAnimationFrame(() => {
+            const tScreen = epochNow();
+            const w = r.perf;
+            addPerfRow({
+              n,
+              audioMs: u.durationMs,
+              silenceMs: emitAt - voicedAt,
+              prepMs: prepBefore + (r.tPost - emitAt),
+              queueMs: w ? w.tStart - r.tPost : 0,
+              featureMs: w?.featureMs ?? 0,
+              encoderMs: w?.encoderMs ?? 0,
+              decoderMs: w?.decoderMs ?? 0,
+              decoderSteps: w?.decoderSteps ?? 0,
+              returnMs: w ? tBack - w.tEnd : 0,
+              screenMs: tScreen - tClean,
+              totalMs: tScreen - voicedAt,
+              text,
+            });
+          });
+        }
       } catch {
         h.onError("model");
       } finally {
@@ -191,9 +229,18 @@ export function createWhisperEngine(lang: Lang, model: WhisperModelId, h: Handle
     ctx.createMediaStreamSource(stream).connect(node);
     node.connect(mute).connect(ctx.destination);
     const rate = ctx.sampleRate;
-    seg = new Segmenter();
+    // la pausa che chiude la frase: 700 ms; nelle build di prova si può cambiare con ?silence=
+    seg = new Segmenter(__ELODICT_TEST_HOOKS__ && perfEnabled() ? { silenceMs: perfConfig().silenceMs } : {});
     node.port.onmessage = (e: MessageEvent<Float32Array>) => {
       if (!seg) return;
+      if (measuring) {
+        const t = performance.now();
+        const r16 = resampleTo16k(e.data, rate);
+        prepAcc += performance.now() - t;
+        if (rmsOf(r16) > 0.012) lastVoicedAt = epochNow();
+        for (const u of seg.push(r16)) enqueue(u);
+        return;
+      }
       for (const u of seg.push(resampleTo16k(e.data, rate))) enqueue(u);
     };
     stream.getAudioTracks()[0]?.addEventListener("ended", () => void onLost());

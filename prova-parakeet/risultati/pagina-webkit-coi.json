@@ -1,0 +1,217 @@
+{
+ "browser": "webkit",
+ "version": "27.2",
+ "url": "http://localhost:5240/elodict/prova-parakeet/",
+ "startedAt": "2026-11-09T18:46:00.276Z",
+ "device": {
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.2 Safari/605.1.15",
+  "platform": "Win32",
+  "cores": 8,
+  "crossOriginIsolated": true,
+  "sharedArrayBuffer": true,
+  "webgpu": false
+ },
+ "sweeps": [
+  {
+   "silenceMs": 400,
+   "emitted": 12,
+   "expected": 6,
+   "splits": 6,
+   "delaysMs": [
+    425.62499999999994,
+    403.12500000000017,
+    457.50000000000045,
+    436.87500000000057,
+    405.9375000000003,
+    446.24999999999915,
+    407.8124999999986,
+    422.81249999999915,
+    469.68749999999915,
+    401.24999999999744,
+    441.5624999999963,
+    391.87499999999886
+   ],
+   "meanDelayMs": 425.85937499999915
+  },
+  {
+   "silenceMs": 550,
+   "emitted": 9,
+   "expected": 6,
+   "splits": 3,
+   "delaysMs": [
+    573.7500000000005,
+    607.5000000000017,
+    616.8750000000002,
+    578.4374999999961,
+    593.4375000000002,
+    554.9999999999961,
+    571.8749999999986,
+    612.1874999999975,
+    562.5
+   ],
+   "meanDelayMs": 585.7291666666657
+  },
+  {
+   "silenceMs": 700,
+   "emitted": 7,
+   "expected": 6,
+   "splits": 1,
+   "delaysMs": [
+    744.3750000000002,
+    692.8125000000005,
+    702.1874999999991,
+    764.0625000000014,
+    742.4999999999998,
+    697.499999999998,
+    733.1249999999941
+   ],
+   "meanDelayMs": 725.2232142857132
+  }
+ ],
+ "rows": [
+  {
+   "engine": "whisper-base",
+   "threads": 1,
+   "backend": "wasm",
+   "label": "whisper-base · 1 thread · wasm",
+   "ok": true,
+   "loadMs": 6191.56,
+   "networkMB": 98.9478931427002,
+   "cachedMB": 0,
+   "peakMemMB": null,
+   "memSource": "n/d",
+   "coldMs": 2809,
+   "clips": [
+    {
+     "id": 1,
+     "seconds": 4.105,
+     "timings": {
+      "preMs": 176.46000000000095,
+      "encMs": 1806.539999999999,
+      "decMs": 536.5999999999985,
+      "totalMs": 2528.1000000000004,
+      "decSteps": 15
+     },
+     "text": "Buongiorno, vorrei prenotare un tavolo.",
+     "score": {
+      "wer": 0,
+      "words": 5,
+      "errors": 0,
+      "punctExpected": 2,
+      "punctCorrect": 2,
+      "punctExtra": 0
+     }
+    },
+    {
+     "id": 2,
+     "seconds": 3.59,
+     "timings": {
+      "preMs": 173.57999999999993,
+      "encMs": 1863.8199999999997,
+      "decMs": 540.2399999999998,
+      "totalMs": 2585.4799999999996,
+      "decSteps": 14
+     },
+     "text": "Domani piuve, porta l'ombrello.",
+     "score": {
+      "wer": 0.25,
+      "words": 4,
+      "errors": 1,
+      "punctExpected": 2,
+      "punctCorrect": 2,
+      "punctExtra": 0
+     }
+    },
+    {
+     "id": 3,
+     "seconds": 8.4,
+     "timings": {
+      "preMs": 172.15999999999985,
+      "encMs": 1881.8199999999997,
+      "decMs": 1087.3399999999983,
+      "totalMs": 3155.579999999998,
+      "decSteps": 35
+     },
+     "text": "Ieri sera abbiamo cenato in un ristorante vicino al mare, e il camerai regentile ci ha consigliato il pesce fresco.",
+     "score": {
+      "wer": 0.1,
+      "words": 20,
+      "errors": 2,
+      "punctExpected": 2,
+      "punctCorrect": 2,
+      "punctExtra": 0
+     }
+    },
+    {
+     "id": 4,
+     "seconds": 7.91,
+     "timings": {
+      "preMs": 174.9200000000019,
+      "encMs": 1853.079999999998,
+      "decMs": 1079.9600000000028,
+      "totalMs": 3121.6800000000003,
+      "decSteps": 34
+     },
+     "text": "Il treno per Roma parte alle nove e quarenta dal binario sette, non dimenticare i billeti e il passaporto.",
+     "score": {
+      "wer": 0.10526315789473684,
+      "words": 19,
+      "errors": 2,
+      "punctExpected": 2,
+      "punctCorrect": 2,
+      "punctExtra": 0
+     }
+    },
+    {
+     "id": 5,
+     "seconds": 14.19,
+     "timings": {
+      "preMs": 166.90000000000146,
+      "encMs": 1752.4799999999996,
+      "decMs": 1772.1400000000103,
+      "totalMs": 3712.16,
+      "decSteps": 61
+     },
+     "text": "Gentile cliente, la informiamo che il suo ordine è stato spedito questa mattina e arriverà entre tre giorni lavorativi, se desiderà cambiare l'indirizzo di consegna, ci contatti al più presto, grazie.",
+     "score": {
+      "wer": 0.06451612903225806,
+      "words": 31,
+      "errors": 2,
+      "punctExpected": 5,
+      "punctCorrect": 4,
+      "punctExtra": 0
+     }
+    }
+   ],
+   "osPeakMB": 4468.4765625,
+   "osBaselineMB": 373.4921875,
+   "wallS": 25.738
+  },
+  {
+   "engine": "whisper-base",
+   "threads": 2,
+   "backend": "wasm",
+   "label": "whisper-base · 2 thread · wasm",
+   "ok": false,
+   "loadMs": 0,
+   "networkMB": 0,
+   "cachedMB": 0,
+   "peakMemMB": null,
+   "memSource": "n/d",
+   "coldMs": null,
+   "clips": [],
+   "error": "Error: errore del lavoratore",
+   "osPeakMB": 536.3203125,
+   "osBaselineMB": 2682.38671875,
+   "wallS": 1.904
+  }
+ ],
+ "log": [
+  "FALLITA http://localhost:5240/elodict/prova-parakeet/audio/frase-2.wav Load request cancelled",
+  "pageerror: TypeError: Load failed",
+  "pageerror: Returned response is null.",
+  "pageerror: /localhost:5240/elodict/prova-parakeet/assets/whisper.worker-DEZQAR2Y.js.",
+  "FALLITA http://localhost:5240/elodict/prova-parakeet/assets/whisper.worker-DEZQAR2Y.js FetchEvent.respondWith received an error: Returned response is null.",
+  "console.error: Failed to load resource: FetchEvent.respondWith received an error: Returned response is null."
+ ]
+}

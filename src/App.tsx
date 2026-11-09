@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { useEditor, type Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import UnderlineExt from "@tiptap/extension-underline";
 import { Toolbar } from "./components/Toolbar";
+import { perfEnabled } from "./perf/perf";
 import { Paper, type Zoom } from "./components/Paper";
 import { InstallBanner } from "./install/Install";
 import { DatabaseNotice } from "./documents/ui/DatabaseNotice";
@@ -24,6 +25,9 @@ import { useDictation } from "./app/useDictation";
 import { useDocumentStore } from "./app/useDocumentStore";
 import { useSettings } from "./app/useSettings";
 import { useToast } from "./app/useToast";
+
+// Riquadro dei tempi del riconoscimento (T013b): esiste solo nelle build di prova, e si vede solo con ?perf=1
+const PerfPanel = __ELODICT_TEST_HOOKS__ ? lazy(() => import("./perf/PerfPanel")) : null;
 
 export function App() {
   const settings = useSettings();
@@ -130,6 +134,11 @@ export function App() {
 
   return (
     <div className="flex min-h-full flex-col bg-bg text-text">
+      {__ELODICT_TEST_HOOKS__ && PerfPanel && perfEnabled() && (
+        <Suspense fallback={null}>
+          <PerfPanel />
+        </Suspense>
+      )}
       {store.problem && <DatabaseProblem s={s} />}
       {store.dbNotice && <DatabaseNotice s={s} kind={store.dbNotice} />}
       <UpdateBanner s={s} ready={update.ready} busy={update.busy} saveFailed={update.saveFailed} onApply={() => void update.apply()} onLater={update.later} />

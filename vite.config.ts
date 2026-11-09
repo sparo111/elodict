@@ -35,6 +35,44 @@ function installaTesti(): Plugin {
 }
 
 /**
+ * Solo per `--mode coi` (copia di prova, T013b): mette nelle risposte del service worker dell'app le due intestazioni che isolano la
+ * pagina («cross-origin isolation»: Cross-Origin-Opener-Policy e Cross-Origin-Embedder-Policy). Senza, il motore di Whisper non può
+ * usare più di un thread (serve SharedArrayBuffer). GitHub Pages non permette di mettere intestazioni, quindi le mette il service worker,
+ * come fa il pacchetto coi-serviceworker, ma qui SENZA un secondo service worker (l'app ne ha già uno, con la copia per l'uso offline):
+ * il file si carica con importScripts PRIMA del codice di Workbox e avvolge ogni risposta che Workbox dà con respondWith.
+ */
+const COI_HEADERS_JS = `// Solo nella build di prova «coi»: isolamento cross-origin dentro il service worker dell'app.
+(function () {
+  function add(res) {
+    if (!res || res.type === "opaque" || res.type === "opaqueredirect" || res.status === 0) return res;
+    var h = new Headers(res.headers);
+    h.set("Cross-Origin-Opener-Policy", "same-origin");
+    h.set("Cross-Origin-Embedder-Policy", "require-corp");
+    h.set("Cross-Origin-Resource-Policy", "cross-origin");
+    return new Response(res.body, { status: res.status, statusText: res.statusText, headers: h });
+  }
+  var orig = self.addEventListener.bind(self);
+  self.addEventListener = function (type, fn, opts) {
+    if (type !== "fetch") return orig(type, fn, opts);
+    return orig(type, function (ev) {
+      var rw = ev.respondWith.bind(ev);
+      ev.respondWith = function (p) { return rw(Promise.resolve(p).then(add)); };
+      return fn(ev);
+    }, opts);
+  };
+})();
+`;
+function coiHeaders(): Plugin {
+  return {
+    name: "elodict-coi-headers",
+    apply: "build",
+    generateBundle() {
+      this.emitFile({ type: "asset", fileName: "coi-headers.js", source: COI_HEADERS_JS });
+    },
+  };
+}
+
+/**
  * Gli «agganci per le prove» (per esempio far fallire di proposito una migrazione) esistono solo fuori dalla build pubblicata:
  * `vite build` (modalità production) li toglie dal codice; il server di sviluppo e `--mode test` (le copie costruite per le prove) li tengono.
  */
@@ -45,6 +83,7 @@ export default defineConfig(({ mode }) => ({
     react(),
     themeColor(),
     installaTesti(),
+    ...(mode === "coi" ? [coiHeaders()] : []),
     VitePWA({
       // «prompt»: nessun aggiornamento silenzioso; è l'utente a premere «Aggiorna».
       registerType: "prompt",
@@ -75,7 +114,9 @@ export default defineConfig(({ mode }) => ({
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
         navigateFallback: `${base}index.html`,
         // «installa.html» (anche con ?lang=it: l'indirizzo che l'app stessa apre) è una pagina a sé, non l'app: niente ripiego su index.html
-        navigateFallbackDenylist: [/installa\.html(\?.*)?$/],
+        // «prova-parakeet/» è una pagina di prova a parte (T013b), non l'app: anche lei non deve ripiegare su index.html
+        navigateFallbackDenylist: [/installa\.html(\?.*)?$/, /\/prova-parakeet\//],
+        ...(mode === "coi" ? { importScripts: ["coi-headers.js"] } : {}),
         cleanupOutdatedCaches: true,
         runtimeCaching: [
           {

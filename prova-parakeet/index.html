@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex" />
+<title>Prova Parakeet</title>
+<script>
+  // Isolamento «cross-origin» (serve ai thread multipli): un piccolo service worker mette le due intestazioni, come fa il
+  // pacchetto coi-serviceworker. Solo su questa pagina. Si disattiva con ?coi=0; su Safari/iPhone è spento di base (nelle prove con
+  // WebKit il service worker impediva di avviare i lavoratori con più thread): si accende con ?coi=1.
+  var q = new URLSearchParams(location.search).get("coi");
+  var safari = /iPhone|iPad|iPod|CriOS|FxiOS|EdgiOS/.test(navigator.userAgent) || (/Safari/.test(navigator.userAgent) && !/Chrome|Chromium|Edg|Android/.test(navigator.userAgent));
+  if (q === "1" || (q !== "0" && !safari)) {
+    var s = document.createElement("script");
+    s.src = "coi-serviceworker.js";
+    document.head.appendChild(s);
+  }
+</script>
+<style>
+  :root { color-scheme: light dark; --bg: #fff; --fg: #111; --muted: #555; --line: #bbb; --acc: #0b5cad; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #14161a; --fg: #eee; --muted: #aaa; --line: #444; --acc: #6db3ff; } }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 16px; font: 16px/1.4 system-ui, sans-serif; background: var(--bg); color: var(--fg); max-width: 1100px; margin-inline: auto; }
+  h1 { font-size: 1.4rem; margin: 0 0 8px; }
+  h2 { font-size: 1.1rem; margin: 22px 0 6px; }
+  p, li { color: var(--fg); }
+  .muted { color: var(--muted); font-size: .9rem; }
+  button { font: inherit; border-radius: 10px; border: 2px solid var(--acc); background: var(--acc); color: #fff; }
+  #start { display: block; width: 100%; min-height: 64px; font-size: 1.4rem; font-weight: 700; margin: 14px 0 6px; }
+  #start:disabled { opacity: .55; }
+  #copy { display: block; width: 100%; min-height: 52px; font-size: 1.15rem; font-weight: 700; margin: 10px 0; background: transparent; color: var(--acc); }
+  .opts label { display: block; margin: 6px 0; }
+  .scroll { overflow-x: auto; }
+  table { border-collapse: collapse; font-size: .85rem; min-width: 100%; }
+  th, td { border: 1px solid var(--line); padding: 4px 6px; text-align: left; white-space: nowrap; }
+  td.txt { white-space: normal; min-width: 18em; }
+  tr.bad td { background: rgba(220, 50, 50, .18); }
+  pre, textarea { width: 100%; font: .8rem/1.3 ui-monospace, monospace; background: transparent; color: var(--fg); border: 1px solid var(--line); border-radius: 8px; padding: 8px; white-space: pre-wrap; }
+  textarea { height: 9em; }
+  #status { min-height: 1.5em; font-weight: 600; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Prova di Parakeet e Whisper</h1>
+  <p class="muted">Pagina di prova di Elodict: misura quanto sono veloci e precisi due modi di trascrivere la voce, sul tuo dispositivo, con 5 frasi registrate. Non fa parte dell'app e non cambia niente nell'app. Le frasi sono dette da una voce di sintesi (Windows), non da una persona.</p>
+  <p id="device" class="muted">…</p>
+  <button id="start" type="button" disabled>Avvia la prova</button>
+  <div class="opts">
+    <label><input type="checkbox" id="opt-big" /> Prova anche il modello grande di Parakeet (circa 670 MB: solo Wi-Fi, e potrebbe non starci in memoria su un telefono)</label>
+    <label><input type="checkbox" id="opt-threads" /> Prova anche con 2 e 4 thread (se il browser lo permette)</label>
+    <label><input type="checkbox" id="opt-webgpu" /> Prova anche con WebGPU (se il browser ce l'ha)</label>
+  </div>
+  <p id="sizes" class="muted"></p>
+  <p id="iso-note" class="muted"></p>
+  <p id="status" role="status" aria-live="polite">Carico le frasi…</p>
+  <button id="copy" type="button" hidden>Copia i risultati</button>
+  <div id="tables"></div>
+  <h2>Risultati da copiare</h2>
+  <textarea id="copy-box" readonly aria-label="Risultati in forma di testo"></textarea>
+  <h2>Le 5 frasi</h2>
+  <pre id="phrases"></pre>
+  <section id="attribution"></section>
+</main>
+<script type="module" src="./src/main.ts"></script>
+</body>
+</html>
