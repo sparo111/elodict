@@ -6,11 +6,13 @@ interface Props {
   onClose: () => void;
   title: string;
   closeLabel: string;
+  /** Spazio libero da lasciare in fondo allo schermo (lunghezza CSS), per esempio per una freccia: la finestra non lo occupa mai. */
+  reserveBottom?: string;
   children: ReactNode;
 }
 
 /** Finestra con l'elemento nativo <dialog>: gestisce da sola focus, tasto Esc e sfondo. */
-export function Modal({ open, onClose, title, closeLabel, children }: Props) {
+export function Modal({ open, onClose, title, closeLabel, reserveBottom, children }: Props) {
   const ref = useRef<HTMLDialogElement>(null);
   const titleId = useId();
 
@@ -25,6 +27,7 @@ export function Modal({ open, onClose, title, closeLabel, children }: Props) {
     <dialog
       ref={ref}
       aria-labelledby={titleId}
+      style={reserveBottom ? { bottom: reserveBottom } : undefined}
       onClose={onClose}
       onClick={(e) => {
         if (e.target === ref.current) onClose();
@@ -32,7 +35,7 @@ export function Modal({ open, onClose, title, closeLabel, children }: Props) {
       className="m-auto w-[min(92vw,34rem)] rounded-lg border-0 bg-bg p-0 text-text shadow-pop backdrop:bg-black/40"
     >
       {open && (
-        <div className="max-h-[85vh] overflow-y-auto p-6">
+        <div className="max-h-[85vh] overflow-y-auto p-6" style={reserveBottom ? { maxHeight: `calc(100dvh - ${reserveBottom} - 1rem)` } : undefined}>
           <div className="mb-4 flex items-start justify-between gap-4">
             <h2 id={titleId} className="text-lg">{title}</h2>
             <button

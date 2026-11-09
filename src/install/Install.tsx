@@ -60,10 +60,17 @@ function Steps({ title, children }: { title: string; children: ReactNode }) {
   );
 }
 
-/** Freccia grande e animata verso il pulsante Condividi di Safari (in fondo allo schermo, al centro). */
+/** Altezza dello spazio che la finestra lascia libero in fondo allo schermo per la freccia (freccia, scritta, margine e rimbalzo). */
+const ARROW_SPACE = "7.5rem";
+
+/**
+ * Freccia grande e animata verso il pulsante Condividi di Safari (in fondo allo schermo, al centro).
+ * Sta nello spazio che la finestra le riserva (ARROW_SPACE), quindi non copre mai nulla; un tocco sulla freccia non fa niente
+ * (senza questo, il tocco cadrebbe sullo sfondo e chiuderebbe la finestra).
+ */
 function ShareArrow({ label }: { label: string }) {
   return (
-    <div data-testid="share-arrow" aria-hidden="true" className="pointer-events-none fixed inset-x-0 bottom-0 z-50 flex justify-center pb-4">
+    <div data-testid="share-arrow" aria-hidden="true" className="fixed inset-x-0 bottom-0 z-50 flex justify-center pb-4" onClick={(e) => e.stopPropagation()}>
       <div className="share-arrow flex flex-col items-center rounded-lg bg-accent px-4 py-1 text-on-accent">
         <span className="text-lg font-bold">{label}</span>
         <ArrowDown size={44} strokeWidth={3} aria-hidden="true" />
@@ -84,6 +91,7 @@ export function InstallButton({ s }: { s: Strings }) {
       className="inline-flex h-10 items-center gap-2 rounded-md px-2 text-sm font-semibold hover:bg-surface sm:px-3"
     >
       <MonitorSmartphone size={18} aria-hidden="true" />
+      <span className="text-sm sm:hidden">{s.installBannerAction}</span>
       <span className="hidden sm:inline">{s.installButton}</span>
     </button>
   );
@@ -153,15 +161,16 @@ export function InstallDialog({ s, lang }: { s: Strings; lang: Lang }) {
   const known = installCase in titles;
 
   return (
-    <Modal open={dialogOpen && known} onClose={closeInstallDialog} title={titles[installCase] ?? s.installButton} closeLabel={s.installClose}>
+    <Modal
+      open={dialogOpen && known}
+      onClose={closeInstallDialog}
+      title={titles[installCase] ?? s.installButton}
+      closeLabel={s.installClose}
+      reserveBottom={installCase === "ios" ? ARROW_SPACE : undefined}
+    >
       <div className="flex flex-col gap-4">
         {installCase === "ios" && (
           <>
-            <Steps title={s.installHowTo}>
-              <Step n={1} icon={<ShareIcon />}>{s.installIos1}</Step>
-              <Step n={2} icon={<AddHomeIcon />}>{s.installIos2}</Step>
-              <Step n={3} icon={<AddButtonIcon />}>{s.installIos3}</Step>
-            </Steps>
             {canShare && (
               <>
                 <button
@@ -175,6 +184,11 @@ export function InstallDialog({ s, lang }: { s: Strings; lang: Lang }) {
                 <p className="text-lg">{s.installShareHint}</p>
               </>
             )}
+            <Steps title={s.installHowTo}>
+              <Step n={1} icon={<ShareIcon />}>{s.installIos1}</Step>
+              <Step n={2} icon={<AddHomeIcon />}>{s.installIos2}</Step>
+              <Step n={3} icon={<AddButtonIcon />}>{s.installIos3}</Step>
+            </Steps>
             <ShareArrow label={s.installArrowLabel} />
           </>
         )}

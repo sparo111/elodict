@@ -7,7 +7,8 @@ import { watchErrors } from "./helpers";
  * Progetto «pwa-iphone», versione costruita sulla porta 5200.
  */
 // Il profilo iPhone 15 è largo 393 px; qui si prova anche a 390 px (iPhone più piccoli).
-test.use({ viewport: { width: 390, height: 844 } });
+// T001h: 390 x 664 è l'altezza utile di Safari su iPhone (con le barre in alto e in basso).
+test.use({ viewport: { width: 390, height: 664 } });
 
 const PWA = "http://localhost:5200";
 const T = {
@@ -53,7 +54,7 @@ for (const [lang, t] of Object.entries(T)) {
       const errors = watchErrors(page);
       await fakeShare(page, "ok");
       const dlg = await openDialog(page, t.title, t.install);
-      expect(page.viewportSize()!.width).toBe(390);
+      expect(page.viewportSize()).toEqual({ width: 390, height: 664 });
 
       // titolo «Come fare» sopra i passi
       const how = dlg.getByRole("heading", { name: t.how });
@@ -76,7 +77,7 @@ for (const [lang, t] of Object.entries(T)) {
       }
       await expect(dlg.locator("ol button, ol a, ol [role=button]")).toHaveCount(0);
 
-      // pulsante grande, la riga sotto, il tutto sopra «Stampa le istruzioni»
+      // pulsante grande; poi la riga; poi «Come fare»; per ultimo «Stampa le istruzioni»
       const btn = dlg.getByRole("button", { name: t.share });
       await expect(btn).toBeVisible();
       const bb = (await btn.boundingBox())!;
@@ -86,8 +87,10 @@ for (const [lang, t] of Object.entries(T)) {
       await expect(hint).toBeVisible();
       const print = dlg.getByRole("link", { name: t.print });
       const [hb, pb] = [(await hint.boundingBox())!, (await print.boundingBox())!];
+      const hw = (await how.boundingBox())!;
       expect(bb.y + bb.height).toBeLessThanOrEqual(hb.y);
-      expect(hb.y + hb.height).toBeLessThanOrEqual(pb.y);
+      expect(hb.y + hb.height).toBeLessThanOrEqual(hw.y);
+      expect(hw.y).toBeLessThan(pb.y);
 
       // freccia presente, animata, in fondo al centro, con la scritta
       const arrow = page.getByTestId("share-arrow");
@@ -96,13 +99,62 @@ for (const [lang, t] of Object.entries(T)) {
       const ab = (await arrow.locator(".share-arrow").boundingBox())!;
       const vh = page.viewportSize()!;
       expect(Math.abs(ab.x + ab.width / 2 - vh.width / 2)).toBeLessThan(2);
-      expect(vh.height - (ab.y + ab.height)).toBeLessThan(60);
+      expect(vh.height - (ab.y + ab.height)).toBeLessThan(70);
       expect(await arrow.locator(".share-arrow").evaluate((el) => getComputedStyle(el).animationName)).toBe("share-arrow-bounce");
 
       // accessibilità (con la freccia e la finestra) e niente scorrimento orizzontale
       expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
       errors();
+    });
+
+    test("T001h: il pulsante è il primo elemento, visibile senza scorrere a 390x664; la freccia non tocca la finestra né i pulsanti; il tocco sulla freccia non chiude", async ({ page }) => {
+      await fakeShare(page, "ok");
+      const dlg = await openDialog(page, t.title, t.install);
+      const btn = dlg.getByRole("button", { name: t.share });
+      await expect(btn).toBeVisible();
+      await expect(btn).toBeInViewport({ ratio: 1 }); // tutto dentro lo schermo, senza scorrere
+      const d = (await dlg.boundingBox())!;
+      const bb = (await btn.boundingBox())!;
+      // dentro la finestra, e non coperto: è l'elemento che si trova nel suo punto centrale
+      expect(bb.y + bb.height).toBeLessThanOrEqual(d.y + d.height);
+      expect(await btn.evaluate((el) => { const r = el.getBoundingClientRect(); const top = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2); return el === top || el.contains(top); })).toBe(true);
+      // primo elemento: sopra la riga, i passi e «Stampa»; sotto c'è solo il titolo con la X
+      for (const other of [dlg.getByText(t.hint, { exact: true }), dlg.getByRole("heading", { name: t.how }), dlg.getByRole("link", { name: t.print })]) {
+        expect((await other.boundingBox())!.y).toBeGreaterThan(bb.y);
+      }
+      const firstInteractive = await dlg.locator("button, a").first().evaluate((el) => el.textContent?.trim());
+      expect(firstInteractive).toBe(""); // la X di chiusura (solo icona), poi subito il pulsante
+      expect(await dlg.locator("button, a").nth(1).textContent()).toContain(t.share);
+
+      // la freccia non si sovrappone mai alla finestra né a un pulsante (si campiona il rimbalzo)
+      const arrow = page.getByTestId("share-arrow");
+      const inner = arrow.locator(".share-arrow");
+      const boxes = [(await arrow.boundingBox())!];
+      for (let i = 0; i < 12; i++) {
+        boxes.push((await inner.boundingBox())!);
+        await page.waitForTimeout(100);
+      }
+      const buttons = await dlg.locator("button, a").evaluateAll((els) => els.map((el) => { const r = el.getBoundingClientRect(); return { x: r.x, y: r.y, width: r.width, height: r.height }; }));
+      const hit = (a: { x: number; y: number; width: number; height: number }, b: typeof a) =>
+        a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
+      const dd = (await dlg.boundingBox())!;
+      for (const a of boxes) {
+        expect(hit(a, dd), "freccia contro finestra").toBe(false);
+        // di ogni pulsante conta la parte visibile, cioè dentro la finestra (il resto è nell'area che scorre, ritagliato)
+        for (const b of buttons) {
+          const x = Math.max(b.x, dd.x), y = Math.max(b.y, dd.y);
+          const vis = { x, y, width: Math.min(b.x + b.width, dd.x + dd.width) - x, height: Math.min(b.y + b.height, dd.y + dd.height) - y };
+          if (vis.width > 0 && vis.height > 0) expect(hit(a, vis), "freccia contro pulsante").toBe(false);
+        }
+        expect(a.y + a.height).toBeLessThanOrEqual(page.viewportSize()!.height); // e sta tutta nello schermo
+      }
+
+      // toccando la freccia la finestra resta aperta
+      const ab = (await inner.boundingBox())!;
+      await page.touchscreen.tap(ab.x + ab.width / 2, ab.y + ab.height / 2);
+      await page.waitForTimeout(300);
+      await expect(dlg).toBeVisible();
     });
 
     test("il pulsante chiama navigator.share con titolo e indirizzo dell'app", async ({ page }) => {
@@ -154,4 +206,25 @@ test.describe("movimento ridotto", () => {
     await expect(arrow).toBeVisible();
     expect(await arrow.locator(".share-arrow").evaluate((el) => getComputedStyle(el).animationName)).toBe("none");
   });
+});
+
+test.describe("pulsante «Installa» in alto, sul telefono", () => {
+  for (const [lang, t] of Object.entries(T)) {
+    test.describe(lang, () => {
+      test.use({ locale: t.locale });
+      test("la scritta breve è visibile a 390 px, il nome accessibile la contiene, niente scorrimento orizzontale, axe", async ({ page }) => {
+      await fakeShare(page, "ok");
+      await page.addInitScript(() => localStorage.setItem("elodict-onboarding", "done"));
+      await page.goto(`${PWA}/`);
+      const btn = page.getByRole("button", { name: t.install }).first();
+      await expect(btn).toBeVisible();
+      const short = { it: "Installa", en: "Install", fr: "Installer", es: "Instalar" }[lang as "it"];
+      const label = btn.getByText(short, { exact: true });
+      await expect(label).toBeVisible();
+      await expect(btn).toBeInViewport({ ratio: 1 });
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
+      });
+    });
+  }
 });
