@@ -75,7 +75,8 @@ export default defineConfig(({ mode }) => ({
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
         navigateFallback: `${base}index.html`,
         // «installa.html» (anche con ?lang=it: l'indirizzo che l'app stessa apre) è una pagina a sé, non l'app: niente ripiego su index.html
-        navigateFallbackDenylist: [/installa\.html(\?.*)?$/],
+        // «prova-parakeet/» è una pagina di prova a parte (T013b), non l'app: anche lei non deve ripiegare su index.html
+        navigateFallbackDenylist: [/installa\.html(\?.*)?$/, /\/prova-parakeet\//],
         cleanupOutdatedCaches: true,
         runtimeCaching: [
           {

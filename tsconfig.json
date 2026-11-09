@@ -13,5 +13,5 @@
     "noEmit": true,
     "types": ["vite/client", "vite-plugin-pwa/client"]
   },
-  "include": ["src", "vite.config.ts", "tailwind.config.ts"]
+  "include": ["src", "prova-parakeet/src", "vite.config.ts", "vite.prova.config.ts", "tailwind.config.ts"]
 }

@@ -1,0 +1,54 @@
+{
+ "frasi": [
+  {
+   "id": 1,
+   "circa_secondi": 3,
+   "testo": "Buongiorno, vorrei prenotare un tavolo."
+  },
+  {
+   "id": 2,
+   "circa_secondi": 3,
+   "testo": "Domani piove, porta l'ombrello."
+  },
+  {
+   "id": 3,
+   "circa_secondi": 8,
+   "testo": "Ieri sera abbiamo cenato in un ristorante vicino al mare, e il cameriere gentile ci ha consigliato il pesce fresco."
+  },
+  {
+   "id": 4,
+   "circa_secondi": 8,
+   "testo": "Il treno per Roma parte alle nove e quaranta dal binario sette, non dimenticare i biglietti e il passaporto."
+  },
+  {
+   "id": 5,
+   "circa_secondi": 15,
+   "testo": "Gentile cliente, la informiamo che il suo ordine è stato spedito questa mattina e arriverà entro tre giorni lavorativi; se desidera cambiare l'indirizzo di consegna, ci contatti al più presto, grazie."
+  }
+ ],
+ "pause": [
+  "Per favore <break time='350ms'/> chiudi la finestra della cucina.",
+  "<break time='2000ms'/>Domani mattina <break time='450ms'/> devo portare la macchina dal meccanico.",
+  "<break time='2000ms'/>Vorrei un caffè <break time='500ms'/> senza zucchero.",
+  "<break time='2000ms'/>Mia sorella arriva alle sei <break time='600ms'/> con i bambini.",
+  "<break time='2000ms'/>Il libro che mi hai prestato <break time='650ms'/> è davvero bellissimo.",
+  "<break time='2000ms'/>Telefonami stasera <break time='800ms'/> dopo cena."
+ ],
+ "pause_testo": [
+  "Per favore chiudi la finestra della cucina.",
+  "Domani mattina devo portare la macchina dal meccanico.",
+  "Vorrei un caffè senza zucchero.",
+  "Mia sorella arriva alle sei con i bambini.",
+  "Il libro che mi hai prestato è davvero bellissimo.",
+  "Telefonami stasera dopo cena."
+ ],
+ "pause_interne_ms": [
+  350,
+  450,
+  500,
+  600,
+  650,
+  800
+ ],
+ "voce": "Microsoft Elsa Desktop (sintesi vocale di Windows, it-IT): NON è una voce umana"
+}
