@@ -49,7 +49,7 @@ export default defineConfig(({ mode }) => ({
       // «prompt»: nessun aggiornamento silenzioso; è l'utente a premere «Aggiorna».
       registerType: "prompt",
       injectRegister: false, // ci pensa src/pwa/useAppUpdate.ts
-      includeAssets: ["favicon.svg", "icons/apple-touch-icon.png", "installa.html"],
+      includeAssets: ["icons/favicon-32.png", "icons/favicon-48.png", "icons/apple-touch-icon.png", "installa.html"],
       manifest: {
         id: base,
         name: "Elodict",
@@ -74,7 +74,8 @@ export default defineConfig(({ mode }) => ({
         globIgnores: ["ort/**", "**/*.wasm", "**/*.mjs"],
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
         navigateFallback: `${base}index.html`,
-        navigateFallbackDenylist: [/installa\.html$/],
+        // «installa.html» (anche con ?lang=it: l'indirizzo che l'app stessa apre) è una pagina a sé, non l'app: niente ripiego su index.html
+        navigateFallbackDenylist: [/installa\.html(\?.*)?$/],
         cleanupOutdatedCaches: true,
         runtimeCaching: [
           {

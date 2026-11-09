@@ -1,41 +1,73 @@
-// Crea le icone dell'app installabile da public/favicon.svg. Si può rieseguire quando cambia il disegno:
+// Crea le icone dell'app (installabile, iPhone, scheda del browser) da design/icona-elodict.png (1254x1254). Si può rieseguire
+// quando cambia il disegno:
 //   npm run make-icons
-// Usa Chromium di Playwright (già nelle dipendenze di sviluppo) per trasformare l'SVG in PNG.
-import { mkdirSync, readFileSync } from "node:fs";
+// Usa Chromium di Playwright (già nelle dipendenze di sviluppo) per ridurre l'immagine: si dimezza a passi, poi l'ultimo
+// passo porta alla misura finale, così le icone piccole restano nitide.
+//
+// Il sorgente sta FUORI da public/: non finisce nel sito. Il disegno occupa circa il 75% del quadrato (dentro il cerchio
+// dell'80% della «zona sicura»), quindi la stessa immagine va bene anche per le icone «maskable».
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { chromium } from "@playwright/test";
 
-const svg = readFileSync("public/favicon.svg", "utf8");
-mkdirSync("public/icons", { recursive: true });
-
-/** Variante dell'SVG: angoli arrotondati (rx) e disegno rimpicciolito al centro (scale). */
-function variant({ rx, scale }) {
-  let s = svg.replace(/rx="14"/, `rx="${rx}"`);
-  if (scale !== 1) {
-    const t = `translate(32 32) scale(${scale}) translate(-32 -32)`;
-    s = s.replace(/<g fill="#ffffff">/, `<g fill="#ffffff" transform="${t}">`);
-  }
-  return s;
-}
+const SOURCE = "design/icona-elodict.png";
+const OUT = "public/icons";
+mkdirSync(OUT, { recursive: true });
 
 const jobs = [
-  // icone normali: angoli arrotondati del disegno originale
-  { file: "icon-192.png", size: 192, svg: variant({ rx: 14, scale: 1 }) },
-  { file: "icon-512.png", size: 512, svg: variant({ rx: 14, scale: 1 }) },
-  // "maskable": tutto il quadrato pieno e il disegno dentro la zona sicura (il sistema ritaglia a cerchio o a squadrato)
-  { file: "icon-maskable-512.png", size: 512, svg: variant({ rx: 0, scale: 0.62 }) },
-  // iPhone/iPad: quadrato pieno, senza trasparenza (il sistema arrotonda da solo)
-  { file: "apple-touch-icon.png", size: 180, svg: variant({ rx: 0, scale: 0.86 }) },
+  { file: "icon-192.png", size: 192 }, // app installabile
+  { file: "icon-512.png", size: 512 },
+  { file: "icon-maskable-512.png", size: 512 }, // stessa immagine: il disegno sta già dentro il cerchio dell'80%
+  { file: "apple-touch-icon.png", size: 180 }, // iPhone/iPad: quadrato pieno, senza trasparenza
+  { file: "favicon-32.png", size: 32 }, // scheda del browser
+  { file: "favicon-48.png", size: 48 },
 ];
 
+const png = readFileSync(SOURCE).toString("base64");
 const browser = await chromium.launch();
 try {
   const page = await browser.newPage();
+  await page.setContent("<!doctype html><canvas id=c></canvas>");
+  const results = await page.evaluate(
+    async ({ src, sizes }) => {
+      const img = new Image();
+      img.src = `data:image/png;base64,${src}`;
+      await img.decode();
+      const out = {};
+      for (const size of sizes) {
+        let cur = document.createElement("canvas");
+        cur.width = img.naturalWidth;
+        cur.height = img.naturalHeight;
+        cur.getContext("2d").drawImage(img, 0, 0);
+        // dimezza finché non si è a meno del doppio della misura finale
+        while (cur.width / 2 >= size * 1.0 && cur.width / 2 > size) {
+          const next = document.createElement("canvas");
+          next.width = Math.max(size, Math.round(cur.width / 2));
+          next.height = next.width;
+          const g = next.getContext("2d");
+          g.imageSmoothingEnabled = true;
+          g.imageSmoothingQuality = "high";
+          g.drawImage(cur, 0, 0, next.width, next.height);
+          cur = next;
+        }
+        if (cur.width !== size) {
+          const last = document.createElement("canvas");
+          last.width = size;
+          last.height = size;
+          const g = last.getContext("2d");
+          g.imageSmoothingEnabled = true;
+          g.imageSmoothingQuality = "high";
+          g.drawImage(cur, 0, 0, size, size);
+          cur = last;
+        }
+        out[size] = cur.toDataURL("image/png").split(",")[1];
+      }
+      return out;
+    },
+    { src: png, sizes: [...new Set(jobs.map((j) => j.size))] },
+  );
   for (const j of jobs) {
-    await page.setViewportSize({ width: j.size, height: j.size });
-    const sized = j.svg.replace("<svg ", `<svg width="${j.size}" height="${j.size}" `);
-    await page.setContent(`<!doctype html><style>html,body{margin:0;background:transparent}svg{display:block}</style>${sized}`);
-    await page.screenshot({ path: `public/icons/${j.file}`, omitBackground: true, clip: { x: 0, y: 0, width: j.size, height: j.size } });
-    console.log(`creata public/icons/${j.file} (${j.size}x${j.size})`);
+    writeFileSync(`${OUT}/${j.file}`, Buffer.from(results[j.size], "base64"));
+    console.log(`creata ${OUT}/${j.file} (${j.size}x${j.size})`);
   }
 } finally {
   await browser.close();

@@ -46,7 +46,7 @@ I colori dell'originale (`#0078d4`, `#185abd`, `#2b579a`, `#106ebe`) sono in `br
 - **Deve funzionare a** 16 px (icona della scheda) e a 1024 px (icona dell'app).
 - **Da consegnare:** SVG; icona 1024×1024 senza trasparenza; set di icone della scheda; immagine social 1200×630.
 - **Non deve somigliare all'originale:** niente microfono blu, niente la forma delle icone di Office. Mettere la bozza accanto al logo dell'originale e controllare.
-- **Bozza già fatta:** `public/favicon.svg` (sfondo viola `#5b34c9`, "E" bianca di barre arrotondate). È un segnaposto onesto, non un logo definitivo.
+- **Icona attuale (T001g):** `design/icona-elodict.png` (documento verde smeraldo con onde sonore su sfondo azzurro `#A9DDFB`, 1254x1254); sostituisce la bozza viola `public/favicon.svg`, tolta. I colori del manifest (`#5b34c9`, bianco) restano quelli dei token di design.
 
 ## Voce
 **Tre parole: chiara, calma, onesta.**

@@ -68,7 +68,7 @@ npm run build        # controlla i tipi e crea la cartella dist/
 - Le prove con **Whisper vero** (`e2e/f08-offline-whisper.spec.ts`) hanno bisogno di **internet** (scaricano il modello) e delle registrazioni di prova: `powershell -ExecutionPolicy Bypass -File e2e/make-fixtures.ps1` (usa le voci di sintesi di Windows Elsa e Zira; i file finiscono in `e2e/fixtures/`, ignorata da git). Se mancano, quelle prove si **saltano da sole**.
 - Pubblicazione: **fatta** il 2026-11-08 su <https://sparo111.github.io/elodict/> (repository pubblico <https://github.com/sparo111/elodict>, ramo `main`, Pages con sorgente «GitHub Actions»). `.github/workflows/deploy.yml` a ogni push su `main` costruisce l'app con `VITE_BASE=/<nome-repo>/`, lancia le prove sulla logica **con le soglie di copertura**, controlla che nella build non ci siano gli agganci per le prove (`npm run check:dist`) e la pubblica su **GitHub Pages** (gratis, con HTTPS) a ogni aggiornamento del ramo principale; l'indirizzo sotto `/<nome-repo>/` arriva dalla variabile `VITE_BASE`. Non servono COOP/COEP: il motore di Whisper gira con un solo filo (`numThreads = 1`), quindi basta un hosting statico semplice. In Git Bash, per costruire a mano per `/elodict/` serve `MSYS_NO_PATHCONV=1` (altrimenti Git Bash cambia la base in un percorso di Windows: la build si ferma con un messaggio). Prove sul sito pubblicato: `SITE_URL=https://sparo111.github.io/elodict/ npx playwright test --project=sito-pubblicato`. La **storia di git è stata riscritta prima della prima pubblicazione** (tolti i testi originali delle recensioni e un percorso personale): i codici dei commit nei documenti sono quelli nuovi; una copia della storia di prima è nel file `elodict-prima-della-riscrittura.bundle` (fuori dal repository). Il tag `v-prima-di-T004` indica la versione dell'app prima dell'elenco dei documenti (serve alla prova `npm run test:migrazione`).
 - **Installazione**: l'app è una «PWA» fatta con `vite-plugin-pwa` (`registerType: 'prompt'`). Le prove vere del «service worker» usano la copia costruita (`npm run build:pwa-test`, cartella `dist-pwa`), non il sito di sviluppo. I file pesanti del motore (`public/ort`, ~22 MB) non sono nella copia iniziale: si tengono solo dopo il primo uso (`elodict-motore`). I pesi di Whisper li tiene già Transformers.js nella sua memoria.
-- `npm run make-icons` rigenera le icone da `public/favicon.svg`.
+- `npm run make-icons` rigenera le icone (192, 512, maskable, iPhone 180, scheda 32 e 48) dal sorgente `design/icona-elodict.png` (1254x1254, fuori da `public/`: non va nel sito). Il disegno sta già dentro il cerchio dell'80%, quindi la stessa immagine serve anche per «maskable».
 
 ## 6. Architettura in una pagina
 
@@ -110,7 +110,7 @@ npm run build        # controlla i tipi e crea la cartella dist/
 | `src/pwa/basePath.ts` | indirizzi del motore vocale che tengono conto della sottocartella |
 | `src/pwa/useAppUpdate.ts`, `UpdateBanner.tsx` | avviso «nuova versione»; salva il documento prima di ricaricare |
 | `public/installa.html` | pagina da stampare in A4, 4 lingue |
-| `scripts/make-icons.mjs`, `public/icons/` | icone 192, 512, maskable, iPhone |
+| `scripts/make-icons.mjs`, `design/icona-elodict.png`, `public/icons/` | icone 192, 512, maskable, iPhone, scheda del browser |
 | `.github/workflows/deploy.yml` | pubblicazione su GitHub Pages |
 
 **Codice dell'app — `src/`**
