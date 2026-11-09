@@ -52,7 +52,6 @@ test("PROVA-3 l'app non ha nessun collegamento alla pagina di prova", async ({ p
   await page.goto(APP);
   await expect(page.getByRole("textbox", { name: "Documento" })).toBeVisible();
   await page.getByRole("button", { name: "Impostazioni" }).click();
-  await page.getByRole("button", { name: "Aiuto" }).click({ trial: true }).catch(() => undefined);
   expect(await page.locator('a[href*="prova-parakeet"]').count()).toBe(0);
   expect(await page.content()).not.toContain("prova-parakeet");
 });

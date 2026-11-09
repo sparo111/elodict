@@ -179,14 +179,14 @@
 | parakeet-istupakov-int8 | 4 | Il treno per Roma parte alle 9 e 40 dal binario 7. Non dimenticare i biglietti e il passaporto. | 15.8 |
 | parakeet-istupakov-int8 | 5 | Gentile cliente, la informiamo che il suo ordine è stato spedito questa mattina e arriverà entro tre giorni lavorativi. Se desidera cambiare l'indirizzo di consegna, ci contatti al più presto, grazie. | 0.0 |
 
-### Dispositivi / browser provati
+### Dispositivi e browser provati
 
 - **chromium**: userAgent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/158.0.8127.18 Safari/537.36 · platform=Windows · cores=22 · deviceMemoryGB=16 · crossOriginIsolated=true · sharedArrayBuffer=true · webgpu=true · platformVersion=19.0.0 · architecture=x86 · webgpuAdapter=nessun adattatore
 - **msedge**: userAgent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36 Edg/153.0.0.0 · platform=Windows · cores=22 · deviceMemoryGB=16 · crossOriginIsolated=true · sharedArrayBuffer=true · webgpu=true · platformVersion=19.0.0 · architecture=x86 · webgpuAdapter=intel / xe-lpg
 - **webkit**: userAgent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.2 Safari/605.1.15 · platform=Win32 · cores=8 · crossOriginIsolated=true · sharedArrayBuffer=true · webgpu=false
 - **webkit**: userAgent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.2 Safari/605.1.15 · platform=Win32 · cores=8 · crossOriginIsolated=false · sharedArrayBuffer=false · webgpu=false
 
-### Pausa che chiude la frase — solo il segmentatore (audio con 6 pause interne: 350, 450, 500, 600, 650, 800 ms)
+### Tabella 6 — pausa che chiude la frase, solo il segmentatore (audio con 6 pause interne: 350, 450, 500, 600, 650, 800 ms)
 
 | silenceMs | Frasi emesse / volute | Tagliate a metà | Ritardo medio ms |
 |---|---|---|---|

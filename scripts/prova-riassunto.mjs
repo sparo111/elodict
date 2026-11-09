@@ -65,11 +65,11 @@ if (pages.length) {
         if (c.id === 5) seen.add(r.engine);
       }
   P();
-  P("### Dispositivi / browser provati");
+  P("### Dispositivi e browser provati");
   P();
   for (const { d } of pages) P(`- **${d.browser}**: ${Object.entries(d.device ?? {}).map(([k, v]) => `${k}=${v}`).join(" · ")}`);
   P();
-  P("### Pausa che chiude la frase — solo il segmentatore (audio con 6 pause interne: 350, 450, 500, 600, 650, 800 ms)");
+  P("### Tabella 6 — pausa che chiude la frase, solo il segmentatore (audio con 6 pause interne: 350, 450, 500, 600, 650, 800 ms)");
   P();
   P("| silenceMs | Frasi emesse / volute | Tagliate a metà | Ritardo medio ms |");
   P("|---|---|---|---|");
