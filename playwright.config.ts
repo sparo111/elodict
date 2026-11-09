@@ -65,7 +65,9 @@ export default defineConfig({
     // Prove sul sito pubblicato (o sulla sua anteprima): si lanciano a mano con SITE_URL=... npx playwright test --project=sito-pubblicato
     { name: "sito-pubblicato", testMatch: /g1-.*\.spec\.ts/, use: { ...desktop } },
     // Prove della versione installabile: partono "da zero" (nessun primo avvio fatto) salvo dove il test lo imposta.
-    { name: "pwa-desktop", testMatch: /pwa-.*\.spec\.ts/, use: { ...desktop, baseURL: PWA } },
-    { name: "pwa-mobile", testMatch: /pwa-.*\.spec\.ts/, use: { ...mobile, baseURL: PWA } },
+    { name: "pwa-desktop", testMatch: /pwa-.*\.spec\.ts/, testIgnore: /pwa-iphone/, use: { ...desktop, baseURL: PWA } },
+    { name: "pwa-mobile", testMatch: /pwa-.*\.spec\.ts/, testIgnore: /pwa-iphone/, use: { ...mobile, baseURL: PWA } },
+    // T001e: iPhone (motore WebKit di Safari, profilo iPhone 15). Serve: npx playwright install webkit
+    { name: "pwa-iphone", testMatch: /pwa-iphone\.spec\.ts/, use: { ...devices["iPhone 15"], baseURL: PWA, locale: "it-IT" } },
   ],
 });
