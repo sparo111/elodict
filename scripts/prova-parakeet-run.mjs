@@ -18,8 +18,8 @@ const browserName = arg("browser", "chromium");
 const url = arg("url");
 const out = arg("out", `prova-parakeet/risultati/${browserName}.json`);
 const configs = String(arg("configs", "whisper-base:1:wasm")).split(",").filter(Boolean).map((c) => {
-  const [engine, threads, backend] = c.split(":");
-  return { engine, threads: Number(threads || 1), backend: backend || "wasm" };
+  const [engine, threads, backend, lm] = c.split(":");
+  return { engine, threads: Number(threads || 1), backend: backend || "wasm", ...(lm === "poca" ? { lowMem: true } : {}) };
 });
 const coi = arg("coi", "1");
 const limitMs = Number(arg("timeout", 420)) * 1000; // massimo per ogni configurazione

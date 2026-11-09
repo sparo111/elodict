@@ -28,7 +28,11 @@
   .muted { color: var(--muted); font-size: .9rem; }
   button { font: inherit; border-radius: 10px; border: 2px solid var(--acc); background: var(--acc); color: #fff; }
   #start { display: block; width: 100%; min-height: 64px; font-size: 1.4rem; font-weight: 700; margin: 14px 0 6px; }
-  #start:disabled { opacity: .55; }
+  #start:disabled, #start-small:disabled { opacity: .55; }
+  #start-small { display: block; width: 100%; min-height: 52px; font-size: 1.15rem; font-weight: 700; margin: 8px 0; background: transparent; color: var(--acc); }
+  .warn { border: 3px solid #b3261e; border-radius: 10px; padding: 8px 12px; margin: 10px 0; }
+  .warn h2 { margin-top: 4px; color: #b3261e; }
+  @media (prefers-color-scheme: dark) { .warn, .warn h2 { border-color: #ff8a80; color: #ff8a80; } }
   #copy { display: block; width: 100%; min-height: 52px; font-size: 1.15rem; font-weight: 700; margin: 10px 0; background: transparent; color: var(--acc); }
   .opts label { display: block; margin: 6px 0; }
   .scroll { overflow-x: auto; }
@@ -46,9 +50,16 @@
   <h1>Prova di Parakeet e Whisper</h1>
   <p class="muted">Pagina di prova di Elodict: misura quanto sono veloci e precisi due modi di trascrivere la voce, sul tuo dispositivo, con 5 frasi registrate. Non fa parte dell'app e non cambia niente nell'app. Le frasi sono dette da una voce di sintesi (Windows), non da una persona.</p>
   <p id="device" class="muted">…</p>
+  <section id="interrupted" hidden aria-label="Ultima prova interrotta" class="warn">
+    <h2>Ultima prova interrotta</h2>
+    <pre id="interrupted-text"></pre>
+    <p class="muted">Questo testo viene incluso in «Copia i risultati».</p>
+  </section>
   <button id="start" type="button" disabled>Avvia la prova</button>
+  <button id="start-small" type="button" disabled>Prova solo Parakeet piccolo</button>
   <div class="opts">
     <label><input type="checkbox" id="opt-big" /> Prova anche il modello grande di Parakeet (circa 670 MB: solo Wi-Fi, e potrebbe non starci in memoria su un telefono)</label>
+    <label><input type="checkbox" id="opt-lowmem" /> Modalità a poca memoria per Parakeet (meno ottimizzazioni e niente memoria di riserva; si spunta da sola dopo una prova interrotta con Parakeet)</label>
     <label><input type="checkbox" id="opt-threads" /> Prova anche con 2 e 4 thread (se il browser lo permette)</label>
     <label><input type="checkbox" id="opt-webgpu" /> Prova anche con WebGPU (se il browser ce l'ha)</label>
   </div>

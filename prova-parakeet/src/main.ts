@@ -5,11 +5,20 @@ import { scoreText, type TextScore } from "../../src/speech/parakeet/metrics";
 import { runSweep, type SweepResult } from "../../src/speech/parakeet/sweep";
 import { PARAKEET_WEIGHTS, totalBytes } from "../../src/speech/parakeet/models";
 import { ATTRIBUTION } from "../../src/attribution";
-import type { Backend, EngineKind, FromWorker, Timings } from "./protocol";
+import type { Backend, EngineKind, FromWorker, PhaseKind, Timings } from "./protocol";
+import { finishJournal, interruptedReport, journalError, journalPageEvent, markPhase, navType, readJournal, startJournal } from "./journal";
 
 const BASE = new URL("./", location.href).href; // .../prova-parakeet/
 const ORT_WHISPER = `${BASE}ort22/`; // gli stessi file di public/ort dell'app (onnxruntime-web 1.22), copiati dentro la pagina
 const ORT_PARAKEET = `${BASE}ort24/`;
+
+/* ---------- opzioni dall'indirizzo (per le prove automatiche e per chi vuole cambiare i limiti) ---------- */
+const Q = new URLSearchParams(location.search);
+/** ?sim=finto,lento,hang-session…: i motori veri sono sostituiti dal motore finto (vedi fake.worker.ts) */
+const SIM = Q.get("sim");
+const seconds = (name: string, def: number) => (Number(Q.get(name)) > 0 ? Number(Q.get(name)) : def) * 1000;
+/** tempo massimo per fase: scaricamento 10 minuti, sessione 2 minuti, frase 2 minuti (?t_download=, ?t_session=, ?t_run= in secondi) */
+const LIMITS: Record<PhaseKind, number> = { download: seconds("t_download", 600), session: seconds("t_session", 120), run: seconds("t_run", 120) };
 
 export interface Phrase {
   id: number;
@@ -22,11 +31,19 @@ export interface Config {
   engine: EngineKind;
   threads: number;
   backend: Backend;
+  /** modalità a poca memoria (solo Parakeet) */
+  lowMem?: boolean;
 }
 export interface Row extends Config {
   label: string;
   ok: boolean;
   error?: string;
+  /** la fase in cui si è fermata (se è andata male) */
+  errorPhase?: string;
+  /** tutti gli errori visti dal lavoratore e da onnxruntime, con il messaggio completo */
+  errors: string[];
+  /** avvisi ed errori scritti nella console del lavoratore */
+  logs: string[];
   loadMs: number;
   networkMB: number;
   cachedMB: number;
@@ -48,6 +65,10 @@ const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as 
 const rows: Row[] = [];
 let phrases: Phrase[] = [];
 let sweeps: SweepResult[] = [];
+/** il rapporto sull'ultima prova rimasta a metà (letto dal diario all'avvio), se c'è */
+let interrupted: string | null = null;
+let probe: Record<string, string | boolean> | null = null;
+const pageErrors: string[] = [];
 const MB = 1024 * 1024;
 
 /* ---------- dispositivo ---------- */
@@ -108,24 +129,51 @@ async function readMemory(): Promise<{ bytes: number; source: string } | null> {
 }
 
 /* ---------- una configurazione ---------- */
-export const label = (c: Config) => `${c.engine} · ${c.threads} thread · ${c.backend}`;
+export const label = (c: Config) => `${c.engine} · ${c.threads} thread · ${c.backend}${c.lowMem ? " · poca memoria" : ""}`;
+
+/** Il lavoratore giusto per il motore (due `new Worker(new URL(...))` scritti per esteso: Vite li riconosce solo così). */
+function makeWorker(engine: EngineKind): Worker {
+  if (SIM) return new Worker(new URL("./fake.worker.ts", import.meta.url), { type: "module" });
+  return engine === "whisper-base" ? new Worker(new URL("./whisper.worker.ts", import.meta.url), { type: "module" }) : new Worker(new URL("./parakeet.worker.ts", import.meta.url), { type: "module" });
+}
+
+const KIND_NAME: Record<PhaseKind, string> = { download: "scaricamento", session: "creazione della sessione", run: "frase" };
 
 export async function runConfig(cfg: Config, onStatus: (s: string) => void = () => undefined): Promise<Row> {
-  const row: Row = { ...cfg, label: label(cfg), ok: false, loadMs: 0, networkMB: 0, cachedMB: 0, peakMemMB: null, memSource: "n/d", coldMs: null, clips: [] };
-  // (due `new Worker(new URL(...))` scritti per esteso: Vite li riconosce solo così)
-  const worker =
-    cfg.engine === "whisper-base"
-      ? new Worker(new URL("./whisper.worker.ts", import.meta.url), { type: "module" })
-      : new Worker(new URL("./parakeet.worker.ts", import.meta.url), { type: "module" });
+  const row: Row = { ...cfg, label: label(cfg), ok: false, errors: [], logs: [], loadMs: 0, networkMB: 0, cachedMB: 0, peakMemMB: null, memSource: "n/d", coldMs: null, clips: [] };
+  const note = (s: string) => {
+    if (row.errors.length < 40) row.errors.push(s);
+    journalError(`${cfg.engine}: ${s}`);
+  };
+
+  /* il tempo massimo di ogni fase: se scade, la prova segna ERRORE con la fase e la pagina va avanti con la prossima */
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  let curPhase = "avvio";
+  let curKind: PhaseKind = "session";
+  let abort!: (e: Error) => void;
+  const aborted = new Promise<never>((_, rej) => {
+    abort = rej;
+  });
+  aborted.catch(() => undefined);
+  const arm = () => {
+    clearTimeout(timer);
+    const limit = LIMITS[curKind];
+    timer = setTimeout(() => abort(new Error(`tempo scaduto (${limit / 1000} s, limite per «${KIND_NAME[curKind]}») nella fase «${curPhase}»`)), limit);
+  };
+  const enter = (kind: PhaseKind, text: string) => {
+    curKind = kind;
+    curPhase = text;
+    markPhase(cfg, text); // PRIMA di entrare nella fase: se la pagina muore qui, il diario dice dove
+    onStatus(`${label(cfg)}: ${text}`);
+    arm();
+  };
+  const guard = <T,>(p: Promise<T>) => Promise.race([p, aborted]);
+
+  let worker: Worker | null = null;
   const waiters = new Map<number, (m: FromWorker) => void>();
   let loaded: ((m: FromWorker) => void) | null = null;
-  worker.onmessage = (e: MessageEvent<FromWorker>) => {
-    const m = e.data;
-    if (m.type === "progress") onStatus(`${label(cfg)}: scarico ${m.file.split("/").pop()} ${(m.loaded / MB).toFixed(0)}/${(m.total / MB).toFixed(0)} MB`);
-    else if (m.type === "loaded" || (m.type === "error" && m.id === undefined)) loaded?.(m);
-    else if ((m.type === "result" || m.type === "error") && m.id !== undefined) waiters.get(m.id)?.(m);
-  };
-  worker.onerror = (e) => loaded?.({ type: "error", message: e.message || "errore del lavoratore" });
+  let lastMarkedMB = -100;
+  let lastFile = "";
 
   let peak = 0;
   let memSource = "n/d";
@@ -142,11 +190,45 @@ export async function runConfig(cfg: Config, onStatus: (s: string) => void = () 
   })();
 
   try {
-    onStatus(`${label(cfg)}: carico il modello…`);
-    const l = await new Promise<FromWorker>((res) => {
-      loaded = res;
-      worker.postMessage({ type: "load", engine: cfg.engine, threads: cfg.threads, backend: cfg.backend, ortWhisper: ORT_WHISPER, ortParakeet: ORT_PARAKEET });
-    });
+    enter("session", "avvio del lavoratore");
+    worker = makeWorker(cfg.engine);
+    worker.onmessage = (e: MessageEvent<FromWorker>) => {
+      const m = e.data;
+      if (m.type === "phase") enter(m.kind, m.phase);
+      else if (m.type === "progress") {
+        const mb = m.loaded / MB;
+        const text = `scaricamento file ${m.index ?? "?"}${m.count ? ` di ${m.count}` : ""}: ${m.file} (${mb.toFixed(0)}/${(m.total / MB).toFixed(0)} MB)`;
+        onStatus(`${label(cfg)}: ${text}`);
+        // il diario si aggiorna a ogni file nuovo e ogni 20 MB; ogni avanzamento rimette a zero il tempo massimo dello scaricamento
+        if (m.file !== lastFile || mb - lastMarkedMB >= 20) {
+          lastFile = m.file;
+          lastMarkedMB = mb;
+          curPhase = text;
+          markPhase(cfg, text);
+        }
+        if (curKind === "download") arm();
+      } else if (m.type === "worker-error") note(`[lavoratore ${m.kind}] ${m.message}${m.stack ? ` | ${m.stack.split("\n").slice(0, 3).join(" ¦ ")}` : ""}`);
+      else if (m.type === "log") {
+        const line = `${m.level}: ${m.text}`;
+        if (row.logs.length < 60 && !row.logs.includes(line)) row.logs.push(line); // le righe uguali si scrivono una volta sola
+      } else if (m.type === "loaded" || (m.type === "error" && m.id === undefined)) loaded?.(m);
+      else if ((m.type === "result" || m.type === "error") && m.id !== undefined) waiters.get(m.id)?.(m);
+    };
+    // un errore che ferma il lavoratore (anche il caricamento di un file .wasm/.mjs): messaggio, file, riga
+    worker.onerror = (e) => {
+      const msg = `errore del lavoratore: ${e.message || "(senza messaggio)"} (${e.filename || "?"}:${e.lineno}:${e.colno})`;
+      note(msg);
+      abort(new Error(msg));
+    };
+    worker.onmessageerror = () => note("messaggio del lavoratore non leggibile (messageerror)");
+
+    const l = await guard(
+      new Promise<FromWorker>((res) => {
+        loaded = res;
+        enter("session", "invio del comando di caricamento al lavoratore");
+        worker!.postMessage({ type: "load", engine: cfg.engine, threads: cfg.threads, backend: cfg.backend, ortWhisper: ORT_WHISPER, ortParakeet: ORT_PARAKEET, lowMem: cfg.lowMem, sim: SIM ?? undefined });
+      }),
+    );
     if (l.type === "error") throw new Error(l.message);
     if (l.type !== "loaded") throw new Error("risposta inattesa");
     row.loadMs = l.loadMs;
@@ -158,21 +240,24 @@ export async function runConfig(cfg: Config, onStatus: (s: string) => void = () 
       new Promise<{ text: string; timings: Timings }>((resolve, reject) => {
         const id = nextId++;
         waiters.set(id, (m) => (m.type === "result" ? resolve({ text: m.text, timings: m.timings }) : reject(new Error(m.type === "error" ? m.message : "errore"))));
-        worker.postMessage({ type: "run", id, samples: samples.slice() });
+        worker!.postMessage({ type: "run", id, samples: samples.slice() });
       });
 
-    onStatus(`${label(cfg)}: prima trascrizione (a freddo)…`);
     const warm = phrases.find((p) => p.id === 2) ?? phrases[0];
-    row.coldMs = (await run(warm.samples)).timings.totalMs;
+    enter("run", `prima trascrizione, a freddo (frase ${warm.id}): invio al motore`);
+    row.coldMs = (await guard(run(warm.samples))).timings.totalMs;
     for (const p of phrases) {
-      onStatus(`${label(cfg)}: frase ${p.id}/${phrases.length} (${p.seconds.toFixed(1)} s)…`);
-      const r = await run(p.samples);
+      enter("run", `frase ${p.id}/${phrases.length} (${p.seconds.toFixed(1)} s): invio al motore`);
+      const r = await guard(run(p.samples));
       row.clips.push({ id: p.id, seconds: p.seconds, timings: r.timings, text: r.text.trim(), score: scoreText(p.testo, r.text) });
     }
     row.ok = true;
   } catch (e) {
     row.error = e instanceof Error ? `${e.name}: ${e.message}` : String(e);
+    row.errorPhase = curPhase;
+    note(`ERRORE nella fase «${curPhase}»: ${row.error}`);
   } finally {
+    clearTimeout(timer);
     sampling = false;
     await sampler;
     const last = await readMemory();
@@ -182,9 +267,36 @@ export async function runConfig(cfg: Config, onStatus: (s: string) => void = () 
     }
     row.peakMemMB = peak ? peak / MB : null;
     row.memSource = memSource;
-    worker.terminate();
+    worker?.terminate();
   }
   return row;
+}
+
+/* ---------- sonda del dispositivo: quello che il browser sa fare, e un piccolo assaggio di memoria ---------- */
+export function probeDevice(): Record<string, string | boolean> {
+  const out: Record<string, string | boolean> = {};
+  const valid = (bytes: number[]) => {
+    try {
+      return WebAssembly.validate(new Uint8Array(bytes));
+    } catch {
+      return false;
+    }
+  };
+  out.wasmSimd = valid([0, 97, 115, 109, 1, 0, 0, 0, 1, 5, 1, 96, 0, 1, 123, 3, 2, 1, 0, 10, 10, 1, 8, 0, 65, 0, 253, 15, 253, 98, 11]);
+  out.wasmEccezioni = valid([0, 97, 115, 109, 1, 0, 0, 0, 1, 4, 1, 96, 0, 0, 3, 2, 1, 0, 10, 8, 1, 6, 0, 6, 64, 25, 11, 11]);
+  try {
+    const m = new WebAssembly.Memory({ initial: 4096, maximum: 4096 }); // 256 MB
+    out.memoriaWasm256MB = m.buffer.byteLength === 4096 * 65536 ? "ok" : "strana";
+  } catch (e) {
+    out.memoriaWasm256MB = `ERRORE ${(e as Error).message}`;
+  }
+  try {
+    out.arrayBuffer128MB = new ArrayBuffer(128 * MB).byteLength === 128 * MB ? "ok" : "strano";
+  } catch (e) {
+    out.arrayBuffer128MB = `ERRORE ${(e as Error).message}`;
+  }
+  out.apertaCome = navType();
+  return out;
 }
 
 /* ---------- pausa che chiude la frase ---------- */
@@ -211,8 +323,16 @@ function summaryOf(r: Row) {
 
 export function resultsAsText(info: Record<string, unknown>): string {
   const L: string[] = [];
-  L.push("PROVA PARAKEET (T013b)  " + new Date().toISOString());
+  L.push("PROVA PARAKEET (T013b/T013c)  " + new Date().toISOString());
+  if (interrupted) {
+    L.push("");
+    L.push("== ULTIMA PROVA INTERROTTA ==");
+    L.push(interrupted);
+    L.push("");
+  }
   L.push("Dispositivo: " + JSON.stringify(info));
+  if (probe) L.push("Sonda del dispositivo: " + JSON.stringify(probe));
+  if (SIM) L.push("ATTENZIONE: motori simulati (?sim=" + SIM + "), non sono misure vere");
   L.push("Voce delle frasi: sintesi vocale di Windows (Microsoft Elsa, it-IT), NON una voce umana");
   L.push("");
   L.push("== Riassunto (RTF = tempo di calcolo / durata dell'audio; più basso è meglio) ==");
@@ -227,6 +347,16 @@ export function resultsAsText(info: Record<string, unknown>): string {
   for (const r of rows)
     for (const c of r.clips) L.push([r.engine, r.threads, r.backend, c.id, fmt(c.seconds, 1), fmt(c.timings.preMs), fmt(c.timings.encMs), fmt(c.timings.decMs), fmt(c.timings.totalMs), c.timings.decSteps, fmt(c.score.wer * 100, 1), c.text].join("\t"));
   L.push("");
+  L.push("== Errori e messaggi (completi) ==");
+  for (const r of rows) {
+    if (r.ok && !r.errors.length && !r.logs.length) continue;
+    L.push(`${label(r)}: ${r.ok ? "ok" : `ERRORE nella fase «${r.errorPhase}»: ${r.error}`}`);
+    for (const e of r.errors) L.push("  - " + e);
+    for (const l of r.logs) L.push("  · console " + l);
+  }
+  for (const e of pageErrors) L.push("pagina: " + e);
+  if (!rows.some((r) => !r.ok || r.errors.length || r.logs.length) && !pageErrors.length) L.push("(nessuno)");
+  L.push("");
   L.push("== Pausa che chiude la frase (audio con 6 pause dentro la frase da 350 a 800 ms) ==");
   for (const s of sweeps) L.push(`silenceMs ${s.silenceMs}: frasi emesse ${s.emitted} (volute ${s.expected}), tagliate a metà ${s.splits}, ritardo medio ${fmt(s.meanDelayMs)} ms`);
   return L.join("\n");
@@ -236,7 +366,7 @@ function render(info: Record<string, unknown>) {
   const sum = rows
     .map((r) => {
       const s = summaryOf(r);
-      return `<tr class="${r.ok ? "" : "bad"}"><td>${esc(r.engine)}</td><td>${r.threads}</td><td>${r.backend}</td><td>${fmt(r.networkMB)}${r.cachedMB ? ` (+${fmt(r.cachedMB)} già salvati)` : ""}</td><td>${fmt(r.loadMs / 1000, 1)}</td><td>${r.peakMemMB === null ? "n/d" : fmt(r.peakMemMB)}</td><td>${r.coldMs === null ? "n/d" : fmt(r.coldMs)}</td><td>${r.ok ? fmt(s.rtf, 2) : "—"}</td><td>${r.ok ? fmt(s.wer * 100, 1) : "—"}</td><td>${r.ok ? fmt(s.punct * 100) : "—"}</td><td>${r.ok ? "ok" : esc(r.error ?? "errore")}</td></tr>`;
+      return `<tr class="${r.ok ? "" : "bad"}"><td>${esc(r.engine)}${r.lowMem ? " (poca memoria)" : ""}</td><td>${r.threads}</td><td>${r.backend}</td><td>${fmt(r.networkMB)}${r.cachedMB ? ` (+${fmt(r.cachedMB)} già salvati)` : ""}</td><td>${fmt(r.loadMs / 1000, 1)}</td><td>${r.peakMemMB === null ? "n/d" : fmt(r.peakMemMB)}</td><td>${r.coldMs === null ? "n/d" : fmt(r.coldMs)}</td><td>${r.ok ? fmt(s.rtf, 2) : "—"}</td><td>${r.ok ? fmt(s.wer * 100, 1) : "—"}</td><td>${r.ok ? fmt(s.punct * 100) : "—"}</td><td>${r.ok ? "ok" : `ERRORE (fase «${esc(r.errorPhase ?? "?")}»): ${esc(r.error ?? "errore")}`}</td></tr>`;
     })
     .join("");
   const det = rows
@@ -254,7 +384,36 @@ function render(info: Record<string, unknown>) {
 
 /* ---------- avvio ---------- */
 async function main() {
+  // errori della pagina e movimenti della pagina (chiusura, ricaricamento) nel diario
+  window.addEventListener("error", (e) => {
+    const m = `errore: ${e.message} (${e.filename}:${e.lineno}:${e.colno})`;
+    pageErrors.push(m);
+    journalError(`pagina ${m}`);
+  });
+  window.addEventListener("unhandledrejection", (e) => {
+    const r = e.reason as Error | undefined;
+    const m = `promessa rifiutata: ${r instanceof Error ? `${r.name}: ${r.message}` : String(e.reason)}`;
+    pageErrors.push(m);
+    journalError(`pagina ${m}`);
+  });
+  document.addEventListener("visibilitychange", () => journalPageEvent(`visibilità: ${document.visibilityState}`));
+  window.addEventListener("pagehide", (e) => journalPageEvent(`pagehide (persisted=${e.persisted})`));
+
+  // una prova rimasta a metà l'ultima volta? Si legge PRIMA di toccare il diario
+  interrupted = interruptedReport(readJournal());
   const info = await deviceInfo();
+  if (interrupted) {
+    $("interrupted").hidden = false;
+    $("interrupted-text").textContent = `${interrupted}
+Questa pagina è stata appena aperta come: ${navType()} (reload = ricaricata; navigate = aperta di nuovo)`;
+    interrupted += `
+Questa pagina è stata appena aperta come: ${navType()}`;
+    // se era ferma con Parakeet, la volta dopo si propone la modalità a poca memoria
+    const last = readJournal()?.last;
+    if (last?.engine.startsWith("parakeet")) ($("opt-lowmem") as HTMLInputElement).checked = true;
+    $("copy").hidden = false;
+    $<HTMLTextAreaElement>("copy-box").value = resultsAsText(info);
+  }
   $("device").textContent = Object.entries(info).filter(([, v]) => v !== undefined && v !== "").map(([k, v]) => `${k}: ${v}`).join(" · ");
   const attr = ATTRIBUTION.it;
   $("attribution").innerHTML = `<h2>${esc(attr.title)}</h2><ul>${attr.lines.map((l) => `<li>${esc(l)}</li>`).join("")}</ul><p>Licenza: <a href="${attr.licenseUrl}">${esc(attr.license)}</a>. ${esc(attr.changes)}</p>`;
@@ -273,32 +432,52 @@ async function main() {
 
   const status = (s: string) => ($("status").textContent = s);
   const start = $<HTMLButtonElement>("start");
+  const startSmall = $<HTMLButtonElement>("start-small");
   start.disabled = false;
-  start.onclick = async () => {
+  startSmall.disabled = false;
+
+  /** Una prova: azzera il diario, fa la sonda, (se serve) le pause, poi le configurazioni una dopo l'altra, senza mai bloccarsi su una sola. */
+  const runAll = async (configs: Config[], withSweeps: boolean) => {
     start.disabled = true;
+    startSmall.disabled = true;
     rows.length = 0;
-    const cores = navigator.hardwareConcurrency || 2;
-    const threadList = self.crossOriginIsolated && ($("opt-threads") as HTMLInputElement).checked ? [1, ...[2, 4].filter((t) => t <= cores)] : [1];
-    const wantBig = ($("opt-big") as HTMLInputElement).checked;
-    const wantGpu = ($("opt-webgpu") as HTMLInputElement).checked && !!info.webgpu;
-    status("Pausa che chiude la frase…");
-    sweeps = await runSweeps();
-    const configs: Config[] = [
-      ...threadList.map((t) => ({ engine: "whisper-base" as const, threads: t, backend: "wasm" as const })),
-      ...threadList.map((t) => ({ engine: "parakeet-olicorne-w2a8" as const, threads: t, backend: "wasm" as const })),
-      ...(wantBig ? threadList.map((t) => ({ engine: "parakeet-istupakov-int8" as const, threads: t, backend: "wasm" as const })) : []),
-      ...(wantGpu ? [{ engine: "whisper-base" as const, threads: 1, backend: "webgpu" as const }] : []),
-      // (Parakeet su WebGPU non si prova da qui: in Edge con Intel Arc dava testo vuoto con tutti e due i pesi; vedi AUDIT_T013b.md)
-    ];
+    startJournal();
+    markPhase({ engine: "pagina", threads: 0, backend: "-" }, "sonda del dispositivo (WebAssembly e piccola prova di memoria)");
+    probe = probeDevice();
+    if (withSweeps) {
+      markPhase({ engine: "pagina", threads: 0, backend: "-" }, "pausa che chiude la frase (calcolo sul segmentatore)");
+      status("Pausa che chiude la frase…");
+      sweeps = await runSweeps();
+    } else sweeps = [];
     for (const c of configs) {
       rows.push(await runConfig(c, status));
       render(info);
     }
     render(info);
-    status("Finito. Premi «Copia i risultati» e incollali nella chat.");
+    finishJournal();
+    const bad = rows.filter((r) => !r.ok).length;
+    status(`Finito${bad ? ` (${bad} prova${bad > 1 ? "e" : ""} con ERRORE: vedi la tabella)` : ""}. Premi «Copia i risultati» e incollali nella chat.`);
     start.disabled = false;
+    startSmall.disabled = false;
     $("copy").hidden = false;
   };
+  const lowMem = () => ($("opt-lowmem") as HTMLInputElement).checked;
+  start.onclick = async () => {
+    const cores = navigator.hardwareConcurrency || 2;
+    const threadList = self.crossOriginIsolated && ($("opt-threads") as HTMLInputElement).checked ? [1, ...[2, 4].filter((t) => t <= cores)] : [1];
+    const wantBig = ($("opt-big") as HTMLInputElement).checked;
+    const wantGpu = ($("opt-webgpu") as HTMLInputElement).checked && !!info.webgpu;
+    const configs: Config[] = [
+      ...threadList.map((t) => ({ engine: "whisper-base" as const, threads: t, backend: "wasm" as const })),
+      ...threadList.map((t) => ({ engine: "parakeet-olicorne-w2a8" as const, threads: t, backend: "wasm" as const, lowMem: lowMem() })),
+      ...(wantBig ? threadList.map((t) => ({ engine: "parakeet-istupakov-int8" as const, threads: t, backend: "wasm" as const, lowMem: lowMem() })) : []),
+      ...(wantGpu ? [{ engine: "whisper-base" as const, threads: 1, backend: "webgpu" as const }] : []),
+      // (Parakeet su WebGPU non si prova da qui: in Edge con Intel Arc dava testo vuoto con tutti e due i pesi; vedi AUDIT_T013b.md)
+    ];
+    await runAll(configs, true);
+  };
+  // «Prova solo Parakeet piccolo»: salta Whisper e le prove sulle pause (una sola configurazione, 1 thread)
+  startSmall.onclick = () => runAll([{ engine: "parakeet-olicorne-w2a8", threads: 1, backend: "wasm", lowMem: lowMem() }], false);
   $<HTMLButtonElement>("copy").onclick = async () => {
     const box = $<HTMLTextAreaElement>("copy-box");
     try {
@@ -323,6 +502,7 @@ async function main() {
       runSweeps: async () => (sweeps = await runSweeps()),
       info,
       text: () => resultsAsText(info),
+      journal: () => readJournal(),
     },
   });
 }

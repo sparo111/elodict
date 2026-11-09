@@ -66,12 +66,14 @@ export default defineConfig({
     },
   ],
   projects: [
-    { name: "desktop", testIgnore: /(pwa-|f16-|g[123]-).*\.spec\.ts/, use: { ...desktop, storageState: done(DEV) } },
-    { name: "mobile", testIgnore: /(pwa-|f16-|g[123]-).*\.spec\.ts/, use: { ...mobile, storageState: done(DEV) } },
+    { name: "desktop", testIgnore: /(pwa-|f16-|g[1234]-).*\.spec\.ts/, use: { ...desktop, storageState: done(DEV) } },
+    { name: "mobile", testIgnore: /(pwa-|f16-|g[1234]-).*\.spec\.ts/, use: { ...mobile, storageState: done(DEV) } },
     // Migrazione con la versione di prima e un profilo vero (apre i suoi server e il suo browser): npm run test:migrazione
     // Parte per ultima e da sola (avvia altri server e un altro browser): se girasse insieme alle altre le rallenterebbe.
     { name: "migrazione-vera", testMatch: /f16-.*\.spec\.ts/, dependencies: ["desktop", "mobile", "pwa-desktop", "pwa-mobile"], use: { ...desktop } },
     // Prove sul sito pubblicato (o sulla sua anteprima): si lanciano a mano con SITE_URL=... npx playwright test --project=sito-pubblicato
+    // T013c: la pagina di prova su un iPhone simulato (motore WebKit): npm run test:pagina-prova con PROVA_URL=...
+    { name: "prova-webkit", testMatch: /g4-.*\.spec\.ts/, use: { ...devices["iPhone 15"], locale: "it-IT" } },
     { name: "sito-pubblicato", testMatch: /g[123]-.*\.spec\.ts/, use: { ...desktop } },
     // T013z: la dettatura deve scrivere testo sulla build di produzione sotto /elodict/ (microfono finto, Edge/Chromium): npm run test:dettatura
     { name: "dettatura-produzione", testMatch: /g2-.*\.spec\.ts/, use: { ...desktop, baseURL: `${PROD}/elodict/` } },

@@ -42,7 +42,7 @@ test("PROVA-2 «Avvia la prova» riempie la tabella e «Copia i risultati» copi
   await expect(copy).toBeVisible({ timeout: 30_000 }).catch(() => undefined); // compare a fine prova
   // il testo da copiare è già pronto nella casella, con dispositivo e tabella
   const box = await page.locator("#copy-box").inputValue();
-  expect(box).toContain("PROVA PARAKEET (T013b)");
+  expect(box).toContain("PROVA PARAKEET (T013b");
   expect(box).toContain("Dispositivo:");
   expect(box).toContain("whisper-base");
 });
