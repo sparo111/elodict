@@ -3,8 +3,12 @@
 import { env, pipeline } from "@huggingface/transformers";
 import { counted } from "../../src/speech/parakeet/download";
 import type { FromWorker, LoadMsg, RunMsg, Timings } from "./protocol";
+import { describe, installDiagnostics, phase } from "./workerCommon";
 
 const ctx = self as unknown as { postMessage(m: FromWorker): void; onmessage: ((e: MessageEvent<LoadMsg | RunMsg>) => void) | null };
+const post = (m: FromWorker) => ctx.postMessage(m);
+installDiagnostics(post);
+let decoderPhasePosted = false;
 
 type Asr = ((audio: Float32Array, opts: Record<string, unknown>) => Promise<{ text: string }>) & {
   model: { sessions: Record<string, { run: (...a: unknown[]) => Promise<unknown> }> };
@@ -34,15 +38,18 @@ ctx.onmessage = async (e) => {
       wasm.wasmPaths = m.ortWhisper;
       wasm.numThreads = m.threads;
       const files = new Map<string, { loaded: number; total: number }>();
+      phase(post, "download", "scaricamento dei file di Whisper base (Transformers.js)");
       const webgpu = m.backend === "webgpu";
+      phase(post, "session", `creazione della pipeline Whisper e delle sessioni onnxruntime (${m.threads} thread, ${m.backend})`);
       asr = (await pipeline("automatic-speech-recognition", "Xenova/whisper-base", {
         // come l'app: q8 su WebAssembly. Su WebGPU l'encoder in fp32 e il decoder q4 (la combinazione consigliata da Transformers.js)
         dtype: webgpu ? { encoder_model: "fp32", decoder_model_merged: "q4" } : "q8",
         device: webgpu ? "webgpu" : "wasm",
         progress_callback: (p: { status?: string; file?: string; loaded?: number; total?: number }) => {
           if (p.status === "progress" && p.file && p.total) {
+            if (!files.has(p.file)) phase(post, "download", `scaricamento file ${files.size + 1}: ${p.file}`);
             files.set(p.file, { loaded: p.loaded ?? 0, total: p.total });
-            ctx.postMessage({ type: "progress", file: p.file, loaded: p.loaded ?? 0, total: p.total });
+            post({ type: "progress", file: p.file, loaded: p.loaded ?? 0, total: p.total, index: files.size });
           }
         },
       } as never)) as unknown as Asr;
@@ -51,6 +58,12 @@ ctx.onmessage = async (e) => {
         const orig = s.run.bind(s);
         s.run = async (...a: unknown[]) => {
           const t = performance.now();
+          const isEnc = name === "model" || name.startsWith("encoder");
+          if (isEnc) phase(post, "run", "encoder");
+          else if (!decoderPhasePosted) {
+            decoderPhasePosted = true;
+            phase(post, "run", "decoder (generazione del testo)");
+          }
           try {
             return await orig(...a);
           } finally {
@@ -66,11 +79,13 @@ ctx.onmessage = async (e) => {
           }
         };
       }
-      ctx.postMessage({ type: "loaded", loadMs: performance.now() - t0, networkBytes, cachedBytes: 0, ep: webgpu ? "webgpu" : "wasm" });
+      post({ type: "loaded", loadMs: performance.now() - t0, networkBytes, cachedBytes: 0, ep: webgpu ? "webgpu" : "wasm" });
     } else if (m.type === "run") {
       if (!asr) throw new Error("modello non caricato");
       enc = dec = steps = 0;
       firstEncoderAt = 0;
+      decoderPhasePosted = false;
+      phase(post, "run", "preparazione dell'audio (spettro log-mel)");
       const t0 = performance.now();
       const out = await asr(m.samples, { language: "italian", task: "transcribe" });
       const total = performance.now() - t0;
@@ -82,9 +97,10 @@ ctx.onmessage = async (e) => {
         totalMs: total,
         decSteps: steps,
       };
-      ctx.postMessage({ type: "result", id: m.id, text: out.text ?? "", timings });
+      post({ type: "result", id: m.id, text: out.text ?? "", timings });
     }
   } catch (err) {
-    ctx.postMessage({ type: "error", id: "id" in m ? m.id : undefined, message: err instanceof Error ? err.message : String(err) });
+    post({ type: "error", id: "id" in m ? m.id : undefined, message: `${describe(err)}${err instanceof Error && err.stack ? `
+${err.stack.slice(0, 600)}` : ""}` });
   }
 };

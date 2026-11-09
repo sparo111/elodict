@@ -11,7 +11,14 @@ export interface ParakeetOptions {
   threads: number;
   /** «wasm» o «webgpu» (solo l'encoder: il decoder resta su WebAssembly) */
   backend: "wasm" | "webgpu";
-  onProgress?: (loaded: number, total: number, file: string) => void;
+  /**
+   * Modalità a poca memoria (T013c, per i telefoni): niente ottimizzazioni del grafo (che fanno copie dei pesi), niente «arena» di
+   * memoria di riserva, esecuzione in sequenza, e i collegamenti ai file scaricati vengono liberati appena le sessioni sono create.
+   */
+  lowMemory?: boolean;
+  onProgress?: (loaded: number, total: number, file: string, index: number, count: number) => void;
+  /** dice in che fase si è, PRIMA di entrarci (serve al diario della pagina di prova) */
+  onPhase?: (kind: "download" | "session" | "run", text: string) => void;
 }
 
 export interface ParakeetTimings {
@@ -39,12 +46,24 @@ export async function loadParakeet(o: ParakeetOptions): Promise<ParakeetEngine> 
   const w = PARAKEET_WEIGHTS[o.weights];
   const stats: FetchStats = { networkBytes: 0, cachedBytes: 0 };
   const blobs: Record<string, Blob> = {};
-  for (const f of w.files) blobs[f.name] = await fetchCached(fileUrl(w, f), CACHE, stats, (l, t) => o.onProgress?.(l, t, f.path));
+  const MB = 1024 * 1024;
+  for (const [i, f] of w.files.entries()) {
+    o.onPhase?.("download", `scaricamento file ${i + 1} di ${w.files.length}: ${f.path} (${(f.bytes / MB).toFixed(1)} MB)`);
+    blobs[f.name] = await fetchCached(fileUrl(w, f), CACHE, stats, (l, t) => o.onProgress?.(l, t, f.path, i + 1, w.files.length));
+  }
 
+  o.onPhase?.("session", `configurazione di onnxruntime-web (${o.threads} thread, ${o.backend}${o.lowMemory ? ", poca memoria" : ""})`);
   configureOrtWeb({ wasmPaths: o.wasmPaths, numThreads: o.threads, simd: true, proxy: false });
   const config = JSON.parse(await blobs["config.json"].text());
-  const url = (name: string) => URL.createObjectURL(blobs[name]);
+  const urls: string[] = [];
+  const url = (name: string) => {
+    const u = URL.createObjectURL(blobs[name]);
+    urls.push(u);
+    return u;
+  };
+  const vocab = await blobs["vocab.txt"].text();
   // L'encoder va sull'acceleratore scelto; il decoder (piccolo) sta sempre su WebAssembly (lo fa anche parakeet.js).
+  o.onPhase?.("session", `creazione delle sessioni onnxruntime: preprocessore nemo128, encoder (${(w.files.find((f) => f.name === "encoder")!.bytes / MB).toFixed(0)} MB, il file entra in memoria qui), decoder`);
   const model = (await createAsrModel({
     modelType: "nemo-conformer-tdt",
     decoderKind: "tdt",
@@ -52,23 +71,33 @@ export async function loadParakeet(o: ParakeetOptions): Promise<ParakeetEngine> 
     preprocessorModel: url("nemo128.onnx"),
     encoderModel: url("encoder"),
     decoderJointModel: url("decoder"),
-    vocabularyText: await blobs["vocab.txt"].text(),
-    sessionOptions: { executionProviders: [o.backend === "webgpu" ? "webgpu" : "wasm"] },
+    vocabularyText: vocab,
+    sessionOptions: {
+      executionProviders: [o.backend === "webgpu" ? "webgpu" : "wasm"],
+      ...(o.lowMemory ? { graphOptimizationLevel: "disabled", enableCpuMemArena: false, enableMemPattern: false, executionMode: "sequential" } : {}),
+    },
   })) as unknown as {
     preprocessor: { run: Async } | null;
     encoder: { run: Async };
     decoder: { decode: Async };
     transcribeSamples(s: Float32Array, sr?: number): Promise<{ text: string }>;
   };
+  o.onPhase?.("session", "sessioni create");
+  if (o.lowMemory) {
+    // i file sono ormai dentro il motore: si lasciano andare i collegamenti, così il browser può liberare la memoria
+    for (const u of urls) URL.revokeObjectURL(u);
+    for (const k of Object.keys(blobs)) delete blobs[k];
+  }
 
   // I tempi si misurano avvolgendo le tre fasi del motore (le funzioni originali restano quelle della libreria).
   let pre = 0;
   let enc = 0;
   let dec = 0;
-  const wrap = (obj: Record<string, unknown> | null, key: string, add: (ms: number) => void) => {
+  const wrap = (obj: Record<string, unknown> | null, key: string, what: string, add: (ms: number) => void) => {
     if (!obj) return;
     const orig = (obj[key] as Async).bind(obj);
     obj[key] = async (...a: unknown[]) => {
+      o.onPhase?.("run", what);
       const s = performance.now();
       try {
         return await orig(...a);
@@ -77,9 +106,9 @@ export async function loadParakeet(o: ParakeetOptions): Promise<ParakeetEngine> 
       }
     };
   };
-  wrap(model.preprocessor as Record<string, unknown> | null, "run", (ms) => (pre += ms));
-  wrap(model.encoder as unknown as Record<string, unknown>, "run", (ms) => (enc += ms));
-  wrap(model.decoder as unknown as Record<string, unknown>, "decode", (ms) => (dec += ms));
+  wrap(model.preprocessor as Record<string, unknown> | null, "run", "preparazione dell'audio (spettro mel)", (ms) => (pre += ms));
+  wrap(model.encoder as unknown as Record<string, unknown>, "run", "encoder", (ms) => (enc += ms));
+  wrap(model.decoder as unknown as Record<string, unknown>, "decode", "decoder (generazione del testo)", (ms) => (dec += ms));
 
   return {
     stats,
