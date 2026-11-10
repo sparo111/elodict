@@ -71,3 +71,5 @@ Due difetti trovati dalle prove e corretti: (a) l'elenco dei crediti usava `<li>
 **INTEGRAZIONE — PASS ✅** — Motore di partenza invariato; Whisper non modificato (solo il ciclo del microfono è condiviso); controllo `check:dist` pulito (le funzioni di prova non sono nella build pubblicata).
 
 ## GATE COMPLESSIVO: PASS ✅
+
+> Aggiornamento T013e (10 novembre 2026): l'ipotesi sul vuoto di Whisper è stata verificata (riprodotta) e corretta; vedi `AUDIT_T013e.md`.
