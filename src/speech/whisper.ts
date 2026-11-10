@@ -99,6 +99,20 @@ export function isModelReady(model: WhisperModelId): boolean {
   }
 }
 
+/**
+ * Chiude il lavoratore di Whisper e libera la sua memoria (il modello scaricato resta nella memoria del browser e si ricarica quando serve).
+ * Si usa quando si passa a un altro riconoscitore: in memoria deve esserci un solo modello alla volta.
+ */
+export function releaseWhisper(): void {
+  if (!worker) return;
+  worker.terminate();
+  worker = null;
+  loadState = null;
+  loadWaiter = null;
+  jobs.forEach((j) => j.reject(new Error("modello chiuso")));
+  jobs.clear();
+}
+
 /** Cancella i modelli scaricati dalla memoria del browser. */
 export async function deleteModels(): Promise<void> {
   worker?.terminate();
@@ -116,7 +130,7 @@ export async function deleteModels(): Promise<void> {
   }
 }
 
-function transcribeAudio(audio: Float32Array, lang: Lang): Promise<string> {
+export function transcribeWhisper(audio: Float32Array, lang: Lang): Promise<string> {
   const id = nextId++;
   return new Promise<string>((resolve, reject) => {
     jobs.set(id, { resolve, reject });
@@ -130,7 +144,25 @@ export interface WhisperEngine {
   stop(): void;
 }
 
+/** Chi trasforma una frase di voce (16 kHz) in testo: Whisper o Parakeet. Il resto (microfono, pause, comandi) è uguale per tutti. */
+export interface Transcriber {
+  /** scarica (la prima volta) e carica il modello; `onProgress` da 0 a 100 */
+  prepare(onProgress?: (pct: number) => void): Promise<void>;
+  transcribe(samples: Float32Array, lang: Lang): Promise<string>;
+  /** pulizia del testo prima di consegnarlo (vuoto = niente da scrivere) */
+  clean(raw: string): string;
+}
+
 export function createWhisperEngine(lang: Lang, model: WhisperModelId, h: Handlers, micId = ""): WhisperEngine {
+  return createMicEngine(lang, h, micId, {
+    prepare: (onProgress) => prepareModel(model, onProgress),
+    transcribe: (samples, l) => transcribeWhisper(samples, l),
+    clean: cleanWhisperText,
+  });
+}
+
+/** Microfono → pause che chiudono la frase (Segmenter, 700 ms) → riconoscitore → testo. Lo stesso per Whisper e per Parakeet. */
+export function createMicEngine(lang: Lang, h: Handlers, micId: string, t: Transcriber): WhisperEngine {
   let running = false;
   let stream: MediaStream | null = null;
   let ctx: AudioContext | null = null;
@@ -144,7 +176,7 @@ export function createWhisperEngine(lang: Lang, model: WhisperModelId, h: Handle
     h.onInterim("…");
     queue = queue.then(async () => {
       try {
-        const text = cleanWhisperText(await transcribeAudio(u.samples, lang));
+        const text = t.clean(await t.transcribe(u.samples, lang));
         if (text) h.onFinal(text);
       } catch {
         h.onError("model");
@@ -229,7 +261,7 @@ export function createWhisperEngine(lang: Lang, model: WhisperModelId, h: Handle
       } catch { /* senza contesto audio l'errore esce più avanti, con il suo messaggio */ }
       void (async () => {
         try {
-          await prepareModel(model, (pct) => h.onProgress?.(pct));
+          await t.prepare((pct) => h.onProgress?.(pct));
         } catch {
           running = false;
           teardown();

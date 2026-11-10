@@ -22,7 +22,7 @@ Su iPhone e iPad il programma te lo fa fare in 3 passi con i disegni. Se non sai
 - **Detti e il testo compare** in un foglio A4 vero (21 × 29,7 cm, margini di 2,54 cm, numero di pagina). A fine riga e a fine foglio il testo va a capo da solo, anche a metà paragrafo.
 - **Quattro lingue**, sia per i menu sia per la voce: italiano, inglese, francese, spagnolo. Le bandierine accanto al nome le cambiano insieme.
 - **Comandi vocali** nelle quattro lingue: punteggiatura, simboli, «a capo», annulla, cancella (anche «cancella 3 parole» e «cancella da X a Y»), grassetto, corsivo, sottolineato, maiuscolo, selezione, elenchi, pausa e ripresa, cambio lingua, «mostra comandi».
-- **Due modi di ascoltare**: quello del browser (veloce, serve internet; su Chrome l'audio passa da Google) oppure **Whisper offline** nel browser (l'audio resta sul tuo dispositivo; funziona anche su Firefox; il modello si scarica una volta, 40 o 80 MB).
+- **Tre modi di ascoltare**: quello del browser (veloce, serve internet; su Chrome l'audio passa da Google), **Whisper offline** nel browser (l'audio resta sul tuo dispositivo; funziona anche su Firefox; il modello si scarica una volta, 40 o 80 MB) e **«Privato preciso»** con Parakeet (più preciso, circa 200 MB una volta, senza internet; la lingua si riconosce da sola). La scelta di partenza resta il browser.
 - **Salva e invia**: salvataggio automatico nel browser, copia di sicurezza, esportazione in **Word, PDF, Markdown, testo, pagina web** con nome e cartella a scelta, invio per email.
 - **Utile da sapere**: pulizia di «ehm/uhm», dizionario personale, prova del microfono, casella «Prova senza microfono» per provare tutto scrivendo.
 
@@ -58,4 +58,4 @@ Il progetto ricostruisce **le funzioni e l'esperienza d'uso** di Dictate (Micros
 ## Licenza
 Elodict è software libero, rilasciato con la licenza **GNU Affero General Public License, versione 3** (`AGPL-3.0-only`): il testo completo è nel file [`LICENSE`](LICENSE). In pratica: puoi usarlo, studiarlo, modificarlo e condividerlo; se ne metti online una versione modificata, devi offrire il codice sorgente a chi la usa (sezione 13). Per questo in fondo a **Impostazioni** c'è il collegamento «Codice sorgente (licenza AGPL-3.0)», che porta a <https://github.com/sparo111/elodict>.
 
-Le librerie usate hanno le proprie licenze (React, TipTap, Dexie, docx, jsPDF, Transformers.js, onnxruntime-web, Lucide, Inter e Source Serif 4). I modelli Whisper (`Xenova/whisper-tiny` e `-base`) si scaricano da huggingface.co e hanno la propria licenza.
+Le librerie usate hanno le proprie licenze (React, TipTap, Dexie, docx, jsPDF, Transformers.js, onnxruntime-web, Lucide, Inter e Source Serif 4). I modelli Whisper (`Xenova/whisper-tiny` e `-base`) si scaricano da huggingface.co e hanno la propria licenza. «Privato preciso» usa Parakeet TDT 0.6B v3 (NVIDIA; conversioni di istupakov, moondream e Olicorne), licenza CC-BY-4.0: i crediti sono in Impostazioni.

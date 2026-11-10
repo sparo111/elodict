@@ -35,6 +35,25 @@ function installaTesti(): Plugin {
 }
 
 /**
+ * La libreria di Parakeet cita il suo file .wasm di onnxruntime 1.31 e Vite ne metterebbe una seconda copia (30 MB) tra i file del sito:
+ * inutile, perché il motore vero è quello servito da ort31/ (public/, vedi scripts/copy-ort.mjs). Si toglie solo se identica byte per byte.
+ */
+function dropDuplicateOrt31(): Plugin {
+  return {
+    name: "elodict-drop-duplicate-ort31",
+    apply: "build",
+    generateBundle(_o, bundle) {
+      const dir = "public/ort31";
+      if (!fs.existsSync(dir)) return;
+      const ours = fs.readdirSync(dir).filter((f) => f.endsWith(".wasm")).map((f) => fs.readFileSync(`${dir}/${f}`));
+      for (const [name, asset] of Object.entries(bundle)) {
+        if (asset.type === "asset" && name.endsWith(".wasm") && ours.some((b) => Buffer.from(asset.source as Uint8Array).equals(b))) delete bundle[name];
+      }
+    },
+  };
+}
+
+/**
  * Gli «agganci per le prove» (per esempio far fallire di proposito una migrazione) esistono solo fuori dalla build pubblicata:
  * `vite build` (modalità production) li toglie dal codice; il server di sviluppo e `--mode test` (le copie costruite per le prove) li tengono.
  */
@@ -45,6 +64,7 @@ export default defineConfig(({ mode }) => ({
     react(),
     themeColor(),
     installaTesti(),
+    dropDuplicateOrt31(),
     VitePWA({
       // «prompt»: nessun aggiornamento silenzioso; è l'utente a premere «Aggiorna».
       registerType: "prompt",
@@ -71,7 +91,7 @@ export default defineConfig(({ mode }) => ({
         // Il guscio dell'app (pagina, programma, stili, caratteri, icone) si scarica subito e resta sul dispositivo.
         globPatterns: ["**/*.{js,css,html,svg,png,woff2,webmanifest}"],
         // I file del motore di Whisper (decine di MB) NON vanno scaricati all'installazione: si salvano la prima volta che servono.
-        globIgnores: ["ort/**", "**/*.wasm", "**/*.mjs"],
+        globIgnores: ["ort/**", "ort31/**", "**/*.wasm", "**/*.mjs"],
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
         navigateFallback: `${base}index.html`,
         // «installa.html» (anche con ?lang=it: l'indirizzo che l'app stessa apre) è una pagina a sé, non l'app: niente ripiego su index.html
@@ -81,7 +101,7 @@ export default defineConfig(({ mode }) => ({
         runtimeCaching: [
           {
             // Motore di Whisper: la prima volta dalla rete, poi sempre dalla memoria del dispositivo.
-            urlPattern: /\/ort\/ort-wasm[^/]*$/,
+            urlPattern: /\/ort(31)?\/ort-wasm[^/]*$/,
             handler: "CacheFirst",
             options: {
               cacheName: "elodict-motore",
@@ -94,7 +114,10 @@ export default defineConfig(({ mode }) => ({
     }),
   ],
   // La libreria del riconoscimento offline carica da sola i suoi file: non va rielaborata da Vite.
-  optimizeDeps: { exclude: ["@huggingface/transformers"] },
+  optimizeDeps: { exclude: ["@huggingface/transformers", "onnx-asr-web"] },
+  // Il server di sviluppo non guarda le cartelle costruite (dist, dist-pwa, dist-prod...): scrivere lì file grandi mentre sono aperti
+  // (i .wasm di onnxruntime) lo faceva cadere con «EBUSY: resource busy or locked» su Windows.
+  server: { watch: { ignored: ["**/dist/**", "**/dist-*/**"] } },
   worker: { format: "es" },
   test: {
     environment: "node",

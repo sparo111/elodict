@@ -177,7 +177,7 @@ export function App() {
             {store.saveState === "saved" ? s.saved : store.saveState === "saving" ? s.saving : s.saveError}
           </p>
           <p className="pb-1 text-xs text-muted">{s.backupHint}</p>
-          <p className="pb-28 text-xs text-muted">{prefs.engine === "offline" ? s.privacyOffline : s.privacy}</p>
+          <p className="pb-28 text-xs text-muted">{prefs.engine !== "browser" ? s.privacyOffline : s.privacy}</p>
         </div>
       </main>
 

@@ -89,7 +89,7 @@ export function parseBackup(json: string): ParsedBackup {
       cleanFillers: s.cleanFillers,
       cleanRepeats: s.cleanRepeats,
       autoPeriod: typeof s.autoPeriod === "boolean" ? s.autoPeriod : false,
-      engine: s.engine === "offline" ? "offline" : "browser",
+      engine: s.engine === "offline" || s.engine === "parakeet" ? s.engine : "browser",
       whisperModel: s.whisperModel === "tiny" ? "tiny" : "base",
       onboardingDone: s.onboardingDone === true,
       microphoneId: typeof s.microphoneId === "string" && s.microphoneId.length <= 300 ? s.microphoneId : "",

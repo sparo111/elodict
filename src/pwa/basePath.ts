@@ -16,10 +16,11 @@ export function normalizeBase(raw: string | undefined): string {
 }
 
 /**
- * Indirizzo COMPLETO (sito incluso) della cartella con i file del motore di Whisper.
+ * Indirizzo COMPLETO (sito incluso) della cartella con i file del motore di Whisper («ort»: onnxruntime-web 1.22) o di Parakeet («ort31»:
+ * onnxruntime-web 1.31, che la libreria di Parakeet richiede: sono due copie separate, vedi AUDIT_T013d.md).
  * Deve essere completo: se fosse relativo, in sviluppo Vite rifiuterebbe di servirli come moduli.
  */
-export function ortBaseUrl(base: string, origin: string): string {
+export function ortBaseUrl(base: string, origin: string, folder: "ort" | "ort31" = "ort"): string {
   const b = normalizeBase(base);
-  return /^https?:\/\//i.test(b) ? `${b}ort/` : new URL(`${b}ort/`, origin).href;
+  return /^https?:\/\//i.test(b) ? `${b}${folder}/` : new URL(`${b}${folder}/`, origin).href;
 }

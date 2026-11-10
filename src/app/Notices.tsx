@@ -25,7 +25,7 @@ export function Notices({ s, supported, engine, error, notice, noText, onRetry, 
           <AlertTriangle size={20} aria-hidden="true" className="mt-0.5 shrink-0" />
           <div>
             <p className="font-semibold">{s.unsupportedTitle}</p>
-            <p className="text-sm">{engine === "offline" ? s.unsupportedOfflineBody : s.unsupportedBody}</p>
+            <p className="text-sm">{engine !== "browser" ? s.unsupportedOfflineBody : s.unsupportedBody}</p>
           </div>
         </div>
       )}

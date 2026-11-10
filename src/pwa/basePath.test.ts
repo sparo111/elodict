@@ -37,6 +37,11 @@ describe("ortBaseUrl: dove stanno i file del motore di Whisper", () => {
     expect(ortBaseUrl("/elodict/", "https://sparo111.github.io")).toBe("https://sparo111.github.io/elodict/ort/");
     expect(ortBaseUrl("elodict", "https://sparo111.github.io")).toBe("https://sparo111.github.io/elodict/ort/");
   });
+  it("Parakeet ha la sua cartella (onnxruntime-web 1.31): ort31, separata da ort (1.22 di Whisper)", () => {
+    expect(ortBaseUrl("/elodict/", "https://sparo111.github.io", "ort31")).toBe("https://sparo111.github.io/elodict/ort31/");
+    expect(ortBaseUrl("/", "http://localhost:5173", "ort31")).toBe("http://localhost:5173/ort31/");
+    expect(ortBaseUrl("/", "http://localhost:5173")).toBe("http://localhost:5173/ort/");
+  });
   it("è sempre un indirizzo completo (con il sito davanti)", () => {
     expect(ortBaseUrl("/x/", "http://localhost:5199")).toMatch(/^https?:\/\//);
   });

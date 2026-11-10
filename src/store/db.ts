@@ -25,7 +25,7 @@ export interface SettingsRow {
   cleanFillers: boolean;   // toglie "ehm", "uhm"
   cleanRepeats: boolean;   // toglie le parole ripetute di fila
   autoPeriod: boolean;     // aggiunge il punto dopo ogni pausa
-  engine: "browser" | "offline"; // chi ascolta: il browser o il modello offline
+  engine: "browser" | "offline" | "parakeet"; // chi ascolta: il browser, Whisper offline o Parakeet offline («Privato preciso»)
   whisperModel: "tiny" | "base"; // quale modello offline
   dictionary: DictEntry[]; // dizionario personale
   onboardingDone: boolean; // il primo avvio guidato è stato fatto (o saltato)

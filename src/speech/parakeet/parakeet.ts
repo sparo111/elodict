@@ -17,6 +17,8 @@ export interface ParakeetOptions {
    */
   lowMemory?: boolean;
   onProgress?: (loaded: number, total: number, file: string, index: number, count: number) => void;
+  /** nome della memoria «Cache» che tiene i file del modello (la pagina di prova e l'app ne usano due diverse) */
+  cacheName?: string;
   /** dice in che fase si è, PRIMA di entrarci (serve al diario della pagina di prova) */
   onPhase?: (kind: "download" | "session" | "run", text: string) => void;
 }
@@ -49,7 +51,7 @@ export async function loadParakeet(o: ParakeetOptions): Promise<ParakeetEngine> 
   const MB = 1024 * 1024;
   for (const [i, f] of w.files.entries()) {
     o.onPhase?.("download", `scaricamento file ${i + 1} di ${w.files.length}: ${f.path} (${(f.bytes / MB).toFixed(1)} MB)`);
-    blobs[f.name] = await fetchCached(fileUrl(w, f), CACHE, stats, (l, t) => o.onProgress?.(l, t, f.path, i + 1, w.files.length));
+    blobs[f.name] = await fetchCached(fileUrl(w, f), o.cacheName ?? CACHE, stats, (l, t) => o.onProgress?.(l, t, f.path, i + 1, w.files.length));
   }
 
   o.onPhase?.("session", `configurazione di onnxruntime-web (${o.threads} thread, ${o.backend}${o.lowMemory ? ", poca memoria" : ""})`);

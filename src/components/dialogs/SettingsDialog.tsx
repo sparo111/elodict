@@ -139,7 +139,7 @@ export function SettingsDialog({ open, onClose, s, value, onChange, onBackup, on
           {importError && <p role="alert" className="text-sm text-danger">{s.dictImportError}</p>}
         </section>
 
-        <OfflineSection s={s} engine={value.engine} model={value.whisperModel} onEngine={(engine) => onChange({ engine })} onModel={(whisperModel) => onChange({ whisperModel })} />
+        <OfflineSection s={s} engine={value.engine} model={value.whisperModel} onEngine={(engine) => onChange({ engine })} onModel={(whisperModel) => onChange({ whisperModel })} uiLang={value.uiLanguage} />
 
         <section className="flex flex-col gap-2 border-t border-border pt-4" aria-labelledby="mic-title">
           <h3 id="mic-title" className="text-sm font-semibold">{s.micTitle}</h3>

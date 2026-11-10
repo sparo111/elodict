@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 import type { Strings } from "../i18n";
 import type { EngineKind } from "../speech/engine";
+import type { Lang } from "../commands/types";
+import { ATTRIBUTION } from "../attribution";
 import { deleteModels, isModelReady, isOfflineSupported, prepareModel, WHISPER_MODELS, type WhisperModelId } from "../speech/whisper";
+import { deleteParakeet, isParakeetReady, prepareParakeet } from "../speech/parakeetEngine";
 
 interface Props {
   s: Strings;
@@ -9,23 +12,33 @@ interface Props {
   model: WhisperModelId;
   onEngine: (e: EngineKind) => void;
   onModel: (m: WhisperModelId) => void;
+  /** lingua dell'interfaccia: serve ai crediti di Parakeet */
+  uiLang: Lang;
 }
 
 /** Scelta di chi ascolta: il browser (veloce, serve internet) o il modello offline (l'audio resta qui). */
-export function OfflineSection({ s, engine, model, onEngine, onModel }: Props) {
+export function OfflineSection({ s, engine, model, onEngine, onModel, uiLang }: Props) {
   const [pct, setPct] = useState<number | null>(null);
-  const [ready, setReady] = useState(() => isModelReady(model));
+  const [whisperReady, setWhisperReady] = useState(() => isModelReady(model));
+  const [parakeetReady, setParakeetReady] = useState(() => isParakeetReady());
+  const isParakeet = engine === "parakeet";
+  const ready = isParakeet ? parakeetReady : whisperReady;
   const [note, setNote] = useState<"failed" | "deleted" | null>(null);
   const offlineOk = isOfflineSupported();
 
-  useEffect(() => setReady(isModelReady(model)), [model]);
+  useEffect(() => setWhisperReady(isModelReady(model)), [model]);
 
   const download = async () => {
     setNote(null);
     setPct(0);
     try {
-      await prepareModel(model, setPct);
-      setReady(true);
+      if (isParakeet) {
+        await prepareParakeet(setPct);
+        setParakeetReady(true);
+      } else {
+        await prepareModel(model, setPct);
+        setWhisperReady(true);
+      }
     } catch {
       setNote("failed");
     } finally {
@@ -34,8 +47,10 @@ export function OfflineSection({ s, engine, model, onEngine, onModel }: Props) {
   };
 
   const remove = async () => {
-    await deleteModels();
-    setReady(false);
+    // «Elimina i modelli scaricati» toglie tutti i modelli: Whisper e Parakeet
+    await Promise.all([deleteModels(), deleteParakeet()]);
+    setWhisperReady(false);
+    setParakeetReady(false);
     setNote("deleted");
   };
 
@@ -60,10 +75,26 @@ export function OfflineSection({ s, engine, model, onEngine, onModel }: Props) {
         />
         <span>{s.engineOffline}</span>
       </label>
+      <label className="flex items-start gap-3 text-sm">
+        <input
+          type="radio"
+          name="engine"
+          className={`${radio} mt-0.5`}
+          checked={engine === "parakeet"}
+          disabled={!offlineOk}
+          aria-describedby="engine-parakeet-note"
+          onChange={() => onEngine("parakeet")}
+        />
+        <span>
+          {s.engineParakeet}
+          <span id="engine-parakeet-note" className="mt-0.5 block text-muted">{s.engineParakeetNote}</span>
+        </span>
+      </label>
       {!offlineOk && <p className="text-sm text-warning">{s.unsupportedOfflineBody}</p>}
 
       <p className="text-sm text-muted">{s.engineHelp}</p>
 
+      {!isParakeet && (
       <label className="flex flex-col gap-1 text-sm font-semibold">
         {s.modelLabel}
         <select
@@ -78,6 +109,7 @@ export function OfflineSection({ s, engine, model, onEngine, onModel }: Props) {
           ))}
         </select>
       </label>
+      )}
 
       <div className="flex flex-wrap items-center gap-2">
         <button
@@ -109,6 +141,19 @@ export function OfflineSection({ s, engine, model, onEngine, onModel }: Props) {
       )}
       {note === "failed" && <p role="alert" className="text-sm text-danger">{s.modelFailed}</p>}
       {note === "deleted" && <p role="status" className="text-sm">{s.modelDeleted}</p>}
+
+      {offlineOk && (
+        <section className="flex flex-col gap-1 border-t border-border pt-3 text-sm" aria-labelledby="parakeet-credits">
+          <h4 id="parakeet-credits" className="font-semibold">{ATTRIBUTION[uiLang].title}</h4>
+          {/* paragrafi e non un elenco <li>: nella finestra delle impostazioni le prove contano gli <li> del dizionario */}
+          <div className="flex flex-col gap-1 text-muted">
+            {ATTRIBUTION[uiLang].lines.map((l) => <p key={l} className="break-words">{l}</p>)}
+          </div>
+          <p className="text-muted">
+            <a className="underline" href={ATTRIBUTION[uiLang].licenseUrl} target="_blank" rel="noopener noreferrer">{ATTRIBUTION[uiLang].license}</a>. {ATTRIBUTION[uiLang].changes}
+          </p>
+        </section>
+      )}
     </fieldset>
   );
 }
