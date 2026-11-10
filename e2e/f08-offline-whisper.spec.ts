@@ -31,7 +31,8 @@ test.describe("Riconoscimento offline: impostazioni (senza scaricare il modello)
 
   test("OFF-H2 sotto la barra si legge che l'audio resta sul dispositivo", async ({ page }) => {
     await chooseOffline(page);
-    await expect(page.getByText(/l'audio non lascia il tuo dispositivo/)).toBeVisible();
+    // solo nel corpo della pagina: la stessa frase c'è anche nella nota di «Privato preciso», dentro la finestra delle impostazioni (che, sotto carico, può essere ancora nella pagina un istante dopo la chiusura)
+    await expect(page.locator("main").getByText(/l'audio non lascia il tuo dispositivo/)).toBeVisible();
   });
 
   test("OFF-H3 stato del modello: non ancora scaricato", async ({ page }) => {

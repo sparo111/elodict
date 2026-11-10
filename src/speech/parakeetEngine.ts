@@ -4,33 +4,13 @@ import type { Lang } from "../commands/types";
 import type { Handlers } from "./recognizer";
 import { createMicEngine, isOfflineSupported, type WhisperEngine } from "./whisper";
 import { cleanParakeetText } from "./parakeet/clean";
-import { ortBaseUrl } from "../pwa/basePath";
+import { warmEngineCache } from "../pwa/engineCache";
 
 const CACHE_NAME = "elodict-parakeet"; // lo stesso nome di app.worker.ts
 const FLAG = "elodict-model-parakeet-w2a8";
 
 /** Lo stesso controllo dell'offline con Whisper: lavoratori, WebAssembly, microfono, AudioWorklet. */
 export const isParakeetSupported = isOfflineSupported;
-
-/**
- * Per l'uso senza internet: i file del motore (onnxruntime 1.31) vengono messi subito nella memoria del programma di salvataggio offline
- * («elodict-motore», la stessa che usa il service worker per i file di ort/). Altrimenti, se il modello si scarica durante la PRIMA visita
- * (quando il service worker non controlla ancora la pagina), quei file non verrebbero mai salvati e senza internet il modello non partirebbe.
- */
-async function warmEngineCache(): Promise<void> {
-  try {
-    const base = ortBaseUrl(import.meta.env.BASE_URL, location.origin, "ort31");
-    const cache = await caches.open("elodict-motore");
-    for (const f of ["ort-wasm-simd-threaded.jsep.mjs", "ort-wasm-simd-threaded.jsep.wasm"]) {
-      const url = base + f;
-      if (await cache.match(url)) continue;
-      const res = await fetch(url);
-      if (res.ok) await cache.put(url, res);
-    }
-  } catch {
-    /* senza memoria o senza rete: si prova lo stesso, il motore si scaricherà quando serve */
-  }
-}
 
 /* ---------- il lavoratore e i suoi messaggi ---------- */
 let worker: Worker | null = null;
@@ -76,6 +56,11 @@ function getWorker(): Worker {
   return worker;
 }
 
+/** Questa richiesta di caricamento è ancora quella attuale? (se si è passati ad altro, `loadState` è stato azzerato o sostituito) */
+function isCurrentLoad(p: Promise<void> | undefined): boolean {
+  return loadState?.promise === p;
+}
+
 /** Scarica (la prima volta) e carica il modello. Chiamarla più volte non scarica due volte. */
 export function prepareParakeet(onProgress?: (pct: number) => void): Promise<void> {
   if (loadState) {
@@ -84,14 +69,21 @@ export function prepareParakeet(onProgress?: (pct: number) => void): Promise<voi
   }
   const listeners = new Set<(pct: number) => void>();
   if (onProgress) listeners.add(onProgress);
-  const promise = warmEngineCache().then(() => new Promise<void>((resolve, reject) => {
-    loadWaiter = { resolve, reject };
-    getWorker().postMessage({ type: "load" });
-  })).then(() => {
+  const mine: { promise?: Promise<void> } = {}; // serve a riconoscere, più sotto, se questa richiesta è ancora quella attuale
+  const promise: Promise<void> = (async () => {
+    // Prima i file del motore (onnxruntime 1.31) nella memoria per l'uso senza rete: alla prima visita il service worker non li salverebbe da solo.
+    await warmEngineCache("ort31");
+    // Se nel frattempo si è passati ad altro, non si carica più niente (un solo modello in memoria alla volta).
+    if (!isCurrentLoad(mine.promise)) throw new Error("modello chiuso");
+    await new Promise<void>((resolve, reject) => {
+      loadWaiter = { resolve, reject };
+      getWorker().postMessage({ type: "load" });
+    });
     try {
       localStorage.setItem(FLAG, "1");
     } catch { /* senza memoria locale si ricarica ogni volta */ }
-  });
+  })();
+  mine.promise = promise;
   promise.catch(() => undefined);
   loadState = { promise, listeners };
   return promise;
@@ -110,11 +102,12 @@ export function isParakeetReady(): boolean {
  * Si usa quando si passa a un altro riconoscitore: in memoria deve esserci un solo modello alla volta.
  */
 export function releaseParakeet(): void {
+  // anche se il lavoratore non c'è ancora (si sta ancora aspettando i file del motore): quel caricamento non deve più partire
+  loadState = null;
+  loadWaiter = null;
   if (!worker) return;
   worker.terminate();
   worker = null;
-  loadState = null;
-  loadWaiter = null;
   jobs.forEach((j) => j.reject(new Error("modello chiuso")));
   jobs.clear();
 }

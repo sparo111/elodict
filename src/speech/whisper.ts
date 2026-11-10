@@ -2,6 +2,7 @@
 // L'audio non esce dal dispositivo. Il modello (decine di MB) si scarica una volta dal sito Hugging Face.
 import type { Lang } from "../commands/types";
 import { openMic } from "../audio/devices";
+import { warmEngineCache } from "../pwa/engineCache";
 import { WORKLET } from "./worklet";
 import type { Handlers } from "./recognizer";
 import { cleanWhisperText, resampleTo16k, Segmenter, type Utterance } from "./segmenter";
@@ -78,14 +79,22 @@ export function prepareModel(model: WhisperModelId, onProgress?: (pct: number) =
   }
   const listeners = new Set<(pct: number) => void>();
   if (onProgress) listeners.add(onProgress);
-  const promise = new Promise<void>((resolve, reject) => {
-    loadWaiter = { resolve, reject };
-    getWorker().postMessage({ type: "load", repo });
-  }).then(() => {
+  const mine: { promise?: Promise<void> } = {}; // serve a riconoscere, più sotto, se questa richiesta è ancora quella attuale
+  const promise: Promise<void> = (async () => {
+    // Prima i file del motore nella memoria per l'uso senza rete (alla prima visita il service worker non li salverebbe da solo).
+    await warmEngineCache("ort");
+    // Se nel frattempo si è passati ad altro (un altro riconoscitore, o «elimina i modelli»), non si carica più niente:
+    // in memoria deve esserci un solo modello alla volta, e solo se l'utente lo vuole.
+    if (loadState?.promise !== mine.promise) throw new Error("modello chiuso");
+    await new Promise<void>((resolve, reject) => {
+      loadWaiter = { resolve, reject };
+      getWorker().postMessage({ type: "load", repo });
+    });
     try {
       localStorage.setItem(flagKey(model), "1");
     } catch { /* senza memoria locale si ricarica ogni volta */ }
-  });
+  })();
+  mine.promise = promise;
   promise.catch(() => undefined);
   loadState = { repo, promise, listeners };
   return promise;
@@ -104,11 +113,12 @@ export function isModelReady(model: WhisperModelId): boolean {
  * Si usa quando si passa a un altro riconoscitore: in memoria deve esserci un solo modello alla volta.
  */
 export function releaseWhisper(): void {
+  // anche se il lavoratore non c'è ancora (si sta ancora aspettando i file del motore): quel caricamento non deve più partire
+  loadState = null;
+  loadWaiter = null;
   if (!worker) return;
   worker.terminate();
   worker = null;
-  loadState = null;
-  loadWaiter = null;
   jobs.forEach((j) => j.reject(new Error("modello chiuso")));
   jobs.clear();
 }
